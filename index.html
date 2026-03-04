@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiniela Master MX - YEMI</title>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <style>
+        :root { 
+            --verde: #006847; --blanco: #ffffff; --rojo: #CE1126; --gris: #f4f4f4; 
+            --pago-si: #28a745; --pago-no: #dc3545; --azul: #007bff;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--gris); margin: 0; padding: 10px; }
+        .container { max-width: 600px; margin: auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .header-main { background: var(--verde); color: white; padding: 20px; text-align: center; border-bottom: 5px solid var(--rojo); }
+        .header-main h1 { margin: 0; font-size: 1.5em; text-transform: uppercase; letter-spacing: 1px; }
+        .header-title { background: white; padding: 15px; text-align: center; user-select: none; border-bottom: 1px solid #eee; }
+        .secret-trigger { cursor: default; }
+        .tabs { display: none; background: #222; }
+        .tab-btn { flex: 1; padding: 15px; color: #bbb; border: none; background: none; cursor: pointer; font-weight: bold; }
+        .tab-btn.active { color: white; background: var(--verde); border-bottom: 4px solid var(--rojo); }
+        .content { padding: 20px; display: none; }
+        .content.active { display: block; }
+        .partido-card { background: #fff; border: 1px solid #eee; border-radius: 8px; margin-bottom: 10px; padding: 12px; display: flex; align-items: center; justify-content: space-between; }
+        .equipo { font-weight: bold; width: 32%; font-size: 0.85em; text-align: center; }
+        .btn-lev { border: 2px solid #ddd; background: white; padding: 8px 10px; border-radius: 6px; font-weight: bold; cursor:pointer; min-width: 40px; }
+        .btn-lev.selected { background: var(--verde); color: white; border-color: var(--verde); }
+        .btn-lev.real { background: var(--rojo); color: white; border-color: var(--rojo); }
+        .ticket-box { display: none; background: #ffffff; border: 2px solid var(--verde); padding: 20px; border-radius: 8px; margin-top: 10px; }
+        .aviso-pago { background: #fff3cd; color: #856404; padding: 10px; border-radius: 6px; border: 1px solid #ffeeba; margin-bottom: 15px; text-align: center; font-weight: bold; font-size: 0.85em; }
+        .ticket-text { font-family: 'Courier New', monospace; font-size: 0.95em; color: #333; background: #f9f9f9; padding: 15px; border-radius: 4px; border: 1px solid #ddd; display: block; margin: 15px 0; white-space: pre-wrap; }
+        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; margin-bottom: 10px; }
+        .btn-main { width: 100%; padding: 15px; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; font-size: 1em; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85em; }
+        th, td { padding: 10px 5px; border-bottom: 1px solid #eee; text-align: left; }
+        .status-pago { border: none; padding: 5px 10px; border-radius: 4px; color: white; cursor: pointer; font-weight: bold; }
+        .pago-si { background: var(--pago-si); }
+        .pago-no { background: var(--pago-no); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-main">
+        <h1>🇲🇽 LIGA MX 🇲🇽</h1>
+        <p>JORNADA 10</p>
+    </div>
+    <div class="header-title"><h2>Qu<span class="secret-trigger" onclick="activarModoMaestro()">i</span>niela Control</h2></div>
+    
+    <div class="tabs" id="barra-tabs">
+        <button class="tab-btn active" onclick="showTab('jugador')">REGISTRAR</button>
+        <button class="tab-btn" onclick="showTab('posiciones')">POSICIONES</button>
+        <button class="tab-btn" onclick="showTab('admin')">ADMIN</button>
+    </div>
+
+    <div id="jugador" class="content active">
+        <div id="form-registro">
+            <input type="text" id="nombreInput" placeholder="Nombre del participante">
+            <div id="lista-jugador"></div>
+            <button class="btn-main" style="background: var(--verde)" onclick="guardarJugada()">✅ GENERAR TICKET</button>
+        </div>
+        <div id="ticket-final" class="ticket-box">
+            <h3 style="margin:0; color: var(--verde); text-align: center;">🎟️ TICKET GENERADO</h3>
+            <div class="aviso-pago">⚠️ Favor de enviar comprobante al: 8116737983</div>
+            <div id="mensaje-texto" class="ticket-text"></div>
+            <button onclick="copiarAlPortapapeles()" class="btn-main" style="background: var(--azul)">📋 COPIAR RESUMEN</button>
+            <button onclick="location.reload()" style="width:100%; border:none; background:none; color:gray; margin-top:10px; cursor:pointer;">Registrar otra</button>
+        </div>
+    </div>
+
+    <div id="posiciones" class="content">
+        <h3 style="color: var(--verde); text-align: center;">Tabla de Puntos 🏆</h3>
+        <div id="posiciones-render"></div>
+    </div>
+
+    <div id="admin" class="content">
+        <h3 style="color: var(--rojo)">Panel Maestro</h3>
+        <div id="lista-admin"></div>
+        <button class="btn-main" style="background: var(--rojo); margin-top:10px;" onclick="guardarResultadosOficiales()">PUBLICAR RESULTADOS</button>
+        <hr>
+        <h4>Participantes en Tiempo Real</h4>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead><tr><th>Nombre</th><th>Pago</th><th>X</th></tr></thead>
+                <tbody id="admin-participantes"></tbody>
+            </table>
+        </div>
+        <button onclick="limpiarBaseDatos()" style="width:100%; background:black; color:white; padding:10px; border:none; border-radius:6px; margin-top:30px; cursor:pointer;">🚨 RESET TODA LA JORNADA</button>
+    </div>
+</div>
+
+<script>
+    // CONFIGURACIÓN DE TU FIREBASE
+    const firebaseConfig = {
+        apiKey: "AIzaSyBgmqQLnUIPuaDgXOEvuBAoY_mcd69Qw7E",
+        authDomain: "quinielaligamx-68b52.firebaseapp.com",
+        databaseURL: "https://quinielaligamx-68b52-default-rtdb.firebaseio.com",
+        projectId: "quinielaligamx-68b52",
+        storageBucket: "quinielaligamx-68b52.firebasestorage.app",
+        messagingSenderId: "745257098090",
+        appId: "1:745257098090:web:3c13bf19a1a0c1718ca313"
+    };
+
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const CLAVE_ADMIN = "1234";
+    const PARTIDOS = [
+        { id: 1, l: "Mazatlán", v: "León" }, { id: 2, l: "Necaxa", v: "Pumas" }, { id: 3, l: "Cruz Azul", v: "Atl. San Luis" },
+        { id: 4, l: "Querétaro", v: "América" }, { id: 5, l: "Pachuca", v: "Puebla" }, { id: 6, l: "Atlas", v: "Chivas" },
+        { id: 7, l: "Tigres", v: "Monterrey" }, { id: 8, l: "Toluca", v: "FC Juárez" }, { id: 9, l: "Tijuana", v: "Santos" }
+    ];
+
+    let todasLasJugadas = [];
+    let resultadosOficiales = {};
+    let seleccionActual = {};
+
+    // ESCUCHAR CAMBIOS EN TIEMPO REAL
+    db.ref('jugadas').on('value', (snapshot) => {
+        todasLasJugadas = [];
+        snapshot.forEach((child) => {
+            todasLasJugadas.push({ id: child.key, ...child.val() });
+        });
+        renderAdminParticipantes();
+        actualizarLeaderboard();
+    });
+
+    db.ref('oficial').on('value', (snapshot) => {
+        resultadosOficiales = snapshot.val() || {};
+        renderPartidos();
+    });
+
+    function activarModoMaestro() { if (prompt("PIN:") === CLAVE_ADMIN) document.getElementById('barra-tabs').style.display = 'flex'; }
+
+    function renderPartidos() {
+        const listJ = document.getElementById('lista-jugador');
+        const listA = document.getElementById('lista-admin');
+        listJ.innerHTML = ''; listA.innerHTML = '';
+        PARTIDOS.forEach(p => {
+            listJ.innerHTML += `<div class="partido-card"><div class="equipo">${p.l}</div><div><button class="btn-lev ${seleccionActual[p.id]==='L'?'selected':''}" onclick="setSel(${p.id},'L')">L</button><button class="btn-lev ${seleccionActual[p.id]==='E'?'selected':''}" onclick="setSel(${p.id},'E')">E</button><button class="btn-lev ${seleccionActual[p.id]==='V'?'selected':''}" onclick="setSel(${p.id},'V')">V</button></div><div class="equipo">${p.v}</div></div>`;
+            listA.innerHTML += `<div class="partido-card"><div class="equipo">${p.l}</div><div><button class="btn-lev ${resultadosOficiales[p.id]==='L'?'real':''}" onclick="setOficial(${p.id},'L')">L</button><button class="btn-lev ${resultadosOficiales[p.id]==='E'?'real':''}" onclick="setOficial(${p.id},'E')">E</button><button class="btn-lev ${resultadosOficiales[p.id]==='V'?'real':''}" onclick="setOficial(${p.id},'V')">V</button></div><div class="equipo">${p.v}</div></div>`;
+        });
+    }
+
+    function setSel(id, val) { if(seleccionActual[id]===val) delete seleccionActual[id]; else seleccionActual[id]=val; renderPartidos(); }
+    function setOficial(id, val) { if(resultadosOficiales[id]===val) delete resultadosOficiales[id]; else resultadosOficiales[id]=val; renderPartidos(); }
+
+    function guardarJugada() {
+        const nombre = document.getElementById('nombreInput').value.trim();
+        if(!nombre || Object.keys(seleccionActual).length < 9) return alert("Completa todos los partidos.");
+        
+        // Enviar a Google Firebase
+        db.ref('jugadas').push({
+            nombre: nombre,
+            votos: seleccionActual,
+            pagado: false
+        });
+
+        let ticket = `⚽ LIGA MX J10\n👤 ${nombre.toUpperCase()}\n----------------------------\n`;
+        PARTIDOS.forEach(p => { ticket += `${p.l} vs ${p.v}: [${seleccionActual[p.id]}]\n`; });
+        ticket += `----------------------------\n📲 Pago al: 8116737983`;
+        
+        document.getElementById('form-registro').style.display = 'none';
+        document.getElementById('ticket-final').style.display = 'block';
+        document.getElementById('mensaje-texto').innerText = ticket;
+    }
+
+    function copiarAlPortapapeles() {
+        navigator.clipboard.writeText(document.getElementById('mensaje-texto').innerText).then(() => alert("✅ Copiado"));
+    }
+
+    function renderAdminParticipantes() {
+        const body = document.getElementById('admin-participantes');
+        body.innerHTML = '';
+        todasLasJugadas.forEach(j => {
+            body.innerHTML += `<tr>
+                <td>${j.nombre}</td>
+                <td><button class="status-pago ${j.pagado?'pago-si':'pago-no'}" onclick="togglePago('${j.id}', ${j.pagado})">${j.pagado?'SI':'NO'}</button></td>
+                <td><button onclick="eliminarJugador('${j.id}')" style="border:none; background:none; cursor:pointer;">🗑️</button></td>
+            </tr>`;
+        });
+    }
+
+    function togglePago(id, actual) { db.ref('jugadas/' + id).update({ pagado: !actual }); }
+    function eliminarJugador(id) { if(confirm("¿Borrar?")) db.ref('jugadas/' + id).remove(); }
+    function guardarResultadosOficiales() { db.ref('oficial').set(resultadosOficiales); alert("Resultados publicados ✅"); }
+    function limpiarBaseDatos() { if(confirm("¿RESET TOTAL? Se borrarán todos los jugadores de Google.")) db.ref().remove(); }
+    
+    function showTab(tabId) {
+        document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    function actualizarLeaderboard() {
+        const container = document.getElementById('posiciones-render');
+        let tabla = todasLasJugadas.map(j => {
+            let pts = 0;
+            PARTIDOS.forEach(p => { if(j.votos[p.id] === resultadosOficiales[p.id]) pts++; });
+            return { n: j.nombre, p: pts };
+        }).sort((a,b) => b.p - a.p);
+        
+        let html = '<table><tr><th>Pos</th><th>Jugador</th><th>Pts</th></tr>';
+        tabla.forEach((it, i) => { html += `<tr><td>${i+1}</td><td>${it.n}</td><td>${it.p}</td></tr>`; });
+        container.innerHTML = html + '</table>';
+    }
+
+    window.onload = renderPartidos;
+</script>
+</body>
+</html>
