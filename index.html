@@ -27,10 +27,11 @@
         input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; margin-bottom: 10px; }
         .btn-main { width: 100%; padding: 15px; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; }
         .ticket-box { display: none; background: #ffffff; border: 2px solid var(--verde); padding: 20px; border-radius: 8px; margin-top: 10px; }
-        .aviso-pago { background: #fff3cd; color: #856404; padding: 10px; border-radius: 6px; border: 1px solid #ffeeba; margin-bottom: 15px; text-align: center; font-weight: bold; font-size: 0.85em; }
         .ticket-text { font-family: 'Courier New', monospace; font-size: 0.95em; color: #333; background: #f9f9f9; padding: 15px; border-radius: 4px; border: 1px solid #ddd; display: block; margin: 15px 0; white-space: pre-wrap; }
         table { width: 100%; border-collapse: collapse; font-size: 0.85em; }
         th, td { padding: 10px 5px; border-bottom: 1px solid #eee; text-align: left; }
+        .ganador-row { font-weight: bold; background: #fff3cd; color: #856404; }
+        .toggle-switch { display: flex; align-items: center; justify-content: space-between; background: #eee; padding: 10px; border-radius: 8px; margin-bottom: 15px; }
         #modal-jugada { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; overflow-y: auto; }
         .modal-content { background:white; margin:10% auto; padding:20px; width:85%; max-width:400px; border-radius:10px; }
     </style>
@@ -67,16 +68,28 @@
         </div>
         <div id="ticket-final" class="ticket-box">
             <h3 style="margin:0; color: var(--verde); text-align: center;">🎟️ TICKET GENERADO</h3>
-            <div class="aviso-pago">⚠️ Favor de enviar comprobante al: 8116737983</div>
+            <div style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; font-size: 0.85em; margin-bottom:15px;">⚠️ Favor de enviar comprobante al: 8116737983</div>
             <div id="mensaje-texto" class="ticket-text"></div>
             <button onclick="copiarAlPortapapeles()" class="btn-main" style="background: var(--azul)">📋 COPIAR PARA WHATSAPP</button>
             <button onclick="location.reload()" style="width:100%; border:none; background:none; color:gray; margin-top:10px; cursor:pointer;">Registrar otra</button>
         </div>
     </div>
 
-    <div id="posiciones" class="content"><div id="posiciones-render"></div></div>
+    <div id="posiciones" class="content">
+        <div id="mensaje-bloqueo" style="text-align: center; padding: 40px 0;">
+            <p style="font-size: 1.2em; color: #666;">🏆 Resultados en proceso...<br>Regresa más tarde.</p>
+        </div>
+        <div id="tabla-real" style="display:none;">
+            <h3 style="color: var(--verde); text-align: center;">Tabla de Puntos Final 🏆</h3>
+            <div id="posiciones-render"></div>
+        </div>
+    </div>
 
     <div id="admin" class="content">
+        <div class="toggle-switch">
+            <span style="font-weight:bold;">MOSTRAR TABLA A USUARIOS:</span>
+            <input type="checkbox" id="switch-tabla" onchange="toggleVisibilidadTabla(this.checked)" style="width:auto; margin:0;">
+        </div>
         <div style="background:#f8f9fa; padding:10px; border-radius:8px; border:1px solid #ddd; margin-bottom:15px;">
             <input type="text" id="cfg-jornada" placeholder="Nombre de Jornada">
             <input type="text" id="cfg-costo" placeholder="Costo $">
@@ -110,20 +123,25 @@
     const db = firebase.database();
     const J10_BASE = [{id:1,l:"Mazatlán",v:"León"},{id:2,l:"Necaxa",v:"Pumas"},{id:3,l:"Cruz Azul",v:"Atl. San Luis"},{id:4,l:"Querétaro",v:"América"},{id:5,l:"Pachuca",v:"Puebla"},{id:6,l:"Atlas",v:"Chivas"},{id:7,l:"Tigres",v:"Monterrey"},{id:8,l:"Toluca",v:"FC Juárez"},{id:9,l:"Tijuana",v:"Santos"}];
 
-    let CONFIG = { costo: "10", jornada: "" };
-    let PARTIDOS = J10_BASE;
-    let todasLasJugadas = [];
-    let resultadosOficiales = {};
-    let seleccionActual = {};
+    let CONFIG = { costo: "10", jornada: "", mostrarTabla: false };
+    let PARTIDOS = J10_BASE, todasLasJugadas = [], resultadosOficiales = {}, seleccionActual = {};
 
-    db.ref('config').on('value', s => { if(s.val()){ CONFIG = s.val(); document.getElementById('display-jornada').innerText = CONFIG.jornada; } });
+    db.ref('config').on('value', s => { 
+        if(s.val()){ 
+            CONFIG = s.val(); 
+            document.getElementById('display-jornada').innerText = CONFIG.jornada;
+            document.getElementById('switch-tabla').checked = CONFIG.mostrarTabla;
+            document.getElementById('mensaje-bloqueo').style.display = CONFIG.mostrarTabla ? 'none' : 'block';
+            document.getElementById('tabla-real').style.display = CONFIG.mostrarTabla ? 'block' : 'none';
+        } 
+    });
     db.ref('partidos').on('value', s => { PARTIDOS = s.val() || J10_BASE; renderPartidos(); renderEditorEquipos(); });
     db.ref('jugadas').on('value', s => { 
         todasLasJugadas = []; s.forEach(c => { todasLasJugadas.push({id:c.key, ...c.val()}); });
         todasLasJugadas.sort((a,b) => (a.timestamp || 0) - (b.timestamp || 0));
         renderAdminParticipantes(); actualizarLeaderboard();
     });
-    db.ref('oficial').on('value', s => { resultadosOficiales = s.val() || {}; renderPartidos(); });
+    db.ref('oficial').on('value', s => { resultadosOficiales = s.val() || {}; renderPartidos(); actualizarLeaderboard(); });
 
     function renderPartidos() {
         const listJ = document.getElementById('lista-jugador'), listA = document.getElementById('lista-admin');
@@ -134,6 +152,37 @@
         });
     }
 
+    function setSel(id, v) { if(seleccionActual[id]===v) delete seleccionActual[id]; else seleccionActual[id]=v; renderPartidos(); }
+    function setOficial(id, v) { if(resultadosOficiales[id]===v) delete resultadosOficiales[id]; else resultadosOficiales[id]=v; renderPartidos(); }
+    function toggleVisibilidadTabla(v) { db.ref('config').update({ mostrarTabla: v }); }
+
+    function guardarJugada() {
+        const n = document.getElementById('nombreInput').value.trim();
+        if(!n || Object.keys(seleccionActual).length < 9) return alert("Faltan datos.");
+        db.ref('jugadas').push({ nombre: n, votos: seleccionActual, pagado: false, timestamp: firebase.database.ServerValue.TIMESTAMP });
+        let t = `⚽ QUINIELAS REGIAS - ${CONFIG.jornada}\n👤 ${n.toUpperCase()}\n----------------------------\n`;
+        PARTIDOS.forEach(p => { t += `${p.l} vs ${p.v}: [${seleccionActual[p.id]}]\n`; });
+        document.getElementById('form-registro').style.display = 'none';
+        document.getElementById('ticket-final').style.display = 'block';
+        document.getElementById('mensaje-texto').innerText = t;
+    }
+
+    function actualizarLeaderboard() {
+        const container = document.getElementById('posiciones-render');
+        let t = todasLasJugadas.map(j => {
+            let pts = 0; PARTIDOS.forEach(p => { if(j.votos[p.id] === resultadosOficiales[p.id]) pts++; });
+            return {n:j.nombre, p:pts, ts: j.timestamp || 0};
+        }).sort((a,b) => b.p - a.p || a.ts - b.ts);
+        
+        const maxPts = t.length > 0 ? t[0].p : -1;
+        let h = '<table><tr><th>Pos</th><th>Nombre</th><th>Pts</th></tr>';
+        t.forEach((it, i) => { 
+            const esGanador = (maxPts > 0 && it.p === maxPts && i === 0);
+            h += `<tr class="${esGanador ? 'ganador-row' : ''}"><td>${i+1}</td><td>${it.n}${esGanador ? ' 🏆 GANADOR' : ''}</td><td>${it.p}</td></tr>`; 
+        });
+        container.innerHTML = h+'</table>';
+    }
+
     function renderEditorEquipos() {
         const editor = document.getElementById('editor-equipos'); editor.innerHTML = '';
         PARTIDOS.forEach(p => { editor.innerHTML += `<div style="display:flex; gap:5px; margin-bottom:5px;"><input type="text" id="edit-l-${p.id}" value="${p.l}"><input type="text" id="edit-v-${p.id}" value="${p.v}"></div>`; });
@@ -141,30 +190,10 @@
 
     function guardarNombresEquipos() {
         const nuevos = PARTIDOS.map(p => ({ id: p.id, l: document.getElementById(`edit-l-${p.id}`).value, v: document.getElementById(`edit-v-${p.id}`).value }));
-        db.ref('partidos').set(nuevos); alert("Equipos actualizados ✅");
-    }
-
-    function setSel(id, val) { if(seleccionActual[id]===val) delete seleccionActual[id]; else seleccionActual[id]=val; renderPartidos(); }
-    function setOficial(id, val) { if(resultadosOficiales[id]===val) delete resultadosOficiales[id]; else resultadosOficiales[id]=val; renderPartidos(); }
-
-    function guardarJugada() {
-        const n = document.getElementById('nombreInput').value.trim();
-        if(!n || Object.keys(seleccionActual).length < 9) return alert("Completa todos los partidos.");
-        
-        const timestamp = firebase.database.ServerValue.TIMESTAMP;
-        db.ref('jugadas').push({ nombre: n, votos: seleccionActual, pagado: false, timestamp: timestamp });
-
-        let t = `⚽ QUINIELAS REGIAS - ${CONFIG.jornada}\n👤 ${n.toUpperCase()}\n----------------------------\n`;
-        PARTIDOS.forEach(p => { t += `${p.l} vs ${p.v}: [${seleccionActual[p.id]}]\n`; });
-        t += `----------------------------\n💰 TOTAL: $${CONFIG.costo} MXN\n📲 Enviar a: 8116737983`;
-
-        document.getElementById('form-registro').style.display = 'none';
-        document.getElementById('ticket-final').style.display = 'block';
-        document.getElementById('mensaje-texto').innerText = t;
+        db.ref('partidos').set(nuevos); alert("OK ✅");
     }
 
     function copiarAlPortapapeles() { navigator.clipboard.writeText(document.getElementById('mensaje-texto').innerText).then(() => alert("Copiado ✅")); }
-
     function renderAdminParticipantes() {
         const body = document.getElementById('admin-participantes'); body.innerHTML = '';
         todasLasJugadas.forEach((j, idx) => {
@@ -178,8 +207,7 @@
 
     function verDetalle(idx) {
         const j = todasLasJugadas[idx]; document.getElementById('modal-nombre').innerText = j.nombre;
-        const f = j.timestamp ? new Date(j.timestamp).toLocaleString() : "Sin fecha";
-        document.getElementById('modal-fecha').innerText = "📅 Registro: " + f;
+        document.getElementById('modal-fecha').innerText = "📅 " + (j.timestamp ? new Date(j.timestamp).toLocaleString() : "Sin fecha");
         let h = '<ul style="list-style:none; padding:0;">';
         PARTIDOS.forEach(p => {
             const v = j.votos[p.id] || '?';
@@ -193,11 +221,11 @@
     function cerrarModal() { document.getElementById('modal-jugada').style.display='none'; }
     function togglePago(id, act) { db.ref('jugadas/'+id).update({pagado:!act}); }
     function eliminarJugador(id) { if(confirm("¿Borrar?")) db.ref('jugadas/'+id).remove(); }
-    function guardarConfigGeneral() { db.ref('config').set({jornada: document.getElementById('cfg-jornada').value.toUpperCase(), costo: document.getElementById('cfg-costo').value}); alert("Guardado ✅"); }
+    function guardarConfigGeneral() { db.ref('config').update({jornada: document.getElementById('cfg-jornada').value.toUpperCase(), costo: document.getElementById('cfg-costo').value}); alert("Guardado ✅"); }
     function guardarResultadosOficiales() { db.ref('oficial').set(resultadosOficiales); alert("Publicado ✅"); }
     function activarModoMaestro() { if(prompt("PIN:")==="1234") document.getElementById('barra-tabs').style.display='flex'; }
     function showTab(t) { document.querySelectorAll('.content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); }
-    function limpiarBaseDatos() { if(confirm("¿BORRAR TODO?")) db.ref().remove(); }
+    function limpiarBaseDatos() { if(confirm("¿RESET?")) db.ref().remove(); }
     window.onload = renderPartidos;
 </script>
 </body>
