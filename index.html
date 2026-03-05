@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QUINIELAS REGIAS - YEMI</title>
+    <title>QUINIELAS REGIAS</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
@@ -20,28 +20,31 @@
         .content { padding: 15px; display: none; }
         .content.active { display: block; }
 
-        /* TABLERO FINANCIERO */
+        /* FINANZAS */
         .finanzas-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .fin-card { background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #ddd; text-align: center; }
-        .fin-card span { display: block; font-size: 0.7em; font-weight: bold; color: #666; text-transform: uppercase; }
-        .fin-card strong { font-size: 1.1em; color: #333; }
+        .fin-card span { display: block; font-size: 0.65em; font-weight: bold; color: #666; text-transform: uppercase; }
+        .fin-card strong { font-size: 1em; color: #333; }
 
+        /* PARTIDO CARD & BOTONES LEV */
         .partido-card { background: #fff; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 12px; padding: 15px 10px; display: flex; align-items: center; justify-content: space-between; }
-        .equipo { font-weight: 700; width: 30%; font-size: 0.8em; text-align: center; line-height: 1.2; }
+        .equipo { font-weight: 700; width: 30%; font-size: 0.8em; text-align: center; line-height: 1.2; color: #333; }
         .lev-container { display: flex; gap: 8px; justify-content: center; width: 40%; }
-        .btn-lev { border: 2px solid #ccc; background: #fdfdfd; padding: 12px 0; border-radius: 8px; font-weight: 900; cursor: pointer; flex: 1; min-width: 44px; }
+        .btn-lev { border: 2px solid #ccc; background: #fdfdfd; padding: 12px 0; border-radius: 8px; font-weight: 900; cursor: pointer; flex: 1; min-width: 44px; font-size: 1em; color: #666; transition: 0.2s; }
         .btn-lev.selected { background: var(--verde); color: white; border-color: var(--verde); }
         .btn-lev.real { background: var(--rojo); color: white; border-color: var(--rojo); }
 
-        input { width: 100%; padding: 15px; border: 2px solid #eee; border-radius: 8px; box-sizing: border-box; margin-bottom: 15px; }
-        .btn-main { width: 100%; padding: 18px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; font-size: 1.1em; }
+        input { width: 100%; padding: 15px; border: 2px solid #eee; border-radius: 8px; box-sizing: border-box; margin-bottom: 10px; font-size: 1em; }
+        .btn-main { width: 100%; padding: 18px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; font-size: 1.1em; text-transform: uppercase; }
         
+        /* TICKET */
         .ticket-box { display: none; background: #ffffff; border: 2px solid var(--verde); padding: 20px; border-radius: 8px; margin-top: 10px; }
-        .ticket-text { font-family: 'Courier New', monospace; font-size: 0.9em; color: #333; background: #f4f4f4; padding: 15px; border-radius: 4px; border: 1px solid #ddd; display: block; margin: 15px 0; white-space: pre-wrap; }
+        .ticket-text { font-family: 'Courier New', monospace; font-size: 0.9em; color: #333; background: #f4f4f4; padding: 15px; border-radius: 4px; border: 1px solid #ddd; display: block; margin: 15px 0; white-space: pre-wrap; line-height: 1.4; }
         
         table { width: 100%; border-collapse: collapse; font-size: 0.85em; }
         th, td { padding: 12px 8px; border-bottom: 1px solid #eee; text-align: left; }
-        .toggle-switch { display: flex; align-items: center; justify-content: space-between; background: #f0f0f0; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
+        .ganador-row { font-weight: bold; background: #fff3cd; color: #856404; }
+        .toggle-switch { display: flex; align-items: center; justify-content: space-between; background: #f0f0f0; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ddd; }
         
         #modal-jugada { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:1000; overflow-y: auto; }
         .modal-content { background:white; margin:10% auto; padding:20px; width:85%; max-width:400px; border-radius:12px; }
@@ -49,7 +52,7 @@
 </head>
 <body>
 
-<div id="modal-jugada"><div class="modal-content"><h3 id="modal-nombre" style="margin:0; color:var(--verde);"></h3><div id="modal-fecha" style="font-size:0.75em; color:#666; margin-bottom:12px;"></div><div id="modal-detalle"></div><button onclick="cerrarModal()" class="btn-main" style="background:#333; margin-top:15px;">CERRAR</button></div></div>
+<div id="modal-jugada"><div class="modal-content"><h3 id="modal-nombre" style="margin:0; color:var(--verde);"></h3><div id="modal-fecha" style="font-size:0.75em; color:#666; margin-bottom:12px; border-bottom:1px dashed #ccc; padding-bottom:5px;"></div><div id="modal-detalle"></div><button onclick="cerrarModal()" class="btn-main" style="background:#333; margin-top:15px;">CERRAR</button></div></div>
 
 <div class="container">
     <div class="header-main"><h1>🇲🇽 QUINIELAS REGIAS 🇲🇽</h1><p id="display-jornada"></p></div>
@@ -69,14 +72,15 @@
         </div>
         <div id="ticket-final" class="ticket-box">
             <h3 style="margin:0; color: var(--verde); text-align: center;">🎟️ TICKET LISTO</h3>
+            <div style="background: #fff3cd; color: #856404; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 0.85em; margin: 15px 0; border: 1px solid #ffeeba;">⚠️ Enviar comprobante al: 8116737983</div>
             <div id="mensaje-texto" class="ticket-text"></div>
             <button onclick="copiarAlPortapapeles()" class="btn-main" style="background: var(--azul)">📋 COPIAR PARA WHATSAPP</button>
-            <button onclick="location.reload()" style="width:100%; border:none; background:none; color:gray; margin-top:15px; cursor:pointer;">Registrar otra</button>
+            <button onclick="location.reload()" style="width:100%; border:none; background:none; color:gray; margin-top:15px; cursor:pointer; font-weight:bold;">Registrar otra</button>
         </div>
     </div>
 
     <div id="posiciones" class="content">
-        <div id="mensaje-bloqueo" style="text-align: center; padding: 50px 0;"><p>🏆 Resultados en proceso...</p></div>
+        <div id="mensaje-bloqueo" style="text-align: center; padding: 50px 0;"><p style="font-size: 1.1em; color: #777; font-weight:bold;">🏆 Resultados en proceso...</p></div>
         <div id="tabla-real" style="display:none;"><h3 style="text-align: center; color:var(--verde);">Tabla General 🏆</h3><div id="posiciones-render"></div></div>
     </div>
 
@@ -86,25 +90,29 @@
             <div class="fin-card"><span>Pendiente</span><strong id="fin-no" style="color:var(--pago-no);">$0</strong></div>
             <div class="fin-card"><span>Bolsa Total</span><strong id="fin-total" style="color:var(--azul);">$0</strong></div>
         </div>
-
-        <div class="toggle-switch"><span>MOSTRAR TABLA:</span><input type="checkbox" id="switch-tabla" onchange="toggleVisibilidadTabla(this.checked)" style="width:auto;"></div>
+        <div class="toggle-switch"><span style="font-weight:bold; font-size:0.8em;">MOSTRAR TABLA A USUARIOS:</span><input type="checkbox" id="switch-tabla" onchange="toggleVisibilidadTabla(this.checked)" style="width:auto; margin:0;"></div>
         
         <div style="background:#f8f9fa; padding:10px; border-radius:10px; border:1px solid #ddd; margin-bottom:15px;">
-            <input type="text" id="cfg-jornada" placeholder="Jornada">
+            <input type="text" id="cfg-jornada" placeholder="Nombre Jornada">
             <input type="text" id="cfg-costo" placeholder="Costo $">
-            <button onclick="guardarConfigGeneral()" class="btn-main" style="padding:10px; background:#333; height:auto;">💾 GUARDAR CONFIG</button>
+            <button onclick="guardarConfigGeneral()" style="width:100%; padding:10px; background:#333; color:white; border:none; border-radius:6px; font-weight:bold;">💾 GUARDAR CONFIG</button>
         </div>
 
-        <div id="lista-admin"></div>
-        <button class="btn-main" style="background: var(--rojo); margin-top:10px;" onclick="guardarResultadosOficiales()">PUBLICAR RESULTADOS</button>
+        <details style="margin-bottom:15px; background:#eee; padding:12px; border-radius:10px;"><summary style="font-weight:bold; cursor:pointer;">✏️ EDITAR EQUIPOS MANUAL</summary><div id="editor-equipos" style="margin-top:10px;"></div><button onclick="guardarNombresEquipos()" style="width:100%; background:var(--azul); color:white; border:none; padding:12px; border-radius:6px; margin-top:8px; font-weight:bold;">ACTUALIZAR NOMBRES</button></details>
         
-        <hr>
+        <div id="lista-admin"></div>
+        <button class="btn-main" style="background: var(--rojo); margin-top:10px;" onclick="guardarResultadosOficiales()">PUBLICAR RESULTADOS OFICIALES</button>
+        
+        <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+        
         <table><thead><tr><th>Nombre</th><th style="text-align:right;">Pago / Ver</th></tr></thead><tbody id="admin-participantes"></tbody></table>
         <div style="display:flex; justify-content:space-between; margin-top:15px;">
-            <button onclick="cambiarPagina(-1)" class="btn-main" style="width:45%; padding:10px; background:#666;">« Ant</button>
-            <button onclick="cambiarPagina(1)" class="btn-main" style="width:45%; padding:10px; background:#666;">Sig »</button>
+            <button onclick="cambiarPagina(-1)" style="width:45%; padding:10px; background:#333; color:white; border:none; border-radius:6px;">« Ant</button>
+            <button onclick="cambiarPagina(1)" style="width:45%; padding:10px; background:#333; color:white; border:none; border-radius:6px;">Sig »</button>
         </div>
-        <button onclick="limpiarBaseDatos()" class="btn-main" style="background:black; margin-top:30px;">🚨 RESET TOTAL</button>
+
+        <button onclick="forzarJ10()" style="width:100%; background:orange; color:white; padding:12px; border:none; border-radius:8px; margin-top:25px; font-weight:bold;">🔄 RECARGAR J10 BASE</button>
+        <button onclick="limpiarBaseDatos()" style="width:100%; background:black; color:white; padding:12px; border:none; border-radius:8px; margin-top:20px;">🚨 RESET TOTAL JORNADA</button>
     </div>
 </div>
 
@@ -117,7 +125,7 @@
     let CONFIG = { costo: "10", jornada: "", mostrarTabla: false }, PARTIDOS = J10_BASE, todasLasJugadas = [], resultadosOficiales = {}, seleccionActual = {}, paginaActual = 0;
 
     db.ref('config').on('value', s => { if(s.val()){ CONFIG = s.val(); document.getElementById('display-jornada').innerText = CONFIG.jornada; document.getElementById('switch-tabla').checked = CONFIG.mostrarTabla; document.getElementById('mensaje-bloqueo').style.display = CONFIG.mostrarTabla ? 'none' : 'block'; document.getElementById('tabla-real').style.display = CONFIG.mostrarTabla ? 'block' : 'none'; calcularFinanzas(); } });
-    db.ref('partidos').on('value', s => { PARTIDOS = s.val() || J10_BASE; renderPartidos(); });
+    db.ref('partidos').on('value', s => { PARTIDOS = s.val() || J10_BASE; renderPartidos(); renderEditorEquipos(); });
     db.ref('jugadas').on('value', s => { todasLasJugadas = []; s.forEach(c => { todasLasJugadas.push({id:c.key, ...c.val()}); }); todasLasJugadas.sort((a,b) => (a.timestamp || 0) - (b.timestamp || 0)); renderAdminParticipantes(); actualizarLeaderboard(); calcularFinanzas(); });
     db.ref('oficial').on('value', s => { resultadosOficiales = s.val() || {}; renderPartidos(); actualizarLeaderboard(); });
 
@@ -131,24 +139,18 @@
     }
 
     function calcularFinanzas() {
-        const costo = parseFloat(CONFIG.costo) || 0;
-        let si = 0, no = 0;
+        const costo = parseFloat(CONFIG.costo) || 0; let si = 0, no = 0;
         todasLasJugadas.forEach(j => { if(j.pagado) si += costo; else no += costo; });
-        document.getElementById('fin-si').innerText = `$${si}`;
-        document.getElementById('fin-no').innerText = `$${no}`;
-        document.getElementById('fin-total').innerText = `$${si + no}`;
+        document.getElementById('fin-si').innerText = `$${si}`; document.getElementById('fin-no').innerText = `$${no}`; document.getElementById('fin-total').innerText = `$${si + no}`;
     }
-
-    function setSel(id, v) { if(seleccionActual[id]===v) delete seleccionActual[id]; else seleccionActual[id]=v; renderPartidos(); }
-    function setOficial(id, v) { if(resultadosOficiales[id]===v) delete resultadosOficiales[id]; else resultadosOficiales[id]=v; renderPartidos(); }
-    function toggleVisibilidadTabla(v) { db.ref('config').update({ mostrarTabla: v }); }
 
     function guardarJugada() {
         const n = document.getElementById('nombreInput').value.trim();
-        if(!n || Object.keys(seleccionActual).length < 9) return alert("Completa la quiniela.");
+        if(!n || Object.keys(seleccionActual).length < PARTIDOS.length) return alert("Completa la quiniela.");
         db.ref('jugadas').push({ nombre: n, votos: seleccionActual, pagado: false, timestamp: firebase.database.ServerValue.TIMESTAMP });
         let t = `⚽ QUINIELAS REGIAS - ${CONFIG.jornada}\n👤 ${n.toUpperCase()}\n----------------------------\n`;
         PARTIDOS.forEach(p => { t += `${p.l} vs ${p.v}: [${seleccionActual[p.id]}]\n`; });
+        t += `----------------------------\n💰 TOTAL: $${CONFIG.costo} MXN\n📲 Enviar a: 8116737983`;
         document.getElementById('form-registro').style.display = 'none'; document.getElementById('ticket-final').style.display = 'block'; document.getElementById('mensaje-texto').innerText = t;
     }
 
@@ -159,28 +161,46 @@
         paginados.forEach((j, idx) => {
             body.innerHTML += `<tr><td style="font-weight:bold;">${j.nombre}</td><td style="text-align:right;">
                 <button class="btn-lev ${j.pagado?'selected':''}" style="padding:8px; min-width:35px;" onclick="togglePago('${j.id}',${j.pagado})">${j.pagado?'$':'X'}</button>
-                <button onclick="verDetalle('${inicio+idx}')" style="background:#6c757d; color:white; border:none; padding:8px; border-radius:6px;">👁️</button>
+                <button onclick="verDetalle('${inicio+idx}')" style="background:#6c757d; color:white; border:none; padding:8px 10px; border-radius:6px; margin-left:5px;">👁️</button>
+                <button onclick="eliminarJugador('${j.id}')" style="border:none; background:none; padding:5px 10px; cursor:pointer;">🗑️</button>
             </td></tr>`;
         });
     }
+
+    function togglePago(id, act) { db.ref('jugadas/' + id).update({ pagado: !act }); }
 
     function verDetalle(idx) {
         const j = todasLasJugadas[idx]; document.getElementById('modal-nombre').innerText = j.nombre;
         document.getElementById('modal-fecha').innerText = "📅 " + (j.timestamp ? new Date(j.timestamp).toLocaleString() : "---");
         let h = '<div style="margin-top:10px;">';
-        PARTIDOS.forEach(p => { const v = j.votos[p.id] || '?'; const color = (resultadosOficiales[p.id] && v === resultadosOficiales[p.id]) ? 'green' : (resultadosOficiales[p.id] ? 'red' : 'black'); h += `<div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #eee; color:${color}; font-size:0.85em;"><span>${p.l} vs ${p.v}</span><span>[${v}]</span></div>`; });
+        PARTIDOS.forEach(p => { const v = j.votos[p.id] || '?'; const color = (resultadosOficiales[p.id] && v === resultadosOficiales[p.id]) ? '#006847' : (resultadosOficiales[p.id] ? '#CE1126' : '#333'); h += `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee; color:${color}; font-size:0.85em; font-weight:bold;"><span>${p.l} vs ${p.v}</span><span>[ ${v} ]</span></div>`; });
         document.getElementById('modal-detalle').innerHTML = h+'</div>'; document.getElementById('modal-jugada').style.display='block';
     }
 
-    function cambiarPagina(dir) { paginaActual = Math.max(0, Math.min(paginaActual + dir, Math.ceil(todasLasJugadas.length / 10) - 1)); renderAdminParticipantes(); }
-    function togglePago(id, act) { db.ref('jugadas/'+id).update({pagado:!act}); }
-    function guardarConfigGeneral() { db.ref('config').update({jornada: document.getElementById('cfg-jornada').value.toUpperCase(), costo: document.getElementById('cfg-costo').value}); alert("OK ✅"); }
-    function guardarResultadosOficiales() { db.ref('oficial').set(resultadosOficiales); alert("OK ✅"); }
-    function activarModoMaestro() { if(prompt("PIN:")==="1234") document.getElementById('barra-tabs').style.display='flex'; }
-    function showTab(t) { document.querySelectorAll('.content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); }
-    function cerrarModal() { document.getElementById('modal-jugada').style.display='none'; }
+    function actualizarLeaderboard() {
+        const container = document.getElementById('posiciones-render');
+        let t = todasLasJugadas.map(j => { let pts = 0; PARTIDOS.forEach(p => { if(j.votos[p.id] === resultadosOficiales[p.id]) pts++; }); return {n:j.nombre, p:pts, ts: j.timestamp || 0}; }).sort((a,b) => b.p - a.p || a.ts - b.ts);
+        const maxPts = t.length > 0 ? t[0].p : -1;
+        let h = '<table><tr><th>Pos</th><th>Nombre</th><th style="text-align:center;">Pts</th></tr>';
+        t.forEach((it, i) => { const esG = (maxPts > 0 && it.p === maxPts && i === 0); h += `<tr class="${esG ? 'ganador-row' : ''}"><td>${i+1}</td><td>${it.n}${esG ? ' 🏆 GANADOR' : ''}</td><td style="text-align:center; font-weight:bold;">${it.p}</td></tr>`; });
+        container.innerHTML = h+'</table>';
+    }
+
+    function setSel(id, v) { if(seleccionActual[id]===v) delete seleccionActual[id]; else seleccionActual[id]=v; renderPartidos(); }
+    function setOficial(id, v) { if(resultadosOficiales[id]===v) delete resultadosOficiales[id]; else resultadosOficiales[id]=v; renderPartidos(); }
+    function toggleVisibilidadTabla(v) { db.ref('config').update({ mostrarTabla: v }); }
+    function renderEditorEquipos() { const editor = document.getElementById('editor-equipos'); editor.innerHTML = ''; PARTIDOS.forEach(p => { editor.innerHTML += `<div style="display:flex; gap:5px; margin-bottom:8px;"><input type="text" id="edit-l-${p.id}" value="${p.l}" style="margin:0;"><input type="text" id="edit-v-${p.id}" value="${p.v}" style="margin:0;"></div>`; }); }
+    function guardarNombresEquipos() { const nuevos = PARTIDOS.map(p => ({ id: p.id, l: document.getElementById(`edit-l-${p.id}`).value, v: document.getElementById(`edit-v-${p.id}`).value })); db.ref('partidos').set(nuevos); alert("Equipos actualizados ✅"); }
     function copiarAlPortapapeles() { navigator.clipboard.writeText(document.getElementById('mensaje-texto').innerText).then(() => alert("Copiado ✅")); }
-    function limpiarBaseDatos() { if(confirm("¿RESET?")) db.ref().remove(); }
+    function eliminarJugador(id) { if(confirm("¿Borrar?")) db.ref('jugadas/'+id).remove(); }
+    function guardarConfigGeneral() { db.ref('config').update({jornada: document.getElementById('cfg-jornada').value.toUpperCase(), costo: document.getElementById('cfg-costo').value}); alert("Guardado ✅"); }
+    function guardarResultadosOficiales() { db.ref('oficial').set(resultadosOficiales); alert("Publicado ✅"); }
+    function cambiarPagina(dir) { paginaActual = Math.max(0, Math.min(paginaActual + dir, Math.ceil(todasLasJugadas.length / 10) - 1)); renderAdminParticipantes(); }
+    function forzarJ10() { if(confirm("¿Cargar J10 Base?")) db.ref('partidos').set(J10_BASE); }
+    function activarModoMaestro() { if(prompt("PIN:")==="1234") document.getElementById('barra-tabs').style.display='flex'; }
+    function showTab(t) { document.querySelectorAll('.content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); event.currentTarget.classList.add('active'); }
+    function limpiarBaseDatos() { if(confirm("¿BORRAR TODO? No se puede deshacer.")) db.ref().remove(); }
+    function cerrarModal() { document.getElementById('modal-jugada').style.display='none'; }
     window.onload = renderPartidos;
 </script>
 </body>
