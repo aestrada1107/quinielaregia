@@ -19,45 +19,36 @@
         .tab-btn.active { color: white; background: var(--verde); border-bottom: 4px solid var(--rojo); }
         .content { padding: 15px; display: none; }
         .content.active { display: block; }
-
-        /* FINANZAS */
         .finanzas-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .fin-card { background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #ddd; text-align: center; }
         .fin-card span { display: block; font-size: 0.65em; font-weight: bold; color: #666; text-transform: uppercase; }
         .fin-card strong { font-size: 1em; color: #333; }
-
-        /* PARTIDO CARD & BOTONES LEV */
         .partido-card { background: #fff; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 12px; padding: 15px 10px; display: flex; align-items: center; justify-content: space-between; }
-        .equipo { font-weight: 700; width: 30%; font-size: 0.8em; text-align: center; line-height: 1.2; color: #333; }
+        .equipo { font-weight: 700; width: 30%; font-size: 0.8em; text-align: center; line-height: 1.2; }
         .lev-container { display: flex; gap: 8px; justify-content: center; width: 40%; }
-        .btn-lev { border: 2px solid #ccc; background: #fdfdfd; padding: 12px 0; border-radius: 8px; font-weight: 900; cursor: pointer; flex: 1; min-width: 44px; font-size: 1em; color: #666; transition: 0.2s; }
+        .btn-lev { border: 2px solid #ccc; background: #fdfdfd; padding: 12px 0; border-radius: 8px; font-weight: 900; cursor: pointer; flex: 1; min-width: 44px; font-size: 1em; color: #666; }
         .btn-lev.selected { background: var(--verde); color: white; border-color: var(--verde); }
         .btn-lev.real { background: var(--rojo); color: white; border-color: var(--rojo); }
-
         input { width: 100%; padding: 15px; border: 2px solid #eee; border-radius: 8px; box-sizing: border-box; margin-bottom: 10px; font-size: 1em; }
         .btn-main { width: 100%; padding: 18px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; font-size: 1.1em; text-transform: uppercase; }
-        
-        /* TICKET */
         .ticket-box { display: none; background: #ffffff; border: 2px solid var(--verde); padding: 20px; border-radius: 8px; margin-top: 10px; }
         .ticket-text { font-family: 'Courier New', monospace; font-size: 0.9em; color: #333; background: #f4f4f4; padding: 15px; border-radius: 4px; border: 1px solid #ddd; display: block; margin: 15px 0; white-space: pre-wrap; line-height: 1.4; }
-        
         table { width: 100%; border-collapse: collapse; font-size: 0.85em; }
         th, td { padding: 12px 8px; border-bottom: 1px solid #eee; text-align: left; }
         .ganador-row { font-weight: bold; background: #fff3cd; color: #856404; }
         .toggle-switch { display: flex; align-items: center; justify-content: space-between; background: #f0f0f0; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ddd; }
-        
+        .search-box { margin-bottom: 10px; border: 2px solid var(--azul); }
         #modal-jugada { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:1000; overflow-y: auto; }
         .modal-content { background:white; margin:10% auto; padding:20px; width:85%; max-width:400px; border-radius:12px; }
     </style>
 </head>
 <body>
 
-<div id="modal-jugada"><div class="modal-content"><h3 id="modal-nombre" style="margin:0; color:var(--verde);"></h3><div id="modal-fecha" style="font-size:0.75em; color:#666; margin-bottom:12px; border-bottom:1px dashed #ccc; padding-bottom:5px;"></div><div id="modal-detalle"></div><button onclick="cerrarModal()" class="btn-main" style="background:#333; margin-top:15px;">CERRAR</button></div></div>
+<div id="modal-jugada"><div class="modal-content"><h3 id="modal-nombre" style="margin:0; color:var(--verde);"></h3><div id="modal-fecha" style="font-size:0.75em; color:#666; margin-bottom:12px; border-bottom:1px dashed #ccc;"></div><div id="modal-detalle"></div><button onclick="cerrarModal()" class="btn-main" style="background:#333; margin-top:15px;">CERRAR</button></div></div>
 
 <div class="container">
     <div class="header-main"><h1>🇲🇽 QUINIELAS REGIAS 🇲🇽</h1><p id="display-jornada"></p></div>
     <div class="header-title"><h2>Qu<span onclick="activarModoMaestro()" style="cursor:default">i</span>niela Control</h2></div>
-    
     <div class="tabs" id="barra-tabs">
         <button class="tab-btn active" onclick="showTab('jugador')">REGISTRAR</button>
         <button class="tab-btn" onclick="showTab('posiciones')">TABLA</button>
@@ -75,7 +66,7 @@
             <div style="background: #fff3cd; color: #856404; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 0.85em; margin: 15px 0; border: 1px solid #ffeeba;">⚠️ Enviar comprobante al: 8116737983</div>
             <div id="mensaje-texto" class="ticket-text"></div>
             <button onclick="copiarAlPortapapeles()" class="btn-main" style="background: var(--azul)">📋 COPIAR PARA WHATSAPP</button>
-            <button onclick="location.reload()" style="width:100%; border:none; background:none; color:gray; margin-top:15px; cursor:pointer; font-weight:bold;">Registrar otra</button>
+            <button onclick="location.reload()" style="width:100%; border:none; background:none; color:gray; margin-top:15px; cursor:pointer;">Registrar otra</button>
         </div>
     </div>
 
@@ -90,29 +81,33 @@
             <div class="fin-card"><span>Pendiente</span><strong id="fin-no" style="color:var(--pago-no);">$0</strong></div>
             <div class="fin-card"><span>Bolsa Total</span><strong id="fin-total" style="color:var(--azul);">$0</strong></div>
         </div>
-        <div class="toggle-switch"><span style="font-weight:bold; font-size:0.8em;">MOSTRAR TABLA A USUARIOS:</span><input type="checkbox" id="switch-tabla" onchange="toggleVisibilidadTabla(this.checked)" style="width:auto; margin:0;"></div>
+        <div class="toggle-switch"><span>MOSTRAR TABLA:</span><input type="checkbox" id="switch-tabla" onchange="toggleVisibilidadTabla(this.checked)" style="width:auto;"></div>
         
         <div style="background:#f8f9fa; padding:10px; border-radius:10px; border:1px solid #ddd; margin-bottom:15px;">
-            <input type="text" id="cfg-jornada" placeholder="Nombre Jornada">
+            <input type="text" id="cfg-jornada" placeholder="Jornada">
             <input type="text" id="cfg-costo" placeholder="Costo $">
-            <button onclick="guardarConfigGeneral()" style="width:100%; padding:10px; background:#333; color:white; border:none; border-radius:6px; font-weight:bold;">💾 GUARDAR CONFIG</button>
+            <button onclick="guardarConfigGeneral()" class="btn-main" style="padding:10px; background:#333; height:auto;">💾 GUARDAR CONFIG</button>
         </div>
 
-        <details style="margin-bottom:15px; background:#eee; padding:12px; border-radius:10px;"><summary style="font-weight:bold; cursor:pointer;">✏️ EDITAR EQUIPOS MANUAL</summary><div id="editor-equipos" style="margin-top:10px;"></div><button onclick="guardarNombresEquipos()" style="width:100%; background:var(--azul); color:white; border:none; padding:12px; border-radius:6px; margin-top:8px; font-weight:bold;">ACTUALIZAR NOMBRES</button></details>
-        
+        <details style="margin-bottom:15px; background:#eee; padding:12px; border-radius:10px;"><summary style="font-weight:bold; cursor:pointer;">✏️ EDITAR EQUIPOS</summary><div id="editor-equipos" style="margin-top:10px;"></div><button onclick="guardarNombresEquipos()" style="width:100%; background:var(--azul); color:white; border:none; padding:12px; border-radius:6px; margin-top:8px;">ACTUALIZAR</button></details>
+
         <div id="lista-admin"></div>
-        <button class="btn-main" style="background: var(--rojo); margin-top:10px;" onclick="guardarResultadosOficiales()">PUBLICAR RESULTADOS OFICIALES</button>
+        <button class="btn-main" style="background: var(--rojo); margin-top:10px;" onclick="guardarResultadosOficiales()">PUBLICAR RESULTADOS</button>
         
         <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
         
+        <h4>Participantes</h4>
+        <input type="text" id="buscadorParticipante" class="search-box" placeholder="🔍 Buscar jugador..." oninput="filtrarParticipantes()">
+        
         <table><thead><tr><th>Nombre</th><th style="text-align:right;">Pago / Ver</th></tr></thead><tbody id="admin-participantes"></tbody></table>
-        <div style="display:flex; justify-content:space-between; margin-top:15px;">
-            <button onclick="cambiarPagina(-1)" style="width:45%; padding:10px; background:#333; color:white; border:none; border-radius:6px;">« Ant</button>
-            <button onclick="cambiarPagina(1)" style="width:45%; padding:10px; background:#333; color:white; border:none; border-radius:6px;">Sig »</button>
+        
+        <div id="controles-paginacion" style="display:flex; justify-content:space-between; align-items:center; margin-top:15px;">
+            <button onclick="cambiarPagina(-1)" style="width:30%; padding:10px; background:#333; color:white; border-radius:6px; border:none;">« Ant</button>
+            <span id="page-info" style="font-weight:bold; font-size:0.9em;">Pág 1</span>
+            <button onclick="cambiarPagina(1)" style="width:30%; padding:10px; background:#333; color:white; border-radius:6px; border:none;">Sig »</button>
         </div>
 
-        <button onclick="forzarJ10()" style="width:100%; background:orange; color:white; padding:12px; border:none; border-radius:8px; margin-top:25px; font-weight:bold;">🔄 RECARGAR J10 BASE</button>
-        <button onclick="limpiarBaseDatos()" style="width:100%; background:black; color:white; padding:12px; border:none; border-radius:8px; margin-top:20px;">🚨 RESET TOTAL JORNADA</button>
+        <button onclick="limpiarBaseDatos()" class="btn-main" style="background:black; margin-top:30px;">🚨 RESET TOTAL JORNADA</button>
     </div>
 </div>
 
@@ -138,12 +133,50 @@
         });
     }
 
+    function renderAdminParticipantes() {
+        const body = document.getElementById('admin-participantes'); body.innerHTML = '';
+        const filtro = document.getElementById('buscadorParticipante').value.toLowerCase();
+        
+        let jugadasAMostrar = todasLasJugadas;
+        const controles = document.getElementById('controles-paginacion');
+
+        if (filtro) {
+            jugadasAMostrar = todasLasJugadas.filter(j => j.nombre.toLowerCase().includes(filtro));
+            controles.style.opacity = '0.3';
+            controles.style.pointerEvents = 'none';
+        } else {
+            const inicio = paginaActual * 10;
+            jugadasAMostrar = todasLasJugadas.slice(inicio, inicio + 10);
+            controles.style.opacity = '1';
+            controles.style.pointerEvents = 'auto';
+            document.getElementById('page-info').innerText = `Pág ${paginaActual + 1} de ${Math.ceil(todasLasJugadas.length / 10) || 1}`;
+        }
+
+        jugadasAMostrar.forEach((j) => {
+            const originalIndex = todasLasJugadas.findIndex(orig => orig.id === j.id);
+            body.innerHTML += `<tr><td style="font-weight:bold;">${j.nombre}</td><td style="text-align:right;">
+                <button class="btn-lev ${j.pagado?'selected':''}" style="padding:8px; min-width:35px;" onclick="togglePago('${j.id}',${j.pagado})">${j.pagado?'$':'X'}</button>
+                <button onclick="verDetalle('${originalIndex}')" style="background:#6c757d; color:white; border:none; padding:8px; border-radius:6px; margin-left:5px;">👁️</button>
+                <button onclick="eliminarJugador('${j.id}')" style="border:none; background:none; padding:5px 10px;">🗑️</button>
+            </td></tr>`;
+        });
+    }
+
+    function filtrarParticipantes() { renderAdminParticipantes(); }
+    function cambiarPagina(dir) { paginaActual = Math.max(0, Math.min(paginaActual + dir, Math.ceil(todasLasJugadas.length / 10) - 1)); renderAdminParticipantes(); }
+    function togglePago(id, act) { db.ref('jugadas/' + id).update({ pagado: !act }); }
+    function verDetalle(idx) {
+        const j = todasLasJugadas[idx]; document.getElementById('modal-nombre').innerText = j.nombre;
+        document.getElementById('modal-fecha').innerText = "📅 " + (j.timestamp ? new Date(j.timestamp).toLocaleString() : "---");
+        let h = '<div style="margin-top:10px;">';
+        PARTIDOS.forEach(p => { const v = j.votos[p.id] || '?'; const color = (resultadosOficiales[p.id] && v === resultadosOficiales[p.id]) ? 'green' : (resultadosOficiales[p.id] ? 'red' : 'black'); h += `<div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #eee; color:${color}; font-size:0.85em; font-weight:bold;"><span>${p.l} vs ${p.v}</span><span>[${v}]</span></div>`; });
+        document.getElementById('modal-detalle').innerHTML = h+'</div>'; document.getElementById('modal-jugada').style.display='block';
+    }
     function calcularFinanzas() {
         const costo = parseFloat(CONFIG.costo) || 0; let si = 0, no = 0;
         todasLasJugadas.forEach(j => { if(j.pagado) si += costo; else no += costo; });
         document.getElementById('fin-si').innerText = `$${si}`; document.getElementById('fin-no').innerText = `$${no}`; document.getElementById('fin-total').innerText = `$${si + no}`;
     }
-
     function guardarJugada() {
         const n = document.getElementById('nombreInput').value.trim();
         if(!n || Object.keys(seleccionActual).length < PARTIDOS.length) return alert("Completa la quiniela.");
@@ -153,30 +186,19 @@
         t += `----------------------------\n💰 TOTAL: $${CONFIG.costo} MXN\n📲 Enviar a: 8116737983`;
         document.getElementById('form-registro').style.display = 'none'; document.getElementById('ticket-final').style.display = 'block'; document.getElementById('mensaje-texto').innerText = t;
     }
-
-    function renderAdminParticipantes() {
-        const body = document.getElementById('admin-participantes'); body.innerHTML = '';
-        const inicio = paginaActual * 10;
-        const paginados = todasLasJugadas.slice(inicio, inicio + 10);
-        paginados.forEach((j, idx) => {
-            body.innerHTML += `<tr><td style="font-weight:bold;">${j.nombre}</td><td style="text-align:right;">
-                <button class="btn-lev ${j.pagado?'selected':''}" style="padding:8px; min-width:35px;" onclick="togglePago('${j.id}',${j.pagado})">${j.pagado?'$':'X'}</button>
-                <button onclick="verDetalle('${inicio+idx}')" style="background:#6c757d; color:white; border:none; padding:8px 10px; border-radius:6px; margin-left:5px;">👁️</button>
-                <button onclick="eliminarJugador('${j.id}')" style="border:none; background:none; padding:5px 10px; cursor:pointer;">🗑️</button>
-            </td></tr>`;
-        });
-    }
-
-    function togglePago(id, act) { db.ref('jugadas/' + id).update({ pagado: !act }); }
-
-    function verDetalle(idx) {
-        const j = todasLasJugadas[idx]; document.getElementById('modal-nombre').innerText = j.nombre;
-        document.getElementById('modal-fecha').innerText = "📅 " + (j.timestamp ? new Date(j.timestamp).toLocaleString() : "---");
-        let h = '<div style="margin-top:10px;">';
-        PARTIDOS.forEach(p => { const v = j.votos[p.id] || '?'; const color = (resultadosOficiales[p.id] && v === resultadosOficiales[p.id]) ? '#006847' : (resultadosOficiales[p.id] ? '#CE1126' : '#333'); h += `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee; color:${color}; font-size:0.85em; font-weight:bold;"><span>${p.l} vs ${p.v}</span><span>[ ${v} ]</span></div>`; });
-        document.getElementById('modal-detalle').innerHTML = h+'</div>'; document.getElementById('modal-jugada').style.display='block';
-    }
-
+    function setSel(id, v) { if(seleccionActual[id]===v) delete seleccionActual[id]; else seleccionActual[id]=v; renderPartidos(); }
+    function setOficial(id, v) { if(resultadosOficiales[id]===v) delete resultadosOficiales[id]; else resultadosOficiales[id]=v; renderPartidos(); }
+    function toggleVisibilidadTabla(v) { db.ref('config').update({ mostrarTabla: v }); }
+    function renderEditorEquipos() { const editor = document.getElementById('editor-equipos'); editor.innerHTML = ''; PARTIDOS.forEach(p => { editor.innerHTML += `<div style="display:flex; gap:5px; margin-bottom:8px;"><input type="text" id="edit-l-${p.id}" value="${p.l}" style="margin:0;"><input type="text" id="edit-v-${p.id}" value="${p.v}" style="margin:0;"></div>`; }); }
+    function guardarNombresEquipos() { const nuevos = PARTIDOS.map(p => ({ id: p.id, l: document.getElementById(`edit-l-${p.id}`).value, v: document.getElementById(`edit-v-${p.id}`).value })); db.ref('partidos').set(nuevos); alert("OK ✅"); }
+    function copiarAlPortapapeles() { navigator.clipboard.writeText(document.getElementById('mensaje-texto').innerText).then(() => alert("Copiado ✅")); }
+    function eliminarJugador(id) { if(confirm("¿Borrar?")) db.ref('jugadas/'+id).remove(); }
+    function guardarConfigGeneral() { db.ref('config').update({jornada: document.getElementById('cfg-jornada').value.toUpperCase(), costo: document.getElementById('cfg-costo').value}); alert("OK ✅"); }
+    function guardarResultadosOficiales() { db.ref('oficial').set(resultadosOficiales); alert("OK ✅"); }
+    function activarModoMaestro() { if(prompt("PIN:")==="1234") document.getElementById('barra-tabs').style.display='flex'; }
+    function showTab(t) { document.querySelectorAll('.content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); event.currentTarget.classList.add('active'); }
+    function limpiarBaseDatos() { if(confirm("¿RESET TOTAL?")) db.ref().remove(); }
+    function cerrarModal() { document.getElementById('modal-jugada').style.display='none'; }
     function actualizarLeaderboard() {
         const container = document.getElementById('posiciones-render');
         let t = todasLasJugadas.map(j => { let pts = 0; PARTIDOS.forEach(p => { if(j.votos[p.id] === resultadosOficiales[p.id]) pts++; }); return {n:j.nombre, p:pts, ts: j.timestamp || 0}; }).sort((a,b) => b.p - a.p || a.ts - b.ts);
@@ -185,22 +207,6 @@
         t.forEach((it, i) => { const esG = (maxPts > 0 && it.p === maxPts && i === 0); h += `<tr class="${esG ? 'ganador-row' : ''}"><td>${i+1}</td><td>${it.n}${esG ? ' 🏆 GANADOR' : ''}</td><td style="text-align:center; font-weight:bold;">${it.p}</td></tr>`; });
         container.innerHTML = h+'</table>';
     }
-
-    function setSel(id, v) { if(seleccionActual[id]===v) delete seleccionActual[id]; else seleccionActual[id]=v; renderPartidos(); }
-    function setOficial(id, v) { if(resultadosOficiales[id]===v) delete resultadosOficiales[id]; else resultadosOficiales[id]=v; renderPartidos(); }
-    function toggleVisibilidadTabla(v) { db.ref('config').update({ mostrarTabla: v }); }
-    function renderEditorEquipos() { const editor = document.getElementById('editor-equipos'); editor.innerHTML = ''; PARTIDOS.forEach(p => { editor.innerHTML += `<div style="display:flex; gap:5px; margin-bottom:8px;"><input type="text" id="edit-l-${p.id}" value="${p.l}" style="margin:0;"><input type="text" id="edit-v-${p.id}" value="${p.v}" style="margin:0;"></div>`; }); }
-    function guardarNombresEquipos() { const nuevos = PARTIDOS.map(p => ({ id: p.id, l: document.getElementById(`edit-l-${p.id}`).value, v: document.getElementById(`edit-v-${p.id}`).value })); db.ref('partidos').set(nuevos); alert("Equipos actualizados ✅"); }
-    function copiarAlPortapapeles() { navigator.clipboard.writeText(document.getElementById('mensaje-texto').innerText).then(() => alert("Copiado ✅")); }
-    function eliminarJugador(id) { if(confirm("¿Borrar?")) db.ref('jugadas/'+id).remove(); }
-    function guardarConfigGeneral() { db.ref('config').update({jornada: document.getElementById('cfg-jornada').value.toUpperCase(), costo: document.getElementById('cfg-costo').value}); alert("Guardado ✅"); }
-    function guardarResultadosOficiales() { db.ref('oficial').set(resultadosOficiales); alert("Publicado ✅"); }
-    function cambiarPagina(dir) { paginaActual = Math.max(0, Math.min(paginaActual + dir, Math.ceil(todasLasJugadas.length / 10) - 1)); renderAdminParticipantes(); }
-    function forzarJ10() { if(confirm("¿Cargar J10 Base?")) db.ref('partidos').set(J10_BASE); }
-    function activarModoMaestro() { if(prompt("PIN:")==="1234") document.getElementById('barra-tabs').style.display='flex'; }
-    function showTab(t) { document.querySelectorAll('.content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); event.currentTarget.classList.add('active'); }
-    function limpiarBaseDatos() { if(confirm("¿BORRAR TODO? No se puede deshacer.")) db.ref().remove(); }
-    function cerrarModal() { document.getElementById('modal-jugada').style.display='none'; }
     window.onload = renderPartidos;
 </script>
 </body>
