@@ -7,129 +7,86 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
-        :root { 
-            --verde: #006847; --blanco: #ffffff; --rojo: #CE1126; --gris: #f4f4f4; 
-            --pago-si: #28a745; --pago-no: #dc3545; --azul: #007bff;
-        }
+        :root { --verde: #006847; --blanco: #ffffff; --rojo: #CE1126; --gris: #f4f4f4; --pago-si: #28a745; --pago-no: #dc3545; --azul: #007bff; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--gris); margin: 0; padding: 10px; }
         .container { max-width: 600px; margin: auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        
-        /* Encabezado */
         .header-main { background: var(--verde); color: white; padding: 20px; text-align: center; border-bottom: 5px solid var(--rojo); }
-        .header-main h1 { margin: 0; font-size: 1.5em; text-transform: uppercase; letter-spacing: 1px; }
-        .header-main p { margin: 5px 0 0; font-weight: bold; font-size: 0.9em; opacity: 0.9; }
-        
-        .header-title { background: white; padding: 15px; text-align: center; user-select: none; border-bottom: 1px solid #eee; }
-        .secret-trigger { cursor: default; }
-        
-        /* Navegación */
+        .header-main h1 { margin: 0; font-size: 1.5em; text-transform: uppercase; }
+        .header-title { background: white; padding: 15px; text-align: center; border-bottom: 1px solid #eee; }
         .tabs { display: none; background: #222; }
         .tab-btn { flex: 1; padding: 15px; color: #bbb; border: none; background: none; cursor: pointer; font-weight: bold; }
         .tab-btn.active { color: white; background: var(--verde); border-bottom: 4px solid var(--rojo); }
-        
-        /* Contenido */
         .content { padding: 20px; display: none; }
         .content.active { display: block; }
-        
         .partido-card { background: #fff; border: 1px solid #eee; border-radius: 8px; margin-bottom: 10px; padding: 12px; display: flex; align-items: center; justify-content: space-between; }
         .equipo { font-weight: bold; width: 32%; font-size: 0.85em; text-align: center; }
-        
-        /* Botones L-E-V */
         .btn-lev { border: 2px solid #ddd; background: white; padding: 8px 10px; border-radius: 6px; font-weight: bold; cursor:pointer; min-width: 40px; }
         .btn-lev.selected { background: var(--verde); color: white; border-color: var(--verde); }
         .btn-lev.real { background: var(--rojo); color: white; border-color: var(--rojo); }
-        
-        /* Ticket y Mensajes */
-        .ticket-box { display: none; background: #ffffff; border: 2px solid var(--verde); padding: 20px; border-radius: 8px; margin-top: 10px; }
-        .aviso-pago { background: #fff3cd; color: #856404; padding: 10px; border-radius: 6px; border: 1px solid #ffeeba; margin-bottom: 15px; text-align: center; font-weight: bold; font-size: 0.85em; }
-        .ticket-text { font-family: 'Courier New', monospace; font-size: 0.95em; color: #333; background: #f9f9f9; padding: 15px; border-radius: 4px; border: 1px solid #ddd; display: block; margin: 15px 0; white-space: pre-wrap; }
-        
-        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; margin-bottom: 10px; }
-        .btn-main { width: 100%; padding: 15px; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; font-size: 1em; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.85em; }
+        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; margin-bottom: 5px; }
+        .btn-main { width: 100%; padding: 15px; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85em; }
         th, td { padding: 10px 5px; border-bottom: 1px solid #eee; text-align: left; }
-        
-        /* Modal de Auditoría */
-        #modal-jugada { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; overflow-y:auto; }
-        .modal-content { background:white; margin:10% auto; padding:20px; width:90%; max-width:400px; border-radius:10px; }
-        
-        .status-pago { border: none; padding: 5px 10px; border-radius: 4px; color: white; cursor: pointer; font-weight: bold; font-size: 0.8em; }
-        .pago-si { background: var(--pago-si); }
-        .pago-no { background: var(--pago-no); }
-        .btn-ver { background: #6c757d; color: white; border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; margin-right: 5px; }
+        .pagination { display: flex; justify-content: space-between; margin-top: 10px; align-items: center; }
+        .btn-pag { padding: 5px 15px; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        #modal-jugada { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; }
+        .modal-content { background:white; margin:10% auto; padding:20px; width:85%; max-width:400px; border-radius:10px; }
     </style>
 </head>
 <body>
 
-<div id="modal-jugada">
-    <div class="modal-content">
-        <h3 id="modal-nombre" style="margin-top:0; color:var(--verde);"></h3>
-        <div id="modal-detalle"></div>
-        <button onclick="cerrarModal()" class="btn-main" style="background:#333; margin-top:15px;">CERRAR</button>
-    </div>
-</div>
+<div id="modal-jugada"><div class="modal-content"><h3 id="modal-nombre"></h3><div id="modal-detalle"></div><button onclick="cerrarModal()" class="btn-main" style="background:#333; margin-top:15px;">CERRAR</button></div></div>
 
 <div class="container">
     <div class="header-main">
         <h1 id="titulo-web">🇲🇽 LIGA MX 🇲🇽</h1>
-        <p id="display-jornada">JORNADA 10</p>
+        <p id="display-jornada">CARGANDO...</p>
     </div>
-    <div class="header-title"><h2>Qu<span class="secret-trigger" onclick="activarModoMaestro()">i</span>niela Control</h2></div>
+    <div class="header-title"><h2>Qu<span onclick="activarModoMaestro()" style="cursor:default">i</span>niela Control</h2></div>
     
     <div class="tabs" id="barra-tabs">
         <button class="tab-btn active" onclick="showTab('jugador')">REGISTRAR</button>
-        <button class="tab-btn" onclick="showTab('posiciones')">POSICIONES</button>
+        <button class="tab-btn" onclick="showTab('posiciones')">TABLA</button>
         <button class="tab-btn" onclick="showTab('admin')">ADMIN</button>
     </div>
 
     <div id="jugador" class="content active">
-        <div id="form-registro">
-            <input type="text" id="nombreInput" placeholder="Nombre del participante">
-            <div id="lista-jugador"></div>
-            <button class="btn-main" style="background: var(--verde)" onclick="guardarJugada()">✅ GENERAR TICKET</button>
-        </div>
-        <div id="ticket-final" class="ticket-box">
-            <h3 style="margin:0; color: var(--verde); text-align: center;">🎟️ TICKET GENERADO</h3>
-            <div class="aviso-pago">⚠️ Favor de enviar comprobante al: 8116737983</div>
-            <div id="mensaje-texto" class="ticket-text"></div>
-            <button onclick="copiarAlPortapapeles()" class="btn-main" style="background: var(--azul)">📋 COPIAR PARA WHATSAPP</button>
-            <button onclick="location.reload()" style="width:100%; border:none; background:none; color:gray; margin-top:10px; cursor:pointer;">Registrar otra</button>
-        </div>
+        <input type="text" id="nombreInput" placeholder="Nombre del participante">
+        <div id="lista-jugador"></div>
+        <button class="btn-main" style="background: var(--verde)" onclick="guardarJugada()">✅ GENERAR TICKET</button>
     </div>
 
-    <div id="posiciones" class="content">
-        <h3 style="color: var(--verde); text-align: center;">Tabla de Puntos 🏆</h3>
-        <div id="posiciones-render"></div>
-    </div>
+    <div id="posiciones" class="content"><div id="posiciones-render"></div></div>
 
     <div id="admin" class="content">
-        <h3 style="color: var(--rojo)">Panel Maestro</h3>
-        <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid #ddd;">
-            <label style="font-size:0.8em; font-weight:bold;">Nombre Jornada:</label>
-            <input type="text" id="cfg-jornada" placeholder="Ej. JORNADA 10">
-            <label style="font-size:0.8em; font-weight:bold;">Costo ($):</label>
-            <input type="text" id="cfg-costo" placeholder="Ej. 10">
-            <button onclick="guardarConfigGeneral()" style="width:100%; padding:8px; background:#333; color:white; border:none; border-radius:4px; cursor:pointer;">💾 GUARDAR CONFIG</button>
+        <div style="background:#f8f9fa; padding:10px; border-radius:8px; border:1px solid #ddd; margin-bottom:15px;">
+            <input type="text" id="cfg-jornada" placeholder="Jornada (ej. J10)">
+            <input type="text" id="cfg-costo" placeholder="Costo $">
+            <button onclick="guardarConfigGeneral()" style="width:100%; padding:8px; background:#333; color:white; border:none; border-radius:4px;">💾 GUARDAR CONFIG</button>
         </div>
-        
+
+        <details style="margin-bottom:15px; background:#eee; padding:10px; border-radius:8px;">
+            <summary style="font-weight:bold; cursor:pointer;">✏️ EDITAR EQUIPOS SEMANALES</summary>
+            <div id="editor-equipos" style="margin-top:10px;"></div>
+            <button onclick="guardarNombresEquipos()" style="width:100%; background:var(--azul); color:white; border:none; padding:10px; border-radius:4px; margin-top:5px;">ACTUALIZAR EQUIPOS</button>
+        </details>
+
         <div id="lista-admin"></div>
         <button class="btn-main" style="background: var(--rojo); margin-top:10px;" onclick="guardarResultadosOficiales()">PUBLICAR RESULTADOS</button>
+        
         <hr>
         <h4>Participantes</h4>
-        <div style="overflow-x: auto;">
-            <table>
-                <thead><tr><th>Nombre</th><th>Acciones</th></tr></thead>
-                <tbody id="admin-participantes"></tbody>
-            </table>
+        <table><thead><tr><th>Nombre</th><th>Acciones</th></tr></thead><tbody id="admin-participantes"></tbody></table>
+        <div class="pagination">
+            <button class="btn-pag" onclick="cambiarPagina(-1)">« Ant</button>
+            <span id="page-info">Pág 1</span>
+            <button class="btn-pag" onclick="cambiarPagina(1)">Sig »</button>
         </div>
-        <button onclick="forzarJ10()" style="width:100%; background:orange; color:white; padding:10px; border:none; border-radius:6px; margin-top:20px; font-weight:bold; cursor:pointer;">🔄 RECARGAR J10 (9 JUEGOS)</button>
-        <button onclick="limpiarBaseDatos()" style="width:100%; background:black; color:white; padding:10px; border:none; border-radius:6px; margin-top:30px; cursor:pointer;">🚨 RESET TODA LA JORNADA</button>
+        <button onclick="limpiarBaseDatos()" style="width:100%; background:black; color:white; padding:10px; border:none; border-radius:6px; margin-top:30px;">🚨 RESET TOTAL</button>
     </div>
 </div>
 
 <script>
-    // CREDENCIALES
     const firebaseConfig = {
         apiKey: "AIzaSyBgmqQLnUIPuaDgXOEvuBAoY_mcd69Qw7E",
         authDomain: "quinielaligamx-68b52.firebaseapp.com",
@@ -142,40 +99,33 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
-    const CLAVE_ADMIN = "1234";
-    const J10_OFICIAL = [
-        { id: 1, l: "Mazatlán", v: "León" }, { id: 2, l: "Necaxa", v: "Pumas" }, { id: 3, l: "Cruz Azul", v: "Atl. San Luis" },
-        { id: 4, l: "Querétaro", v: "América" }, { id: 5, l: "Pachuca", v: "Puebla" }, { id: 6, l: "Atlas", v: "Chivas" },
-        { id: 7, l: "Tigres", v: "Monterrey" }, { id: 8, l: "Toluca", v: "FC Juárez" }, { id: 9, l: "Tijuana", v: "Santos" }
+    const J10_BASE = [
+        {id:1,l:"Mazatlán",v:"León"},{id:2,l:"Necaxa",v:"Pumas"},{id:3,l:"Cruz Azul",v:"Atl. San Luis"},
+        {id:4,l:"Querétaro",v:"América"},{id:5,l:"Pachuca",v:"Puebla"},{id:6,l:"Atlas",v:"Chivas"},
+        {id:7,l:"Tigres",v:"Monterrey"},{id:8,l:"Toluca",v:"FC Juárez"},{id:9,l:"Tijuana",v:"Santos"}
     ];
 
     let CONFIG = { costo: "10", jornada: "JORNADA 10" };
-    let PARTIDOS = J10_OFICIAL;
+    let PARTIDOS = J10_BASE;
     let todasLasJugadas = [];
     let resultadosOficiales = {};
     let seleccionActual = {};
+    let paginaActual = 0;
+    const itemsPorPagina = 10;
 
-    // ESCUCHADORES FIREBASE
-    db.ref('config').on('value', (s) => { if(s.val()){ CONFIG = s.val(); actualizarUIConfig(); } });
-    db.ref('partidos').on('value', (s) => { if(s.val()){ PARTIDOS = s.val(); renderPartidos(); } });
-    db.ref('jugadas').on('value', (s) => { 
-        todasLasJugadas = []; s.forEach((c) => { todasLasJugadas.push({ id: c.key, ...c.val() }); }); 
-        renderAdminParticipantes(); actualizarLeaderboard(); 
+    db.ref('config').on('value', s => { if(s.val()){ CONFIG = s.val(); document.getElementById('display-jornada').innerText = CONFIG.jornada; } });
+    db.ref('partidos').on('value', s => { 
+        PARTIDOS = s.val() || J10_BASE; 
+        renderPartidos(); renderEditorEquipos();
     });
-    db.ref('oficial').on('value', (s) => { resultadosOficiales = s.val() || {}; renderPartidos(); });
-
-    function actualizarUIConfig() {
-        document.getElementById('display-jornada').innerText = CONFIG.jornada;
-        document.getElementById('cfg-jornada').value = CONFIG.jornada;
-        document.getElementById('cfg-costo').value = CONFIG.costo;
-    }
-
-    function activarModoMaestro() { if (prompt("PIN:") === CLAVE_ADMIN) document.getElementById('barra-tabs').style.display = 'flex'; }
+    db.ref('jugadas').on('value', s => { 
+        todasLasJugadas = []; s.forEach(c => { todasLasJugadas.push({id:c.key, ...c.val()}); });
+        renderAdminParticipantes(); actualizarLeaderboard();
+    });
+    db.ref('oficial').on('value', s => { resultadosOficiales = s.val() || {}; renderPartidos(); });
 
     function renderPartidos() {
-        const listJ = document.getElementById('lista-jugador');
-        const listA = document.getElementById('lista-admin');
+        const listJ = document.getElementById('lista-jugador'), listA = document.getElementById('lista-admin');
         listJ.innerHTML = ''; listA.innerHTML = '';
         PARTIDOS.forEach(p => {
             listJ.innerHTML += `<div class="partido-card"><div class="equipo">${p.l}</div><div><button class="btn-lev ${seleccionActual[p.id]==='L'?'selected':''}" onclick="setSel(${p.id},'L')">L</button><button class="btn-lev ${seleccionActual[p.id]==='E'?'selected':''}" onclick="setSel(${p.id},'E')">E</button><button class="btn-lev ${seleccionActual[p.id]==='V'?'selected':''}" onclick="setSel(${p.id},'V')">V</button></div><div class="equipo">${p.v}</div></div>`;
@@ -183,85 +133,92 @@
         });
     }
 
-    // CLICK PARA MARCAR Y DESMARCAR
-    function setSel(id, val) { if(seleccionActual[id]===val) delete seleccionActual[id]; else seleccionActual[id]=val; renderPartidos(); }
-    function setOficial(id, val) { if(resultadosOficiales[id]===val) delete resultadosOficiales[id]; else resultadosOficiales[id]=val; renderPartidos(); }
-
-    function guardarJugada() {
-        const nombre = document.getElementById('nombreInput').value.trim();
-        if(!nombre || Object.keys(seleccionActual).length < PARTIDOS.length) return alert("Completa todos los partidos.");
-        db.ref('jugadas').push({ nombre: nombre, votos: seleccionActual, pagado: false });
-        let ticket = `⚽ LIGA MX - ${CONFIG.jornada}\n👤 ${nombre.toUpperCase()}\n----------------------------\n`;
-        PARTIDOS.forEach(p => { ticket += `${p.l} vs ${p.v}: [${seleccionActual[p.id]}]\n`; });
-        ticket += `----------------------------\n💰 TOTAL: $${CONFIG.costo} MXN\n📲 Pago al: 8116737983`;
-        document.getElementById('form-registro').style.display = 'none';
-        document.getElementById('ticket-final').style.display = 'block';
-        document.getElementById('mensaje-texto').innerText = ticket;
+    function renderEditorEquipos() {
+        const editor = document.getElementById('editor-equipos');
+        editor.innerHTML = '';
+        PARTIDOS.forEach((p, idx) => {
+            editor.innerHTML += `<div style="display:flex; gap:5px; margin-bottom:5px;">
+                <input type="text" id="edit-l-${p.id}" value="${p.l}">
+                <input type="text" id="edit-v-${p.id}" value="${p.v}">
+            </div>`;
+        });
     }
 
-    function copiarAlPortapapeles() { navigator.clipboard.writeText(document.getElementById('mensaje-texto').innerText).then(() => alert("Copiado ✅")); }
+    function guardarNombresEquipos() {
+        const nuevos = PARTIDOS.map(p => ({
+            id: p.id,
+            l: document.getElementById(`edit-l-${p.id}`).value,
+            v: document.getElementById(`edit-v-${p.id}`).value
+        }));
+        db.ref('partidos').set(nuevos); alert("Nombres actualizados ✅");
+    }
 
     function renderAdminParticipantes() {
         const body = document.getElementById('admin-participantes');
         body.innerHTML = '';
-        todasLasJugadas.forEach((j, index) => {
-            body.innerHTML += `<tr>
-                <td style="font-weight:bold;">${j.nombre}</td>
-                <td>
-                    <button class="btn-ver" onclick="verDetalle('${index}')">👁️</button>
-                    <button class="status-pago ${j.pagado?'pago-si':'pago-no'}" onclick="togglePago('${j.id}', ${j.pagado})">${j.pagado?'$':'X'}</button>
-                    <button onclick="eliminarJugador('${j.id}')" style="background:none; border:none; cursor:pointer;">🗑️</button>
-                </td>
-            </tr>`;
+        const inicio = paginaActual * itemsPorPagina;
+        const fin = inicio + itemsPorPagina;
+        const paginados = todasLasJugadas.slice(inicio, fin);
+        
+        paginados.forEach((j, idx) => {
+            body.innerHTML += `<tr><td>${j.nombre}</td><td>
+                <button onclick="verDetalle('${inicio+idx}')" style="background:#6c757d; color:white; border:none; padding:5px 8px; border-radius:4px;">👁️</button>
+                <button class="btn-lev ${j.pagado?'selected':''}" style="padding:5px 8px" onclick="togglePago('${j.id}',${j.pagado})">${j.pagado?'$':'X'}</button>
+                <button onclick="eliminarJugador('${j.id}')" style="border:none; background:none;">🗑️</button>
+            </td></tr>`;
         });
+        document.getElementById('page-info').innerText = `Pág ${paginaActual + 1} de ${Math.ceil(todasLasJugadas.length/itemsPorPagina) || 1}`;
     }
 
-    function verDetalle(index) {
-        const j = todasLasJugadas[index];
-        document.getElementById('modal-nombre').innerText = j.nombre;
-        let html = '<ul style="list-style:none; padding:0;">';
-        PARTIDOS.forEach(p => {
-            const voto = j.votos[p.id] || '?';
-            const color = (resultadosOficiales[p.id] && voto === resultadosOficiales[p.id]) ? 'green' : (resultadosOficiales[p.id] ? 'red' : 'black');
-            html += `<li style="padding:8px; border-bottom:1px solid #eee; color:${color}; font-size:0.9em;"><strong>${p.l} vs ${p.v}:</strong> [${voto}]</li>`;
-        });
-        document.getElementById('modal-detalle').innerHTML = html + '</ul>';
-        document.getElementById('modal-jugada').style.display = 'block';
+    function cambiarPagina(dir) {
+        const totalPaginas = Math.ceil(todasLasJugadas.length / itemsPorPagina);
+        paginaActual = Math.max(0, Math.min(paginaActual + dir, totalPaginas - 1));
+        renderAdminParticipantes();
     }
 
-    function cerrarModal() { document.getElementById('modal-jugada').style.display = 'none'; }
-    function togglePago(id, actual) { db.ref('jugadas/' + id).update({ pagado: !actual }); }
-    function eliminarJugador(id) { if(confirm("¿Borrar?")) db.ref('jugadas/' + id).remove(); }
-    function guardarResultadosOficiales() { db.ref('oficial').set(resultadosOficiales); alert("Publicado ✅"); }
-    
-    function guardarConfigGeneral() { 
-        CONFIG.jornada = document.getElementById('cfg-jornada').value.toUpperCase();
-        CONFIG.costo = document.getElementById('cfg-costo').value;
-        db.ref('config').set(CONFIG); alert("Guardado ✅");
+    function setSel(id, val) { if(seleccionActual[id]===val) delete seleccionActual[id]; else seleccionActual[id]=val; renderPartidos(); }
+    function setOficial(id, val) { if(resultadosOficiales[id]===val) delete resultadosOficiales[id]; else resultadosOficiales[id]=val; renderPartidos(); }
+    function togglePago(id, act) { db.ref('jugadas/'+id).update({pagado:!act}); }
+    function eliminarJugador(id) { if(confirm("¿Borrar?")) db.ref('jugadas/'+id).remove(); }
+    function guardarConfigGeneral() {
+        const j = document.getElementById('cfg-jornada').value.toUpperCase();
+        const c = document.getElementById('cfg-costo').value;
+        db.ref('config').set({jornada: j, costo: c}); alert("Config guardada ✅");
     }
-
-    function forzarJ10() { if(confirm("¿Cargar 9 partidos J10?")) db.ref('partidos').set(J10_OFICIAL); }
-    function limpiarBaseDatos() { if(confirm("¿RESET TOTAL?")) db.ref().remove(); }
-    
-    function showTab(tabId) { 
+    function guardarResultadosOficiales() { db.ref('oficial').set(resultadosOficiales); alert("Resultados publicados ✅"); }
+    function activarModoMaestro() { if(prompt("PIN:")==="1234") document.getElementById('barra-tabs').style.display='flex'; }
+    function showTab(t) { 
         document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active'); 
-        event.currentTarget.classList.add('active');
+        document.getElementById(t).classList.add('active'); event.currentTarget.classList.add('active');
     }
-
+    function cerrarModal() { document.getElementById('modal-jugada').style.display='none'; }
+    function verDetalle(idx) {
+        const j = todasLasJugadas[idx]; document.getElementById('modal-nombre').innerText = j.nombre;
+        let h = '<ul style="list-style:none; padding:0;">';
+        PARTIDOS.forEach(p => {
+            const v = j.votos[p.id] || '?';
+            h += `<li style="border-bottom:1px solid #eee; padding:5px;">${p.l} vs ${p.v}: [${v}]</li>`;
+        });
+        document.getElementById('modal-detalle').innerHTML = h+'</ul>';
+        document.getElementById('modal-jugada').style.display='block';
+    }
+    function guardarJugada() {
+        const n = document.getElementById('nombreInput').value.trim();
+        if(!n || Object.keys(seleccionActual).length < 9) return alert("Faltan datos");
+        db.ref('jugadas').push({nombre:n, votos:seleccionActual, pagado:false});
+        alert("¡Jugada Guardada! No olvides mandar tu ticket."); location.reload();
+    }
     function actualizarLeaderboard() {
         const container = document.getElementById('posiciones-render');
-        let tabla = todasLasJugadas.map(j => {
-            let pts = 0;
-            PARTIDOS.forEach(p => { if(j.votos[p.id] === resultadosOficiales[p.id]) pts++; });
-            return { n: j.nombre, p: pts };
+        let t = todasLasJugadas.map(j => {
+            let pts = 0; PARTIDOS.forEach(p => { if(j.votos[p.id] === resultadosOficiales[p.id]) pts++; });
+            return {n:j.nombre, p:pts};
         }).sort((a,b) => b.p - a.p);
-        let html = '<table><tr><th>Pos</th><th>Jugador</th><th>Pts</th></tr>';
-        tabla.forEach((it, i) => { html += `<tr><td>${i+1}</td><td>${it.n}</td><td>${it.p}</td></tr>`; });
-        container.innerHTML = html + '</table>';
+        let h = '<table><tr><th>Pos</th><th>Nombre</th><th>Pts</th></tr>';
+        t.forEach((it, i) => { h += `<tr><td>${i+1}</td><td>${it.n}</td><td>${it.p}</td></tr>`; });
+        container.innerHTML = h+'</table>';
     }
-    window.onload = renderPartidos;
 </script>
 </body>
 </html>
