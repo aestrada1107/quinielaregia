@@ -7,8 +7,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
-        :root { --verde: #006847; --rojo: #CE1126; --azul: #007bff; --oro: #fff3cd; --oro-texto: #856404; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f4f4; margin: 0; padding: 10px; }
+        :root { --verde: #006847; --rojo: #CE1126; --azul: #007bff; --oro: #fff3cd; --oro-txt: #856404; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f4f4; margin: 0; padding: 10px; -webkit-tap-highlight-color: transparent; }
         .container { max-width: 600px; margin: auto; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; }
         .header-main { background: var(--verde); color: white; padding: 20px; text-align: center; border-bottom: 5px solid var(--rojo); }
         .tabs { display: none; background: #222; }
@@ -19,15 +19,15 @@
         .partido-card { background: #fff; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 12px; padding: 12px; display: flex; align-items: center; justify-content: space-between; }
         .equipo { font-weight: 700; width: 30%; font-size: 0.85em; text-align: center; }
         .lev-container { display: flex; gap: 5px; width: 40%; }
-        .btn-lev { border: 2px solid #ccc; background: #fdfdfd; padding: 12px 0; border-radius: 8px; font-weight: 900; flex: 1; color: #666; }
+        .btn-lev { border: 2px solid #ccc; background: #fdfdfd; padding: 12px 0; border-radius: 8px; font-weight: 900; flex: 1; color: #666; cursor: pointer; }
         .btn-lev.selected { background: var(--verde); color: white; border-color: var(--verde); }
         .btn-lev.real { background: var(--rojo); color: white; border-color: var(--rojo); }
         .btn-main { width: 100%; padding: 18px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 12px 8px; border-bottom: 1px solid #eee; text-align: left; }
-        .ganador-row { background: var(--oro) !important; color: var(--oro-texto) !important; font-weight: bold; }
-        .ticket-box { background: #fff; border: 2px solid var(--verde); padding: 15px; border-radius: 8px; margin-top: 10px; }
-        .ticket-text { font-family: monospace; background: #f4f4f4; padding: 10px; white-space: pre-wrap; font-size: 0.9em; }
+        .ganador-row { background: var(--oro) !important; color: var(--oro-txt) !important; font-weight: bold; }
+        .ticket-box { background: #fff; border: 2px solid var(--verde); padding: 15px; border-radius: 8px; margin-top: 10px; display: none; }
+        .ticket-text { font-family: monospace; background: #f4f4f4; padding: 10px; white-space: pre-wrap; font-size: 0.9em; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -35,7 +35,7 @@
 <div id="modal-jugada" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:1000;">
     <div style="background:white; margin:15% auto; padding:20px; width:80%; border-radius:12px;">
         <h3 id="modal-nombre"></h3>
-        <div id="modal-detalle"></div>
+        <div id="modal-detalle" style="max-height: 250px; overflow-y: auto;"></div>
         <button onclick="document.getElementById('modal-jugada').style.display='none'" class="btn-main" style="background:#333; margin-top:15px;">CERRAR</button>
     </div>
 </div>
@@ -51,37 +51,39 @@
     </div>
 
     <div id="jugador" class="content active">
-        <input type="text" id="nombreInput" style="width:100%; padding:15px; box-sizing:border-box; border-radius:8px; border:1px solid #ccc; margin-bottom:15px;" placeholder="Tu nombre completo">
-        <div id="lista-jugador"></div>
-        <button class="btn-main" style="background: var(--verde)" onclick="guardarJugada()">✅ GENERAR TICKET</button>
-        <div id="ticket-final" style="display:none;" class="ticket-box">
+        <div id="form-registro">
+            <input type="text" id="nombreInput" style="width:100%; padding:15px; box-sizing:border-box; border-radius:8px; border:1px solid #ccc; margin-bottom:15px;" placeholder="Tu nombre completo">
+            <div id="lista-jugador"></div>
+            <button class="btn-main" style="background: var(--verde)" onclick="guardarJugada()">✅ GENERAR TICKET</button>
+        </div>
+        <div id="ticket-final" class="ticket-box">
             <div id="mensaje-texto" class="ticket-text"></div>
             <button onclick="copiarAlPortapapeles()" class="btn-main" style="background: var(--azul); margin-top:10px;">📋 COPIAR TEXTO</button>
-            <button onclick="location.reload()" style="width:100%; border:none; background:none; color:gray; margin-top:10px; cursor:pointer;">Limpiar</button>
+            <button onclick="location.reload()" style="width:100%; border:none; background:none; color:gray; margin-top:10px; cursor:pointer;">Registrar otra</button>
         </div>
     </div>
 
     <div id="posiciones" class="content">
         <div id="bloqueo-tabla" style="text-align:center; padding:30px;"><p>🏆 Resultados en proceso...</p></div>
         <div id="area-tabla" style="display:none;">
-            <h3 style="text-align:center;">Tabla General</h3>
+            <h3 style="text-align:center;">Tabla de Puntos</h3>
             <div id="render-puntos"></div>
         </div>
     </div>
 
     <div id="admin" class="content">
-        <div style="background:#eee; padding:10px; border-radius:8px; margin-bottom:15px;">
-            <span>Cobrado: <strong id="fin-si">$0</strong></span> | <span>Deuda: <strong id="fin-no">$0</strong></span>
+        <div style="background:#eee; padding:10px; border-radius:8px; margin-bottom:15px; display:flex; justify-content:space-between;">
+            <span>Cobrado: <strong id="fin-si">$0</strong></span>
+            <span>Deben: <strong id="fin-no">$0</strong></span>
         </div>
-        <div style="margin-bottom:15px;">
-            <label><input type="checkbox" id="switch-tabla" onchange="db.ref('config').update({mostrarTabla: this.checked})"> MOSTRAR TABLA PÚBLICA</label>
+        <div style="margin-bottom:15px; background: #fff3cd; padding: 10px; border-radius: 8px;">
+            <label style="cursor:pointer; font-weight:bold;"><input type="checkbox" id="switch-tabla" onchange="toggleTabla(this.checked)"> MOSTRAR TABLA PÚBLICA</label>
         </div>
-        <div id="lista-admin-marcadores"></div>
-        <button class="btn-main" style="background: var(--rojo)" onclick="publicarOficiales()">📢 PUBLICAR RESULTADOS</button>
+        <div id="lista-admin"></div>
+        <button class="btn-main" style="background: var(--rojo); margin-top:10px;" onclick="publicarOficiales()">📢 PUBLICAR RESULTADOS</button>
         <hr>
-        <input type="text" id="buscador" placeholder="🔍 Buscar..." oninput="renderParticipantesAdmin()" style="width:100%; padding:10px; margin-bottom:10px; box-sizing:border-box;">
-        <div id="admin-lista-nombres"></div>
-        <button onclick="if(confirm('¿RESET?')) db.ref().remove()" class="btn-main" style="background:black; margin-top:20px;">🚨 RESET JORNADA</button>
+        <div id="admin-participantes"></div>
+        <button onclick="if(confirm('¿RESET?')) db.ref().remove()" class="btn-main" style="background:black; margin-top:30px;">🚨 RESET TOTAL</button>
     </div>
 </div>
 
@@ -89,102 +91,104 @@
     const firebaseConfig = { apiKey: "AIzaSyBgmqQLnUIPuaDgXOEvuBAoY_mcd69Qw7E", authDomain: "quinielaligamx-68b52.firebaseapp.com", databaseURL: "https://quinielaligamx-68b52-default-rtdb.firebaseio.com", projectId: "quinielaligamx-68b52", storageBucket: "quinielaligamx-68b52.firebasestorage.app", messagingSenderId: "745257098090", appId: "1:745257098090:web:3c13bf19a1a0c1718ca313" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const EQUIPOS_DEFAULT = [{id:1,l:"Mazatlán",v:"León"},{id:2,l:"Necaxa",v:"Pumas"},{id:3,l:"Cruz Azul",v:"Atl. San Luis"},{id:4,l:"Querétaro",v:"América"},{id:5,l:"Pachuca",v:"Puebla"},{id:6,l:"Atlas",v:"Chivas"},{id:7,l:"Tigres",v:"Monterrey"},{id:8,l:"Toluca",v:"FC Juárez"},{id:9,l:"Tijuana",v:"Santos"}];
+    const EQUIPOS = [{id:1,l:"Mazatlán",v:"León"},{id:2,l:"Necaxa",v:"Pumas"},{id:3,l:"Cruz Azul",v:"Atl. San Luis"},{id:4,l:"Querétaro",v:"América"},{id:5,l:"Pachuca",v:"Puebla"},{id:6,l:"Atlas",v:"Chivas"},{id:7,l:"Tigres",v:"Monterrey"},{id:8,l:"Toluca",v:"FC Juárez"},{id:9,l:"Tijuana",v:"Santos"}];
     
-    let CONFIG = {}, PARTIDOS = EQUIPOS_DEFAULT, jugadas = [], oficiales = {}, seleccion = {};
+    let CONFIG = {}, JUGADAS = [], OFICIALES = {}, SELECCION = {};
 
-    // SINCRONIZACIÓN MAESTRA
-    db.ref().on('value', snapshot => {
-        const data = snapshot.val() || {};
-        CONFIG = data.config || { mostrarTabla: false };
-        PARTIDOS = data.partidos || EQUIPOS_DEFAULT;
-        oficiales = data.oficial || {};
-        
-        jugadas = [];
-        if(data.jugadas) {
-            Object.keys(data.jugadas).forEach(key => jugadas.push({id: key, ...data.jugadas[key]}));
-        }
-
-        renderApp();
+    // ESCUCHAR TODO DE FORMA INDEPENDIENTE
+    db.ref('config').on('value', s => {
+        CONFIG = s.val() || {};
+        const visible = CONFIG.mostrarTabla || false;
+        document.getElementById('switch-tabla').checked = visible;
+        document.getElementById('bloqueo-tabla').style.display = visible ? 'none' : 'block';
+        document.getElementById('area-tabla').style.display = visible ? 'block' : 'none';
+        calcularPuntos();
     });
 
-    function renderApp() {
-        // Títulos y Switches
-        document.getElementById('display-jornada').innerText = CONFIG.jornada || "";
-        document.getElementById('switch-tabla').checked = CONFIG.mostrarTabla;
-        
-        // Visibilidad de Tabla
-        document.getElementById('bloqueo-tabla').style.display = CONFIG.mostrarTabla ? 'none' : 'block';
-        document.getElementById('area-tabla').style.display = CONFIG.mostrarTabla ? 'block' : 'none';
-
-        // Renderizar todo
+    db.ref('oficial').on('value', s => {
+        OFICIALES = s.val() || {};
         renderPartidos();
-        renderParticipantesAdmin();
+        calcularPuntos();
+    });
+
+    db.ref('jugadas').on('value', s => {
+        JUGADAS = [];
+        s.forEach(child => { JUGADAS.push({id: child.key, ...child.val()}); });
+        renderAdmin();
         calcularPuntos();
         renderFinanzas();
-    }
+    });
 
     function renderPartidos() {
-        const divJ = document.getElementById('lista-jugador'), divA = document.getElementById('lista-admin-marcadores');
+        const divJ = document.getElementById('lista-jugador'), divA = document.getElementById('lista-admin');
         divJ.innerHTML = ''; divA.innerHTML = '';
-        PARTIDOS.forEach(p => {
-            const htmlBase = `<div class="partido-card"><div class="equipo">${p.l}</div><div class="lev-container">`;
-            divJ.innerHTML += htmlBase + `<button class="btn-lev ${seleccion[p.id]==='L'?'selected':''}" onclick="setS(${p.id},'L')">L</button><button class="btn-lev ${seleccion[p.id]==='E'?'selected':''}" onclick="setS(${p.id},'E')">E</button><button class="btn-lev ${seleccion[p.id]==='V'?'selected':''}" onclick="setS(${p.id},'V')">V</button></div><div class="equipo">${p.v}</div></div>`;
-            divA.innerHTML += htmlBase + `<button class="btn-lev ${oficiales[p.id]==='L'?'real':''}" onclick="setO(${p.id},'L')">L</button><button class="btn-lev ${oficiales[p.id]==='E'?'real':''}" onclick="setO(${p.id},'E')">E</button><button class="btn-lev ${oficiales[p.id]==='V'?'real':''}" onclick="setO(${p.id},'V')">V</button></div><div class="equipo">${p.v}</div></div>`;
+        EQUIPOS.forEach(p => {
+            const base = `<div class="partido-card"><div class="equipo">${p.l}</div><div class="lev-container">`;
+            divJ.innerHTML += base + `<button class="btn-lev ${SELECCION[p.id]==='L'?'selected':''}" onclick="setS(${p.id},'L')">L</button><button class="btn-lev ${SELECCION[p.id]==='E'?'selected':''}" onclick="setS(${p.id},'E')">E</button><button class="btn-lev ${SELECCION[p.id]==='V'?'selected':''}" onclick="setS(${p.id},'V')">V</button></div><div class="equipo">${p.v}</div></div>`;
+            divA.innerHTML += base + `<button class="btn-lev ${OFICIALES[p.id]==='L'?'real':''}" onclick="setO(${p.id},'L')">L</button><button class="btn-lev ${OFICIALES[p.id]==='E'?'real':''}" onclick="setO(${p.id},'E')">E</button><button class="btn-lev ${OFICIALES[p.id]==='V'?'real':''}" onclick="setO(${p.id},'V')">V</button></div><div class="equipo">${p.v}</div></div>`;
         });
     }
 
     function calcularPuntos() {
-        const area = document.getElementById('render-puntos');
-        if(!jugadas.length) return area.innerHTML = "Sin registros.";
+        const render = document.getElementById('render-puntos');
+        if(!JUGADAS.length) return render.innerHTML = "Esperando registros...";
 
-        let lista = jugadas.map(j => {
+        let t = JUGADAS.map(j => {
             let pts = 0;
-            PARTIDOS.forEach(p => {
-                // COMPARACIÓN ULTRA-SEGURA (ID y Valor como String)
-                if(oficiales[p.id] && String(j.votos[p.id]) === String(oficiales[p.id])) pts++;
+            EQUIPOS.forEach(p => {
+                const miV = String(j.votos[p.id]);
+                const ofi = String(OFICIALES[p.id]);
+                if(ofi !== "undefined" && miV === ofi) pts++;
             });
             return { nombre: j.nombre, pts: pts, ts: j.timestamp || 0 };
-        });
+        }).sort((a,b) => b.pts - a.pts || a.ts - b.ts);
 
-        lista.sort((a,b) => b.pts - a.pts || a.ts - b.ts);
-        const top = lista[0].pts;
-
-        let h = '<table><tr><th>#</th><th>Nombre</th><th>Pts</th></tr>';
-        lista.forEach((it, i) => {
-            const win = (top > 0 && it.pts === top && i === 0);
+        const max = t[0].pts;
+        let h = '<table><tr><th>Pos</th><th>Nombre</th><th>Pts</th></tr>';
+        t.forEach((it, i) => {
+            const win = (max > 0 && it.pts === max && i === 0);
             h += `<tr class="${win?'ganador-row':''}"><td>${i+1}</td><td>${it.nombre}${win?' 🏆':''}</td><td>${it.pts}</td></tr>`;
         });
-        area.innerHTML = h + '</table>';
+        render.innerHTML = h + '</table>';
     }
 
-    function renderParticipantesAdmin() {
-        const div = document.getElementById('admin-lista-nombres'); div.innerHTML = '';
-        const bus = document.getElementById('buscador').value.toLowerCase();
-        jugadas.filter(j => j.nombre.toLowerCase().includes(bus)).forEach(j => {
-            div.innerHTML += `<div class="partido-card"><span>${j.nombre}</span><div><button onclick="db.ref('jugadas/${j.id}').update({pagado:${!j.pagado}})">${j.pagado?'$':'X'}</button><button onclick="eliminarJ('${j.id}')">🗑️</button></div></div>`;
+    function renderAdmin() {
+        const div = document.getElementById('admin-participantes'); div.innerHTML = '<h4>Participantes</h4>';
+        JUGADAS.forEach(j => {
+            div.innerHTML += `<div class="partido-card"><span>${j.nombre}</span><div><button onclick="db.ref('jugadas/${j.id}').update({pagado:${!j.pagado}})">${j.pagado?'$':'X'}</button><button onclick="verDetalle('${j.id}')">👁️</button></div></div>`;
         });
     }
 
-    function setS(id, v) { seleccion[id] = (seleccion[id] === v) ? null : v; renderPartidos(); }
-    function setO(id, v) { oficiales[id] = (oficiales[id] === v) ? null : v; renderPartidos(); }
-    function publicarOficiales() { db.ref('oficial').set(oficiales).then(()=>alert("Publicado ✅")); }
+    function setS(id, v) { SELECCION[id] = (SELECCION[id] === v) ? null : v; renderPartidos(); }
+    function setO(id, v) { OFICIALES[id] = (OFICIALES[id] === v) ? null : v; renderPartidos(); }
+    function toggleTabla(v) { db.ref('config').update({ mostrarTabla: v }); }
+    function publicarOficiales() { db.ref('oficial').set(OFICIALES).then(()=>alert("Resultados Publicados ✅")); }
+    
     function guardarJugada() {
         const n = document.getElementById('nombreInput').value.trim();
-        if(!n || Object.keys(seleccion).length < 9) return alert("Completa la quiniela.");
-        db.ref('jugadas').push({ nombre: n, votos: seleccion, pagado: false, timestamp: firebase.database.ServerValue.TIMESTAMP });
+        if(!n || Object.keys(SELECCION).length < 9) return alert("Completa los 9 partidos.");
+        db.ref('jugadas').push({ nombre: n, votos: SELECCION, pagado: false, timestamp: firebase.database.ServerValue.TIMESTAMP });
         document.getElementById('form-registro').style.display='none';
         document.getElementById('ticket-final').style.display='block';
         let t = `👤 ${n.toUpperCase()}\n`;
-        PARTIDOS.forEach(p => { t += `${p.l} vs ${p.v}: [${seleccion[p.id]}]\n`; });
+        EQUIPOS.forEach(p => { t += `${p.l} vs ${p.v}: [${SELECCION[p.id] || '-'}]\n`; });
         document.getElementById('mensaje-texto').innerText = t;
     }
+
+    function verDetalle(id) {
+        const j = JUGADAS.find(x => x.id === id);
+        document.getElementById('modal-nombre').innerText = j.nombre;
+        let h = '';
+        EQUIPOS.forEach(p => { h += `<p>${p.l} vs ${p.v}: [${j.votos[p.id] || '?'}]</p>`; });
+        document.getElementById('modal-detalle').innerHTML = h;
+        document.getElementById('modal-jugada').style.display = 'block';
+    }
+
     function showTab(t) { document.querySelectorAll('.content').forEach(c=>c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); event.currentTarget.classList.add('active'); }
     function activarModoMaestro() { if(prompt("PIN:")==="1234") document.getElementById('barra-tabs').style.display='flex'; }
-    function calcularFinanzas() { let si=0, no=0; jugadas.forEach(j=>{ if(j.pagado) si+=10; else no+=10; }); document.getElementById('fin-si').innerText=`$${si}`; document.getElementById('fin-no').innerText=`$${no}`; }
+    function renderFinanzas() { let si=0, no=0; JUGADAS.forEach(j=>{ if(j.pagado) si+=10; else no+=10; }); document.getElementById('fin-si').innerText=`$${si}`; document.getElementById('fin-no').innerText=`$${no}`; }
     function copiarAlPortapapeles() { navigator.clipboard.writeText(document.getElementById('mensaje-texto').innerText).then(()=>alert("Copiado ✅")); }
-    function eliminarJ(id) { if(confirm('¿Borrar?')) db.ref('jugadas/'+id).remove(); }
-    window.onload = renderApp;
+    window.onload = renderPartidos;
 </script>
 </body>
 </html>
