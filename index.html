@@ -7,31 +7,35 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
-        :root { --verde: #006847; --rojo: #CE1126; --azul: #007bff; --oro: #fff3cd; --oro-txt: #856404; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f4f4; margin: 0; padding: 10px; -webkit-tap-highlight-color: transparent; }
+        :root { --verde: #006847; --rojo: #CE1126; --azul: #007bff; --oro: #fff3cd; --oro-txt: #856404; --gris: #f4f4f4; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--gris); margin: 0; padding: 10px; -webkit-tap-highlight-color: transparent; }
         .container { max-width: 600px; margin: auto; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; }
         .header-main { background: var(--verde); color: white; padding: 20px; text-align: center; border-bottom: 5px solid var(--rojo); }
+        .header-main h1 { margin: 0; font-size: 1.5em; text-transform: uppercase; letter-spacing: 1px; }
         .tabs { display: none; background: #222; }
-        .tab-btn { flex: 1; padding: 15px; color: #bbb; border: none; background: none; cursor: pointer; font-weight: bold; }
+        .tab-btn { flex: 1; padding: 15px; color: #bbb; border: none; background: none; cursor: pointer; font-weight: bold; font-size: 0.9em; }
         .tab-btn.active { color: white; background: var(--verde); border-bottom: 4px solid var(--rojo); }
         .content { padding: 15px; display: none; }
         .content.active { display: block; }
         .partido-card { background: #fff; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 12px; padding: 12px; display: flex; align-items: center; justify-content: space-between; }
-        .equipo { font-weight: 700; width: 30%; font-size: 0.85em; text-align: center; }
+        .equipo { font-weight: 700; width: 30%; font-size: 0.85em; text-align: center; color: #333; }
         .lev-container { display: flex; gap: 5px; width: 40%; }
         .btn-lev { border: 2px solid #ccc; background: #fdfdfd; padding: 12px 0; border-radius: 8px; font-weight: 900; flex: 1; color: #666; cursor: pointer; }
         .btn-lev.selected { background: var(--verde); color: white; border-color: var(--verde); }
         .btn-lev.real { background: var(--rojo); color: white; border-color: var(--rojo); }
-        .btn-main { width: 100%; padding: 18px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        table { width: 100%; border-collapse: collapse; }
+        .btn-main { width: 100%; padding: 18px; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 1em; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { padding: 12px 8px; border-bottom: 1px solid #eee; text-align: left; }
-        .ganador-row { background: var(--oro) !important; color: var(--oro-txt) !important; font-weight: bold; border: 2px solid orange; }
+        .ganador-row { background: var(--oro) !important; color: var(--oro-txt) !important; font-weight: bold; }
+        .ticket-box { background: #fff; border: 2px solid var(--verde); padding: 15px; border-radius: 8px; margin-top: 10px; display: none; }
+        .ticket-text { font-family: monospace; background: #f4f4f4; padding: 10px; white-space: pre-wrap; font-size: 0.9em; border-radius: 4px; border: 1px solid #ddd; }
+        input[type="text"] { width: 100%; padding: 15px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header-main"><h1>🇲🇽 QUINIELAS REGIAS 🇲🇽</h1><p id="display-jornada">CARGANDO...</p></div>
+    <div class="header-main"><h1>🇲🇽 QUINIELAS REGIAS 🇲🇽</h1><p id="display-jornada">JORNADA 10</p></div>
     <div style="text-align:center; padding:10px;"><h2>Qu<span onclick="activarModoMaestro()" style="cursor:pointer">i</span>niela Control</h2></div>
     
     <div class="tabs" id="barra-tabs">
@@ -42,35 +46,35 @@
 
     <div id="jugador" class="content active">
         <div id="form-registro">
-            <input type="text" id="nombreInput" style="width:100%; padding:15px; box-sizing:border-box; border-radius:8px; border:1px solid #ccc; margin-bottom:15px;" placeholder="Tu nombre">
+            <input type="text" id="nombreInput" placeholder="Nombre completo">
             <div id="lista-jugador"></div>
-            <button class="btn-main" style="background: var(--verde)" onclick="guardarJugada()">✅ GUARDAR QUINIELA</button>
+            <button class="btn-main" style="background: var(--verde)" onclick="guardarJugada()">✅ GENERAR TICKET</button>
         </div>
-        <div id="ticket-final" style="display:none; margin-top:15px; border:2px solid var(--verde); padding:10px; border-radius:8px;">
-            <div id="mensaje-texto" style="white-space:pre-wrap; font-family:monospace; font-size:0.9em; background:#f4f4f4; padding:10px;"></div>
-            <button onclick="copiarAlPortapapeles()" class="btn-main" style="background:var(--azul); margin-top:10px;">📋 COPIAR TEXTO</button>
+        <div id="ticket-final" class="ticket-box">
+            <h3 style="text-align:center; color: var(--verde); margin-top:0;">🎟️ TICKET LISTO</h3>
+            <div id="mensaje-texto" class="ticket-text"></div>
+            <button onclick="copiarAlPortapapeles()" class="btn-main" style="background: var(--azul); margin-top:10px;">📋 COPIAR TEXTO</button>
+            <button onclick="location.reload()" style="width:100%; border:none; background:none; color:gray; margin-top:15px; cursor:pointer;">Registrar otra</button>
         </div>
     </div>
 
     <div id="posiciones" class="content">
-        <div id="bloqueo-tabla" style="text-align:center; padding:30px;"><p>🏆 Resultados en proceso...</p></div>
-        <div id="area-tabla" style="display:none;"><div id="render-puntos"></div></div>
+        <h3 style="text-align:center; color: var(--verde);">Tabla General 🏆</h3>
+        <div id="render-puntos"></div>
     </div>
 
     <div id="admin" class="content">
-        <div style="background:#eee; padding:10px; border-radius:8px; margin-bottom:15px; display:flex; justify-content:space-between;">
-            <span>Cobrado: <strong id="fin-si">$0</strong></span>
-            <span>Pendiente: <strong id="fin-no">$0</strong></span>
-        </div>
-        <div style="margin-bottom:20px; border:2px solid var(--azul); padding:15px; border-radius:8px;">
-            <label style="font-weight:bold; cursor:pointer;">
-                <input type="checkbox" id="switch-tabla" onchange="toggleVisibilidad(this.checked)"> MOSTRAR TABLA PÚBLICA
-            </label>
+        <div style="background:#eee; padding:15px; border-radius:8px; margin-bottom:15px; display:flex; justify-content:space-between; font-weight:bold;">
+            <span>Cobrado: <strong id="fin-si" style="color:var(--verde)">$0</strong></span>
+            <span>Deben: <strong id="fin-no" style="color:var(--rojo)">$0</strong></span>
         </div>
         <div id="lista-admin"></div>
         <button class="btn-main" style="background: var(--rojo); margin-top:10px;" onclick="publicarOficiales()">📢 PUBLICAR RESULTADOS</button>
         <hr>
-        <div id="admin-participantes"></div>
+        <h4>Participantes</h4>
+        <input type="text" id="buscador" placeholder="🔍 Buscar nombre..." oninput="renderAdminParticipantes()">
+        <div id="admin-lista-render"></div>
+        <button onclick="if(confirm('¿BORRAR TODO?')) db.ref().remove()" class="btn-main" style="background:black; margin-top:30px; font-size:0.8em;">🚨 RESET TOTAL</button>
     </div>
 </div>
 
@@ -80,24 +84,20 @@
     const db = firebase.database();
     const EQUIPOS = [{id:1,l:"Mazatlán",v:"León"},{id:2,l:"Necaxa",v:"Pumas"},{id:3,l:"Cruz Azul",v:"Atl. San Luis"},{id:4,l:"Querétaro",v:"América"},{id:5,l:"Pachuca",v:"Puebla"},{id:6,l:"Atlas",v:"Chivas"},{id:7,l:"Tigres",v:"Monterrey"},{id:8,l:"Toluca",v:"FC Juárez"},{id:9,l:"Tijuana",v:"Santos"}];
     
-    let configG = {}, jugadasG = [], oficialesG = {}, seleccionG = {};
+    let JUGADAS = [], OFICIALES = {}, SEL_USER = {}, SEL_ADMIN = {};
 
-    // ESCUCHA MAESTRA DE DATOS
+    // ESCUCHA DE DATOS (SINCRONIZACIÓN)
     db.ref().on('value', snap => {
         const d = snap.val() || {};
-        configG = d.config || { mostrarTabla: false, jornada: "JORNADA 10" };
-        oficialesG = d.oficial || {};
-        jugadasG = d.jugadas ? Object.keys(d.jugadas).map(k => ({id:k, ...d.jugadas[k]})) : [];
-
-        // Actualizar UI
-        document.getElementById('display-jornada').innerText = configG.jornada || "JORNADA 10";
-        document.getElementById('switch-tabla').checked = configG.mostrarTabla;
-        document.getElementById('bloqueo-tabla').style.display = configG.mostrarTabla ? 'none' : 'block';
-        document.getElementById('area-tabla').style.display = configG.mostrarTabla ? 'block' : 'none';
-
+        OFICIALES = d.oficial || {};
+        // Solo actualizamos SEL_ADMIN si Firebase tiene datos nuevos para no borrar lo que el admin está picando
+        if(d.oficial) SEL_ADMIN = JSON.parse(JSON.stringify(d.oficial)); 
+        
+        JUGADAS = d.jugadas ? Object.keys(d.jugadas).map(k => ({id: k, ...d.jugadas[k]})) : [];
+        
         renderPartidos();
-        renderAdmin();
-        if(configG.mostrarTabla) calcularLeaderboard();
+        renderAdminParticipantes();
+        calcularPuntos();
         renderFinanzas();
     });
 
@@ -106,57 +106,60 @@
         dj.innerHTML = ''; da.innerHTML = '';
         EQUIPOS.forEach(p => {
             const base = `<div class="partido-card"><div class="equipo">${p.l}</div><div class="lev-container">`;
-            dj.innerHTML += base + `<button class="btn-lev ${seleccionG[p.id]==='L'?'selected':''}" onclick="setS(${p.id},'L')">L</button><button class="btn-lev ${seleccionG[p.id]==='E'?'selected':''}" onclick="setS(${p.id},'E')">E</button><button class="btn-lev ${seleccionG[p.id]==='V'?'selected':''}" onclick="setS(${p.id},'V')">V</button></div><div class="equipo">${p.v}</div></div>`;
-            da.innerHTML += base + `<button class="btn-lev ${oficialesG[p.id]==='L'?'real':''}" onclick="setO(${p.id},'L')">L</button><button class="btn-lev ${oficialesG[p.id]==='E'?'real':''}" onclick="setO(${p.id},'E')">E</button><button class="btn-lev ${oficialesG[p.id]==='V'?'real':''}" onclick="setO(${p.id},'V')">V</button></div><div class="equipo">${p.v}</div></div>`;
+            // VISTA USUARIO
+            dj.innerHTML += base + `<button class="btn-lev ${SEL_USER[p.id]==='L'?'selected':''}" onclick="setS(${p.id},'L')">L</button><button class="btn-lev ${SEL_USER[p.id]==='E'?'selected':''}" onclick="setS(${p.id},'E')">E</button><button class="btn-lev ${SEL_USER[p.id]==='V'?'selected':''}" onclick="setS(${p.id},'V')">V</button></div><div class="equipo">${p.v}</div></div>`;
+            // VISTA ADMIN (Usa SEL_ADMIN para no perder clics)
+            da.innerHTML += base + `<button class="btn-lev ${SEL_ADMIN[p.id]==='L'?'real':''}" onclick="setO(${p.id},'L')">L</button><button class="btn-lev ${SEL_ADMIN[p.id]==='E'?'real':''}" onclick="setO(${p.id},'E')">E</button><button class="btn-lev ${SEL_ADMIN[p.id]==='V'?'real':''}" onclick="setO(${p.id},'V')">V</button></div><div class="equipo">${p.v}</div></div>`;
         });
     }
 
-    function calcularLeaderboard() {
-        const render = document.getElementById('render-puntos');
-        if(!jugadasG.length) return render.innerHTML = "Sin registros.";
+    function calcularPuntos() {
+        const div = document.getElementById('render-puntos');
+        if(!JUGADAS.length) return div.innerHTML = "<p style='text-align:center'>No hay participantes aún.</p>";
 
-        let lista = jugadasG.map(j => {
+        let tabla = JUGADAS.map(j => {
             let pts = 0;
             EQUIPOS.forEach(p => {
                 const v = j.votos ? j.votos[p.id] : null;
-                const o = oficialesG[p.id];
-                if(o && String(v) === String(o)) pts++;
+                const o = OFICIALES[p.id];
+                if(o && v === o) pts++;
             });
             return { n: j.nombre, p: pts, t: j.timestamp || 0 };
         }).sort((a,b) => b.p - a.p || a.t - b.t);
 
         let h = '<table><tr><th>#</th><th>Nombre</th><th>Pts</th></tr>';
-        lista.forEach((it, i) => {
-            const win = (lista[0].p > 0 && it.p === lista[0].p && i === 0);
-            h += `<tr class="${win?'ganador-row':''}"><td>${i+1}</td><td>${it.n}${win?' 🏆':''}</td><td>${it.p}</td></tr>`;
+        const top = tabla[0].p;
+        tabla.forEach((it, i) => {
+            const win = (top > 0 && it.p === top && i === 0);
+            h += `<tr class="${win?'ganador-row':''}"><td>${i+1}</td><td>${it.n}${win?' 🏆 GANADOR':''}</td><td><strong>${it.p}</strong></td></tr>`;
         });
-        render.innerHTML = h + '</table>';
+        div.innerHTML = h + '</table>';
     }
 
-    function renderAdmin() {
-        const div = document.getElementById('admin-participantes'); div.innerHTML = '<h4>Participantes</h4>';
-        jugadasG.forEach(j => {
-            div.innerHTML += `<div class="partido-card"><span>${j.nombre}</span><button onclick="db.ref('jugadas/${j.id}').update({pagado:${!j.pagado}})">${j.pagado?'$':'X'}</button></div>`;
+    function renderAdminParticipantes() {
+        const div = document.getElementById('admin-lista-render'); div.innerHTML = '';
+        const bus = document.getElementById('buscador').value.toLowerCase();
+        JUGADAS.filter(j => j.nombre.toLowerCase().includes(bus)).forEach(j => {
+            div.innerHTML += `<div class="partido-card"><span>${j.nombre}</span><div><button onclick="db.ref('jugadas/${j.id}').update({pagado:${!j.pagado}})">${j.pagado?'$':'X'}</button><button onclick="if(confirm('¿Borrar?')) db.ref('jugadas/${j.id}').remove()">🗑️</button></div></div>`;
         });
     }
 
-    function toggleVisibilidad(val) { db.ref('config').update({ mostrarTabla: val }); }
-    function setS(id, v) { seleccionG[id] = (seleccionG[id] === v) ? null : v; renderPartidos(); }
-    function setO(id, v) { oficialesG[id] = (oficialesG[id] === v) ? null : v; renderPartidos(); }
-    function publicarOficiales() { db.ref('oficial').set(oficialesG).then(()=>alert('Publicado ✅')); }
+    function setS(id, v) { SEL_USER[id] = (SEL_USER[id] === v) ? null : v; renderPartidos(); }
+    function setO(id, v) { SEL_ADMIN[id] = (SEL_ADMIN[id] === v) ? null : v; renderPartidos(); }
+    function publicarOficiales() { db.ref('oficial').set(SEL_ADMIN).then(()=>alert('Marcadores actualizados ✅')); }
     
     function guardarJugada() {
         const n = document.getElementById('nombreInput').value.trim();
-        if(!n || Object.keys(seleccionG).length < 9) return alert("Faltan partidos.");
-        db.ref('jugadas').push({ nombre: n, votos: seleccionG, pagado: false, timestamp: firebase.database.ServerValue.TIMESTAMP });
+        if(!n || Object.keys(SEL_USER).length < 9) return alert("Completa los 9 partidos.");
+        db.ref('jugadas').push({ nombre: n, votos: SEL_USER, pagado: false, timestamp: firebase.database.ServerValue.TIMESTAMP });
         document.getElementById('form-registro').style.display='none'; document.getElementById('ticket-final').style.display='block';
-        let t = `👤 ${n.toUpperCase()}\n`; EQUIPOS.forEach(p => { t += `${p.l} vs ${p.v}: [${seleccionG[p.id]}]\n`; });
+        let t = `👤 ${n.toUpperCase()}\n--------------------\n`; EQUIPOS.forEach(p => { t += `${p.l} vs ${p.v}: [${SEL_USER[p.id]}]\n`; });
         document.getElementById('mensaje-texto').innerText = t;
     }
 
-    function showTab(t) { document.querySelectorAll('.content').forEach(c=>c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); event.currentTarget.classList.add('active'); if(t==='posiciones') calcularLeaderboard(); }
+    function showTab(t) { document.querySelectorAll('.content').forEach(c=>c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); event.currentTarget.classList.add('active'); }
     function activarModoMaestro() { if(prompt("PIN:")==="1234") document.getElementById('barra-tabs').style.display='flex'; }
-    function renderFinanzas() { let si=0, no=0; jugadasG.forEach(j=>{ if(j.pagado) si+=10; else no+=10; }); document.getElementById('fin-si').innerText=`$${si}`; document.getElementById('fin-no').innerText=`$${no}`; }
+    function renderFinanzas() { let si=0, no=0; JUGADAS.forEach(j=>{ if(j.pagado) si+=10; else no+=10; }); document.getElementById('fin-si').innerText=`$${si}`; document.getElementById('fin-no').innerText=`$${no}`; }
     function copiarAlPortapapeles() { navigator.clipboard.writeText(document.getElementById('mensaje-texto').innerText).then(()=>alert("Copiado ✅")); }
     window.onload = renderPartidos;
 </script>
