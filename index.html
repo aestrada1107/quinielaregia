@@ -29,6 +29,7 @@
         .ganador-row { background: var(--oro) !important; color: var(--oro-txt) !important; font-weight: bold; }
         .admin-card { background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 15px; }
         input[type="text"], input[type="number"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; margin-bottom: 10px; }
+        .paginacion { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -39,8 +40,8 @@
         <p id="display-jornada">CARGANDO...</p>
     </div>
 
-    <div style="text-align:center; padding:10px;">
-        <h2 style="font-size: 0.8em; color: #bbb;">Panel de <span onclick="activarAdmin()" style="cursor:pointer; color: #ccc;">Acceso</span></h2>
+    <div style="text-align:center; padding:10px; border-bottom: 1px solid #eee;">
+        <h2 style="font-size: 0.8em; color: #bbb;">Panel de <span onclick="activarAdmin()" style="cursor:pointer">Acceso</span></h2>
     </div>
     
     <div class="tabs">
@@ -50,41 +51,47 @@
     </div>
 
     <div id="jugador" class="content active">
-        <div id="form-registro">
-            <input type="text" id="nombreInput" placeholder="Nombre completo">
-            <div id="lista-jugador"></div>
-            <button class="btn-main" style="background: var(--verde)" onclick="guardarJugada()">✅ GENERAR TICKET</button>
-        </div>
-        <div id="ticket-final" style="display:none; border:2px solid var(--verde); padding:15px; border-radius:8px;">
+        <input type="text" id="nombreInput" placeholder="Tu nombre completo">
+        <div id="lista-jugador"></div>
+        <button class="btn-main" style="background: var(--verde)" onclick="guardarJugada()">✅ GENERAR TICKET</button>
+        <div id="ticket-final" style="display:none; border:2px solid var(--verde); padding:15px; border-radius:8px; margin-top:10px;">
             <div id="mensaje-texto" style="white-space:pre-wrap; font-family:monospace; background:#f4f4f4; padding:10px; font-size:0.9em;"></div>
             <button onclick="copiarAlPortapapeles()" class="btn-main" style="background: var(--azul); margin-top:10px;">📋 COPIAR WHATSAPP</button>
         </div>
     </div>
 
     <div id="posiciones" class="content">
-        <h3 style="text-align:center; color: var(--verde);">Posiciones <span id="tabla-jor-txt"></span> 🏆</h3>
+        <div style="margin-bottom:10px; text-align:right;">
+            <label style="font-size:0.7em; font-weight:bold;">Ver Jornada: </label>
+            <select id="filtro-tabla" onchange="calcularLeaderboard()" style="padding:5px; border-radius:5px;"></select>
+        </div>
         <div id="render-puntos"></div>
     </div>
 
     <div id="admin" class="content">
         <div class="admin-card">
             <h4>📝 Configurar Nueva Jornada</h4>
-            <input type="text" id="cfg-jornada" placeholder="Ej: JORNADA 10">
+            <input type="text" id="cfg-jornada" placeholder="Nombre Jornada (Ej: JORNADA 11)">
             <input type="number" id="cfg-costo" placeholder="Costo $">
             <div id="editor-equipos"></div>
             <button class="btn-main" style="background: var(--azul); padding:10px;" onclick="guardarNuevaJornada()">🚀 LANZAR JORNADA</button>
         </div>
 
         <div class="admin-card">
-            <h4>⚽ Marcadores Oficiales (<span class="jor-act-txt"></span>)</h4>
+            <h4>⚽ Marcadores Oficiales</h4>
             <div id="lista-admin"></div>
             <button class="btn-main" style="background: var(--rojo)" onclick="publicarOficiales()">📢 PUBLICAR RESULTADOS</button>
         </div>
 
         <div class="admin-card">
-            <h4>👥 Participantes (<span class="jor-act-txt"></span>)</h4>
-            <input type="text" id="buscador" placeholder="🔍 Buscar nombre..." oninput="renderAdminParticipantes()">
+            <h4>👥 Participantes</h4>
+            <input type="text" id="buscador" placeholder="🔍 Buscar..." oninput="renderAdminParticipantes()">
             <div id="admin-participantes"></div>
+            <div class="paginacion">
+                <button onclick="cambiarPagina(-1)" style="padding:8px; background:#333; color:white; border:none; border-radius:5px;">« Ant</button>
+                <span id="page-info" style="font-size:0.8em; font-weight:bold;">Pág 1</span>
+                <button onclick="cambiarPagina(1)" style="padding:8px; background:#333; color:white; border:none; border-radius:5px;">Sig »</button>
+            </div>
         </div>
     </div>
 </div>
@@ -94,108 +101,116 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    let JUGADAS_TODAS = [], OFICIALES = {}, SEL_USER = {}, SEL_ADMIN = {}, PARTIDOS = [], CONFIG = {costo:10, jornada:""};
+    // PARTIDOS J10 FIJOS POR DEFECTO
+    const J10_DATA = [{id:1,l:"Mazatlán",v:"León"},{id:2,l:"Necaxa",v:"Pumas"},{id:3,l:"Cruz Azul",v:"Atl. San Luis"},{id:4,l:"Querétaro",v:"América"},{id:5,l:"Pachuca",v:"Puebla"},{id:6,l:"Atlas",v:"Chivas"},{id:7,l:"Tigres",v:"Monterrey"},{id:8,l:"Toluca",v:"FC Juárez"},{id:9,l:"Tijuana",v:"Santos"}];
+    
+    let JUGADAS_ALL = [], OFICIALES_ALL = {}, PARTIDOS_ACTUALES = J10_DATA, CONFIG = {costo:10, jornada:"JORNADA 10"}, PAGINA = 0, SEL_ADMIN = {};
 
     db.ref().on('value', snap => {
         const d = snap.val() || {};
         CONFIG = d.config || {costo:10, jornada:"JORNADA 10"};
-        PARTIDOS = d.partidos || [];
-        OFICIALES = d.oficial || {};
-        JUGADAS_TODAS = d.jugadas ? Object.keys(d.jugadas).map(k => ({id: k, ...d.jugadas[k]})) : [];
+        PARTIDOS_ACTUALES = d.partidos || J10_DATA;
+        OFICIALES_ALL = d.oficial_historial || {};
+        JUGADAS_ALL = d.jugadas ? Object.keys(d.jugadas).map(k => ({id: k, ...d.jugadas[k]})) : [];
         
         document.getElementById('display-jornada').innerText = CONFIG.jornada;
-        document.getElementById('tabla-jor-txt').innerText = CONFIG.jornada;
-        document.querySelectorAll('.jor-act-txt').forEach(el => el.innerText = CONFIG.jornada);
         
-        if(Object.keys(SEL_ADMIN).length === 0) SEL_ADMIN = JSON.parse(JSON.stringify(OFICIALES));
+        // Sincronizar selección de botones Admin con lo que ya existe en Firebase
+        const resActual = OFICIALES_ALL[CONFIG.jornada] || {};
+        if(Object.keys(SEL_ADMIN).length === 0) SEL_ADMIN = JSON.parse(JSON.stringify(resActual));
 
+        actualizarSelectJornadas();
         renderPartidos();
         renderEditor();
         renderAdminParticipantes();
-        calcularPuntos();
+        calcularLeaderboard();
         renderFinanzas();
     });
 
     function renderPartidos() {
         const dj = document.getElementById('lista-jugador'), da = document.getElementById('lista-admin');
         dj.innerHTML = ''; da.innerHTML = '';
-        PARTIDOS.forEach(p => {
+        PARTIDOS_ACTUALES.forEach(p => {
             const base = `<div class="partido-card"><div class="equipo">${p.l}</div><div class="lev-container">`;
             dj.innerHTML += base + `<button class="btn-lev ${SEL_USER[p.id]==='L'?'selected':''}" onclick="setS(${p.id},'L')">L</button><button class="btn-lev ${SEL_USER[p.id]==='E'?'selected':''}" onclick="setS(${p.id},'E')">E</button><button class="btn-lev ${SEL_USER[p.id]==='V'?'selected':''}" onclick="setS(${p.id},'V')">V</button></div><div class="equipo">${p.v}</div></div>`;
             da.innerHTML += base + `<button class="btn-lev ${SEL_ADMIN[p.id]==='L'?'real':''}" onclick="setO(${p.id},'L')">L</button><button class="btn-lev ${SEL_ADMIN[p.id]==='E'?'real':''}" onclick="setO(${p.id},'E')">E</button><button class="btn-lev ${SEL_ADMIN[p.id]==='V'?'real':''}" onclick="setO(${p.id},'V')">V</button></div><div class="equipo">${p.v}</div></div>`;
         });
     }
 
-    function renderEditor() {
-        const div = document.getElementById('editor-equipos'); 
-        if(div.innerHTML !== "") return;
-        for(let i=1; i<=9; i++) {
-            div.innerHTML += `<div style="display:flex; gap:5px; margin-bottom:5px;"><input type="text" id="edit-l-${i}" placeholder="Local ${i}"><input type="text" id="edit-v-${i}" placeholder="Visita ${i}"></div>`;
-        }
+    function calcularLeaderboard() {
+        const jorSel = document.getElementById('filtro-tabla').value || CONFIG.jornada;
+        const render = document.getElementById('render-puntos');
+        const resOfi = OFICIALES_ALL[jorSel] || {};
+        
+        // Filtro: Misma jornada o sin jornada (compatibilidad registros viejos J10)
+        let filtradas = JUGADAS_ALL.filter(j => (!j.jornada && jorSel === "JORNADA 10") || j.jornada === jorSel);
+        
+        if(!filtradas.length) return render.innerHTML = "<p style='text-align:center; padding:20px; color:gray;'>Sin registros en esta jornada.</p>";
+
+        let tabla = filtradas.map(j => {
+            let pts = 0;
+            PARTIDOS_ACTUALES.forEach(p => { if(resOfi[p.id] && String(j.votos[p.id]) === String(resOfi[p.id])) pts++; });
+            return { n: j.nombre, p: pts, t: j.timestamp || 0 };
+        }).sort((a,b) => b.p - a.p || a.t - b.t);
+
+        let h = '<table><tr><th>Pos</th><th>Nombre</th><th>Pts</th></tr>';
+        tabla.forEach((it, i) => {
+            const win = (tabla[0].p > 0 && it.p === tabla[0].p && i === 0);
+            h += `<tr class="${win?'ganador-row':''}"><td>${i+1}</td><td>${it.n}${win?' 🏆':''}</td><td><strong>${it.p}</strong></td></tr>`;
+        });
+        render.innerHTML = h + '</table>';
     }
 
-    function calcularPuntos() {
-        const div = document.getElementById('render-puntos');
-        // PUENTE DE COMPATIBILIDAD: Aceptar jugadas de la jornada actual o jugadas sin jornada definida (las viejas)
-        let jugadasJornada = JUGADAS_TODAS.filter(j => !j.jornada || j.jornada === CONFIG.jornada);
-        if(!jugadasJornada.length) return div.innerHTML = "<p style='text-align:center'>Sin quinielas aún.</p>";
-
-        let tabla = jugadasJornada.map(j => {
-            let pts = 0;
-            PARTIDOS.forEach(p => { if(OFICIALES[p.id] && String(j.votos[p.id]) === String(OFICIALES[p.id])) pts++; });
-            return { nombre: j.nombre, pts: pts, ts: j.timestamp || 0 };
-        }).sort((a,b) => b.pts - a.pts || a.ts - b.ts);
-
-        let h = '<table><tr><th>#</th><th>Nombre</th><th>Pts</th></tr>';
-        tabla.forEach((it, i) => {
-            const win = (tabla[0].pts > 0 && it.pts === tabla[0].pts && i === 0);
-            h += `<tr class="${win?'ganador-row':''}"><td>${i+1}</td><td>${it.nombre}${win?' 🏆':''}</td><td><strong>${it.pts}</strong></td></tr>`;
-        });
-        div.innerHTML = h + '</table>';
+    function actualizarSelectJornadas() {
+        const sel = document.getElementById('filtro-tabla');
+        const jornadas = [...new Set(JUGADAS_ALL.map(j => j.jornada || "JORNADA 10"))];
+        if(!jornadas.includes(CONFIG.jornada)) jornadas.push(CONFIG.jornada);
+        const actual = sel.value;
+        sel.innerHTML = jornadas.map(j => `<option value="${j}" ${j===actual?'selected':''}>${j}</option>`).join('');
+        if(!actual) sel.value = CONFIG.jornada;
     }
 
     function renderAdminParticipantes() {
         const div = document.getElementById('admin-participantes'); div.innerHTML = '';
         const bus = document.getElementById('buscador').value.toLowerCase();
-        // PUENTE DE COMPATIBILIDAD: Filtro igual para el administrador
-        JUGADAS_TODAS.filter(j => (!j.jornada || j.jornada === CONFIG.jornada) && j.nombre.toLowerCase().includes(bus)).forEach(j => {
+        let filtrados = JUGADAS_ALL.filter(j => (!j.jornada || j.jornada === CONFIG.jornada) && j.nombre.toLowerCase().includes(bus));
+        
+        document.getElementById('page-info').innerText = `Pág ${PAGINA+1} de ${Math.ceil(filtrados.length/10)||1}`;
+        filtrados.slice(PAGINA*10, (PAGINA*10)+10).forEach(j => {
             div.innerHTML += `<div class="partido-card"><span>${j.nombre}</span><div><button onclick="db.ref('jugadas/${j.id}').update({pagado:${!j.pagado}})">${j.pagado?'$':'X'}</button><button onclick="if(confirm('¿Borrar?')) db.ref('jugadas/${j.id}').remove()">🗑️</button></div></div>`;
         });
     }
 
-    function guardarNuevaJornada() {
-        const jor = document.getElementById('cfg-jornada').value.toUpperCase();
-        if(!jor) return alert("Escribe el nombre de la jornada.");
-        const nuevosPartidos = [];
-        for(let i=1; i<=9; i++) {
-            nuevosPartidos.push({ id: i, l: document.getElementById(`edit-l-${i}`).value || "Local "+i, v: document.getElementById(`edit-v-${i}`).value || "Visita "+i });
-        }
-        db.ref().update({ 
-            config: { jornada: jor, costo: document.getElementById('cfg-costo').value || 10 },
-            partidos: nuevosPartidos,
-            oficial: {} 
-        }).then(() => { alert("Jornada Lanzada 🚀"); location.reload(); });
+    function renderEditor() {
+        const div = document.getElementById('editor-equipos'); if(div.innerHTML !== "") return;
+        for(let i=1; i<=9; i++){ div.innerHTML += `<div style="display:flex; gap:5px; margin-bottom:5px;"><input type="text" id="edit-l-${i}" placeholder="Local ${i}"><input type="text" id="edit-v-${i}" placeholder="Visita ${i}"></div>`; }
     }
 
+    function guardarNuevaJornada() {
+        const jor = document.getElementById('cfg-jornada').value.toUpperCase();
+        if(!jor) return alert("Nombre jornada requerido");
+        const nuevos = [];
+        for(let i=1; i<=9; i++) { nuevos.push({ id: i, l: document.getElementById(`edit-l-${i}`).value || "Local "+i, v: document.getElementById(`edit-v-${i}`).value || "Visita "+i }); }
+        db.ref().update({ config: { jornada: jor, costo: document.getElementById('cfg-costo').value || 10 }, partidos: nuevos }).then(() => { alert("Nueva Jornada Lanzada 🚀"); location.reload(); });
+    }
+
+    function publicarOficiales() { db.ref('oficial_historial/' + CONFIG.jornada).set(SEL_ADMIN).then(()=>alert('Marcadores Publicados ✅')); }
+    
+    let SEL_USER = {};
     function setS(id, v) { SEL_USER[id] = (SEL_USER[id] === v) ? null : v; renderPartidos(); }
     function setO(id, v) { SEL_ADMIN[id] = (SEL_ADMIN[id] === v) ? null : v; renderPartidos(); }
-    function publicarOficiales() { db.ref('oficial').set(SEL_ADMIN).then(()=>alert('Marcadores Publicados ✅')); }
-    function showTab(t) { document.querySelectorAll('.content').forEach(c=>c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); event.currentTarget.classList.add('active'); }
-    function activarAdmin() { if(prompt("PIN:")==="1234") document.getElementById('btn-admin').style.display='block'; }
-    function renderFinanzas() { 
-        let si=0, no=0; 
-        JUGADAS_TODAS.filter(j => !j.jornada || j.jornada === CONFIG.jornada).forEach(j=>{ if(j.pagado) si+=parseInt(CONFIG.costo); else no+=parseInt(CONFIG.costo); });
-        document.getElementById('fin-si').innerText=`$${si}`; document.getElementById('fin-no').innerText=`$${no}`; 
-    }
     function guardarJugada() {
         const n = document.getElementById('nombreInput').value.trim();
-        if(!n || Object.keys(SEL_USER).length < 9) return alert("Completa los 9 partidos.");
+        if(!n || Object.keys(SEL_USER).length < 9) return alert("Quiniela incompleta");
         db.ref('jugadas').push({ nombre: n, votos: SEL_USER, pagado: false, jornada: CONFIG.jornada, timestamp: firebase.database.ServerValue.TIMESTAMP });
         document.getElementById('form-registro').style.display='none'; document.getElementById('ticket-final').style.display='block';
-        let t = `👤 ${n.toUpperCase()}\n⚽ ${CONFIG.jornada}\n--------------------\n`;
-        PARTIDOS.forEach(p => { t += `${p.l} vs ${p.v}: [${SEL_USER[p.id]}]\n`; });
+        let t = `👤 ${n.toUpperCase()}\n⚽ ${CONFIG.jornada}\n--------------------\n`; PARTIDOS_ACTUALES.forEach(p => { t += `${p.l} vs ${p.v}: [${SEL_USER[p.id]}]\n`; });
         document.getElementById('mensaje-texto').innerText = t;
     }
+    function cambiarPagina(dir) { PAGINA = Math.max(0, dir === 0 ? 0 : PAGINA + dir); renderAdminParticipantes(); }
+    function showTab(t) { document.querySelectorAll('.content').forEach(c=>c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); event.currentTarget.classList.add('active'); }
+    function activarAdmin() { if(prompt("PIN:")==="1234") document.getElementById('btn-admin').style.display='block'; }
+    function renderFinanzas() { let si=0, no=0; JUGADAS_ALL.filter(j => !j.jornada || j.jornada === CONFIG.jornada).forEach(j=>{ if(j.pagado) si+=parseInt(CONFIG.costo); else no+=parseInt(CONFIG.costo); }); document.getElementById('fin-si').innerText=`$${si}`; document.getElementById('fin-no').innerText=`$${no}`; }
     function copiarAlPortapapeles() { navigator.clipboard.writeText(document.getElementById('mensaje-texto').innerText).then(()=>alert("Copiado ✅")); }
     window.onload = renderPartidos;
 </script>
