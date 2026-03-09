@@ -36,7 +36,7 @@
 <div class="container">
     <div class="header-main">
         <h1>🇲🇽 QUINIELAS REGIAS 🇲🇽</h1>
-        <p id="display-jornada">---</p>
+        <p id="display-jornada">CARGANDO...</p>
     </div>
 
     <div style="text-align:center; padding:10px;">
@@ -69,8 +69,7 @@
     <div id="admin" class="content">
         <div class="admin-card">
             <h4>📝 Configurar Nueva Jornada</h4>
-            <p style="font-size:0.7em; color:gray;">Cambia el nombre de la jornada para empezar una nueva sin borrar la anterior.</p>
-            <input type="text" id="cfg-jornada" placeholder="Ej: JORNADA 11">
+            <input type="text" id="cfg-jornada" placeholder="Ej: JORNADA 10">
             <input type="number" id="cfg-costo" placeholder="Costo $">
             <div id="editor-equipos"></div>
             <button class="btn-main" style="background: var(--azul); padding:10px;" onclick="guardarNuevaJornada()">🚀 LANZAR JORNADA</button>
@@ -84,7 +83,7 @@
 
         <div class="admin-card">
             <h4>👥 Participantes (<span class="jor-act-txt"></span>)</h4>
-            <input type="text" id="buscador" placeholder="🔍 Buscar..." oninput="renderAdminParticipantes()">
+            <input type="text" id="buscador" placeholder="🔍 Buscar nombre..." oninput="renderAdminParticipantes()">
             <div id="admin-participantes"></div>
         </div>
     </div>
@@ -95,11 +94,11 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    let JUGADAS_TODAS = [], OFICIALES = {}, SEL_USER = {}, SEL_ADMIN = {}, PARTIDOS = [], CONFIG = {costo:10, jornada:"J10"};
+    let JUGADAS_TODAS = [], OFICIALES = {}, SEL_USER = {}, SEL_ADMIN = {}, PARTIDOS = [], CONFIG = {costo:10, jornada:""};
 
     db.ref().on('value', snap => {
         const d = snap.val() || {};
-        CONFIG = d.config || {costo:10, jornada:"J10"};
+        CONFIG = d.config || {costo:10, jornada:"JORNADA 10"};
         PARTIDOS = d.partidos || [];
         OFICIALES = d.oficial || {};
         JUGADAS_TODAS = d.jugadas ? Object.keys(d.jugadas).map(k => ({id: k, ...d.jugadas[k]})) : [];
@@ -137,9 +136,9 @@
 
     function calcularPuntos() {
         const div = document.getElementById('render-puntos');
-        // FILTRAR SOLO JUGADAS DE LA JORNADA ACTUAL
-        let jugadasJornada = JUGADAS_TODAS.filter(j => j.jornada === CONFIG.jornada);
-        if(!jugadasJornada.length) return div.innerHTML = "<p style='text-align:center'>No hay quinielas en esta jornada.</p>";
+        // PUENTE DE COMPATIBILIDAD: Aceptar jugadas de la jornada actual o jugadas sin jornada definida (las viejas)
+        let jugadasJornada = JUGADAS_TODAS.filter(j => !j.jornada || j.jornada === CONFIG.jornada);
+        if(!jugadasJornada.length) return div.innerHTML = "<p style='text-align:center'>Sin quinielas aún.</p>";
 
         let tabla = jugadasJornada.map(j => {
             let pts = 0;
@@ -158,24 +157,24 @@
     function renderAdminParticipantes() {
         const div = document.getElementById('admin-participantes'); div.innerHTML = '';
         const bus = document.getElementById('buscador').value.toLowerCase();
-        // FILTRAR POR JORNADA Y BUSCADOR
-        JUGADAS_TODAS.filter(j => j.jornada === CONFIG.jornada && j.nombre.toLowerCase().includes(bus)).forEach(j => {
+        // PUENTE DE COMPATIBILIDAD: Filtro igual para el administrador
+        JUGADAS_TODAS.filter(j => (!j.jornada || j.jornada === CONFIG.jornada) && j.nombre.toLowerCase().includes(bus)).forEach(j => {
             div.innerHTML += `<div class="partido-card"><span>${j.nombre}</span><div><button onclick="db.ref('jugadas/${j.id}').update({pagado:${!j.pagado}})">${j.pagado?'$':'X'}</button><button onclick="if(confirm('¿Borrar?')) db.ref('jugadas/${j.id}').remove()">🗑️</button></div></div>`;
         });
     }
 
     function guardarNuevaJornada() {
-        if(!confirm("¿Confirmas que quieres lanzar una nueva jornada?")) return;
+        const jor = document.getElementById('cfg-jornada').value.toUpperCase();
+        if(!jor) return alert("Escribe el nombre de la jornada.");
         const nuevosPartidos = [];
         for(let i=1; i<=9; i++) {
-            nuevosPartidos.push({ id: i, l: document.getElementById(`edit-l-${i}`).value, v: document.getElementById(`edit-v-${i}`).value });
+            nuevosPartidos.push({ id: i, l: document.getElementById(`edit-l-${i}`).value || "Local "+i, v: document.getElementById(`edit-v-${i}`).value || "Visita "+i });
         }
-        const jor = document.getElementById('cfg-jornada').value.toUpperCase();
         db.ref().update({ 
-            config: { jornada: jor, costo: document.getElementById('cfg-costo').value },
+            config: { jornada: jor, costo: document.getElementById('cfg-costo').value || 10 },
             partidos: nuevosPartidos,
-            oficial: {} // Limpiar resultados oficiales para la nueva jornada
-        }).then(() => { alert("Jornada Lanzada con éxito 🚀"); location.reload(); });
+            oficial: {} 
+        }).then(() => { alert("Jornada Lanzada 🚀"); location.reload(); });
     }
 
     function setS(id, v) { SEL_USER[id] = (SEL_USER[id] === v) ? null : v; renderPartidos(); }
@@ -185,7 +184,7 @@
     function activarAdmin() { if(prompt("PIN:")==="1234") document.getElementById('btn-admin').style.display='block'; }
     function renderFinanzas() { 
         let si=0, no=0; 
-        JUGADAS_TODAS.filter(j => j.jornada === CONFIG.jornada).forEach(j=>{ if(j.pagado) si+=parseInt(CONFIG.costo); else no+=parseInt(CONFIG.costo); });
+        JUGADAS_TODAS.filter(j => !j.jornada || j.jornada === CONFIG.jornada).forEach(j=>{ if(j.pagado) si+=parseInt(CONFIG.costo); else no+=parseInt(CONFIG.costo); });
         document.getElementById('fin-si').innerText=`$${si}`; document.getElementById('fin-no').innerText=`$${no}`; 
     }
     function guardarJugada() {
