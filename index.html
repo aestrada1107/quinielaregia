@@ -136,22 +136,16 @@
     function renderAdminParticipantes() {
         const body = document.getElementById('admin-participantes'); body.innerHTML = '';
         const filtro = document.getElementById('buscadorParticipante').value.toLowerCase();
-        
         let jugadasAMostrar = todasLasJugadas;
-        const controles = document.getElementById('controles-paginacion');
-
         if (filtro) {
             jugadasAMostrar = todasLasJugadas.filter(j => j.nombre.toLowerCase().includes(filtro));
-            controles.style.opacity = '0.3';
-            controles.style.pointerEvents = 'none';
+            document.getElementById('controles-paginacion').style.display = 'none';
         } else {
             const inicio = paginaActual * 10;
             jugadasAMostrar = todasLasJugadas.slice(inicio, inicio + 10);
-            controles.style.opacity = '1';
-            controles.style.pointerEvents = 'auto';
+            document.getElementById('controles-paginacion').style.display = 'flex';
             document.getElementById('page-info').innerText = `Pág ${paginaActual + 1} de ${Math.ceil(todasLasJugadas.length / 10) || 1}`;
         }
-
         jugadasAMostrar.forEach((j) => {
             const originalIndex = todasLasJugadas.findIndex(orig => orig.id === j.id);
             body.innerHTML += `<tr><td style="font-weight:bold;">${j.nombre}</td><td style="text-align:right;">
@@ -165,18 +159,25 @@
     function filtrarParticipantes() { renderAdminParticipantes(); }
     function cambiarPagina(dir) { paginaActual = Math.max(0, Math.min(paginaActual + dir, Math.ceil(todasLasJugadas.length / 10) - 1)); renderAdminParticipantes(); }
     function togglePago(id, act) { db.ref('jugadas/' + id).update({ pagado: !act }); }
+    
     function verDetalle(idx) {
         const j = todasLasJugadas[idx]; document.getElementById('modal-nombre').innerText = j.nombre;
         document.getElementById('modal-fecha').innerText = "📅 " + (j.timestamp ? new Date(j.timestamp).toLocaleString() : "---");
         let h = '<div style="margin-top:10px;">';
-        PARTIDOS.forEach(p => { const v = j.votos[p.id] || '?'; const color = (resultadosOficiales[p.id] && v === resultadosOficiales[p.id]) ? 'green' : (resultadosOficiales[p.id] ? 'red' : 'black'); h += `<div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #eee; color:${color}; font-size:0.85em; font-weight:bold;"><span>${p.l} vs ${p.v}</span><span>[${v}]</span></div>`; });
+        PARTIDOS.forEach(p => { 
+            const v = j.votos[p.id] || '?'; 
+            const color = (resultadosOficiales[p.id] && v === resultadosOficiales[p.id]) ? 'green' : (resultadosOficiales[p.id] ? 'red' : 'black'); 
+            h += `<div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #eee; color:${color}; font-size:0.85em; font-weight:bold;"><span>${p.l} vs ${p.v}</span><span>[${v}]</span></div>`; 
+        });
         document.getElementById('modal-detalle').innerHTML = h+'</div>'; document.getElementById('modal-jugada').style.display='block';
     }
+
     function calcularFinanzas() {
         const costo = parseFloat(CONFIG.costo) || 0; let si = 0, no = 0;
         todasLasJugadas.forEach(j => { if(j.pagado) si += costo; else no += costo; });
         document.getElementById('fin-si').innerText = `$${si}`; document.getElementById('fin-no').innerText = `$${no}`; document.getElementById('fin-total').innerText = `$${si + no}`;
     }
+
     function guardarJugada() {
         const n = document.getElementById('nombreInput').value.trim();
         if(!n || Object.keys(seleccionActual).length < PARTIDOS.length) return alert("Completa la quiniela.");
@@ -186,27 +187,59 @@
         t += `----------------------------\n💰 TOTAL: $${CONFIG.costo} MXN\n📲 Enviar a: 8116737983`;
         document.getElementById('form-registro').style.display = 'none'; document.getElementById('ticket-final').style.display = 'block'; document.getElementById('mensaje-texto').innerText = t;
     }
+
     function setSel(id, v) { if(seleccionActual[id]===v) delete seleccionActual[id]; else seleccionActual[id]=v; renderPartidos(); }
     function setOficial(id, v) { if(resultadosOficiales[id]===v) delete resultadosOficiales[id]; else resultadosOficiales[id]=v; renderPartidos(); }
     function toggleVisibilidadTabla(v) { db.ref('config').update({ mostrarTabla: v }); }
     function renderEditorEquipos() { const editor = document.getElementById('editor-equipos'); editor.innerHTML = ''; PARTIDOS.forEach(p => { editor.innerHTML += `<div style="display:flex; gap:5px; margin-bottom:8px;"><input type="text" id="edit-l-${p.id}" value="${p.l}" style="margin:0;"><input type="text" id="edit-v-${p.id}" value="${p.v}" style="margin:0;"></div>`; }); }
-    function guardarNombresEquipos() { const nuevos = PARTIDOS.map(p => ({ id: p.id, l: document.getElementById(`edit-l-${p.id}`).value, v: document.getElementById(`edit-v-${p.id}`).value })); db.ref('partidos').set(nuevos); alert("OK ✅"); }
+    function guardarNombresEquipos() { const nuevos = PARTIDOS.map(p => ({ id: p.id, l: document.getElementById(`edit-l-${p.id}`).value, v: document.getElementById(`edit-v-${p.id}`).value })); db.ref('partidos').set(nuevos).then(() => alert("OK ✅")); }
     function copiarAlPortapapeles() { navigator.clipboard.writeText(document.getElementById('mensaje-texto').innerText).then(() => alert("Copiado ✅")); }
     function eliminarJugador(id) { if(confirm("¿Borrar?")) db.ref('jugadas/'+id).remove(); }
     function guardarConfigGeneral() { db.ref('config').update({jornada: document.getElementById('cfg-jornada').value.toUpperCase(), costo: document.getElementById('cfg-costo').value}); alert("OK ✅"); }
-    function guardarResultadosOficiales() { db.ref('oficial').set(resultadosOficiales); alert("OK ✅"); }
+    function guardarResultadosOficiales() { db.ref('oficial').set(resultadosOficiales).then(() => { alert("Resultados Publicados ✅"); actualizarLeaderboard(); }); }
     function activarModoMaestro() { if(prompt("PIN:")==="1234") document.getElementById('barra-tabs').style.display='flex'; }
     function showTab(t) { document.querySelectorAll('.content').forEach(c => c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); event.currentTarget.classList.add('active'); }
     function limpiarBaseDatos() { if(confirm("¿RESET TOTAL?")) db.ref().remove(); }
     function cerrarModal() { document.getElementById('modal-jugada').style.display='none'; }
+    
+    // ESTA FUNCIÓN ES LA QUE HACÍA FALTA ASEGURAR
     function actualizarLeaderboard() {
         const container = document.getElementById('posiciones-render');
-        let t = todasLasJugadas.map(j => { let pts = 0; PARTIDOS.forEach(p => { if(j.votos[p.id] === resultadosOficiales[p.id]) pts++; }); return {n:j.nombre, p:pts, ts: j.timestamp || 0}; }).sort((a,b) => b.p - a.p || a.ts - b.ts);
+        if (!todasLasJugadas.length) {
+            container.innerHTML = "<p style='text-align:center;'>No hay participantes registrados.</p>";
+            return;
+        }
+
+        // Mapear jugadas y contar puntos contra resultadosOficiales
+        let t = todasLasJugadas.map(j => {
+            let pts = 0;
+            PARTIDOS.forEach(p => {
+                // Comparamos el voto del jugador contra el resultado oficial publicado
+                if(resultadosOficiales && resultadosOficiales[p.id] && j.votos[p.id] === resultadosOficiales[p.id]) {
+                    pts++;
+                }
+            });
+            return {n: j.nombre, p: pts, ts: j.timestamp || 0};
+        });
+
+        // Ordenar por puntos (descendente) y por tiempo (ascendente) en caso de empate
+        t.sort((a,b) => b.p - a.p || a.ts - b.ts);
+        
         const maxPts = t.length > 0 ? t[0].p : -1;
         let h = '<table><tr><th>Pos</th><th>Nombre</th><th style="text-align:center;">Pts</th></tr>';
-        t.forEach((it, i) => { const esG = (maxPts > 0 && it.p === maxPts && i === 0); h += `<tr class="${esG ? 'ganador-row' : ''}"><td>${i+1}</td><td>${it.n}${esG ? ' 🏆 GANADOR' : ''}</td><td style="text-align:center; font-weight:bold;">${it.p}</td></tr>`; });
+        
+        t.forEach((it, i) => {
+            // El ganador es el primero de la lista si tiene al menos 1 punto
+            const esG = (maxPts > 0 && it.p === maxPts && i === 0);
+            h += `<tr class="${esG ? 'ganador-row' : ''}">
+                    <td>${i+1}</td>
+                    <td>${it.n}${esG ? ' 🏆 GANADOR' : ''}</td>
+                    <td style="text-align:center; font-weight:bold;">${it.p}</td>
+                  </tr>`;
+        });
         container.innerHTML = h+'</table>';
     }
+
     window.onload = renderPartidos;
 </script>
 </body>
