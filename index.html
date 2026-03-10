@@ -11,7 +11,6 @@
         body { font-family: 'Segoe UI', sans-serif; background: #f4f4f4; margin: 0; padding: 10px; -webkit-tap-highlight-color: transparent; }
         .container { max-width: 600px; margin: auto; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; }
         .header-main { background: var(--verde); color: white; padding: 20px; text-align: center; border-bottom: 5px solid var(--rojo); }
-        .header-main h1 { margin: 0; font-size: 1.5em; text-transform: uppercase; letter-spacing: 1px; }
         .tabs { display: flex; background: var(--oscuro); }
         .tab-btn { flex: 1; padding: 15px; color: #bbb; border: none; background: none; cursor: pointer; font-weight: bold; font-size: 0.85em; }
         .tab-btn.active { color: white; background: var(--verde); border-bottom: 4px solid var(--rojo); }
@@ -29,9 +28,18 @@
         .ganador-row { background: var(--oro) !important; color: var(--oro-txt) !important; font-weight: bold; }
         .admin-card { background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 15px; }
         input[type="text"], input[type="number"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; margin-bottom: 10px; }
+        .paginacion { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
     </style>
 </head>
 <body>
+
+<div id="modal-ver" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:1000; overflow-y:auto;">
+    <div style="background:white; margin:15% auto; padding:20px; width:85%; border-radius:12px; max-width:400px;">
+        <h3 id="modal-nombre" style="text-align:center; color:var(--verde);"></h3>
+        <div id="modal-detalle"></div>
+        <button onclick="document.getElementById('modal-ver').style.display='none'" class="btn-main" style="background:#333; margin-top:15px;">CERRAR</button>
+    </div>
+</div>
 
 <div class="container">
     <div class="header-main">
@@ -39,8 +47,8 @@
         <p id="display-jornada">---</p>
     </div>
 
-    <div style="text-align:center; padding:10px; border-bottom: 1px solid #eee;">
-        <h2 style="font-size: 0.8em; color: #bbb;">Panel de <span onclick="activarAdmin()" style="cursor:pointer">Acceso</span></h2>
+    <div style="text-align:center; padding:10px;">
+        <h2 style="font-size: 0.9em; color: #999;">Qu<span>i</span>niela Control<span>i</span></h2>
     </div>
     
     <div class="tabs">
@@ -51,20 +59,19 @@
 
     <div id="jugador" class="content active">
         <div id="registro-area">
-            <input type="text" id="nombreInput" placeholder="Tu nombre completo">
+            <input type="text" id="nombreInput" placeholder="Nombre completo">
             <div id="lista-jugador"></div>
             <button class="btn-main" style="background: var(--verde)" onclick="guardarJugada()">✅ GENERAR TICKET</button>
         </div>
         <div id="ticket-final" style="display:none; border:2px solid var(--verde); padding:15px; border-radius:8px; margin-top:10px;">
             <div id="mensaje-texto" style="white-space:pre-wrap; font-family:monospace; background:#f4f4f4; padding:10px; font-size:0.9em;"></div>
             <button onclick="copiarAlPortapapeles()" class="btn-main" style="background: var(--azul); margin-top:10px;">📋 COPIAR WHATSAPP</button>
-            <button onclick="location.reload()" style="width:100%; border:none; background:none; color:gray; margin-top:15px; cursor:pointer;">Hacer otra quiniela</button>
+            <button onclick="location.reload()" style="width:100%; border:none; background:none; color:gray; margin-top:15px; cursor:pointer;">Registrar otra</button>
         </div>
     </div>
 
     <div id="posiciones" class="content">
         <div style="margin-bottom:10px; text-align:right;">
-            <label style="font-size:0.7em; font-weight:bold;">Ver Jornada: </label>
             <select id="filtro-tabla" onchange="calcularLeaderboard()" style="padding:5px; border-radius:5px;"></select>
         </div>
         <div id="render-puntos"></div>
@@ -72,23 +79,28 @@
 
     <div id="admin" class="content">
         <div class="admin-card">
-            <h4>🚀 Configurar Nueva Jornada</h4>
-            <input type="text" id="cfg-jornada" placeholder="Nombre (Ej: JORNADA 11)">
+            <h4>🚀 Nueva Jornada</h4>
+            <input type="text" id="cfg-jornada" placeholder="JORNADA 11">
             <input type="number" id="cfg-costo" placeholder="Costo $">
             <div id="editor-equipos"></div>
-            <button class="btn-main" style="background: var(--azul); padding:10px;" onclick="guardarNuevaJornada()">🚀 LANZAR JORNADA</button>
+            <button class="btn-main" style="background: var(--azul); padding:10px;" onclick="guardarNuevaJornada()">LANZAR</button>
         </div>
 
         <div class="admin-card">
-            <h4>⚽ Resultados Oficiales (<span class="jor-act-txt"></span>)</h4>
+            <h4>⚽ Marcadores (<span class="jor-act-txt"></span>)</h4>
             <div id="lista-admin"></div>
-            <button class="btn-main" style="background: var(--rojo)" onclick="publicarOficiales()">📢 PUBLICAR RESULTADOS</button>
+            <button class="btn-main" style="background: var(--rojo)" onclick="publicarOficiales()">PUBLICAR</button>
         </div>
 
         <div class="admin-card">
             <h4>👥 Participantes (<span class="jor-act-txt"></span>)</h4>
-            <input type="text" id="buscador" placeholder="🔍 Buscar por nombre..." oninput="renderAdminParticipantes()">
+            <input type="text" id="buscador" placeholder="🔍 Buscar..." oninput="cambiarPagina(0)">
             <div id="admin-participantes"></div>
+            <div class="paginacion">
+                <button onclick="cambiarPagina(-1)" class="btn-lev">« Ant</button>
+                <span id="page-info">Pág 1</span>
+                <button onclick="cambiarPagina(1)" class="btn-lev">Sig »</button>
+            </div>
         </div>
     </div>
 </div>
@@ -98,24 +110,22 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    const EQUIPOS_INIT = [{id:1,l:"Mazatlán",v:"León"},{id:2,l:"Necaxa",v:"Pumas"},{id:3,l:"Cruz Azul",v:"Atl. San Luis"},{id:4,l:"Querétaro",v:"América"},{id:5,l:"Pachuca",v:"Puebla"},{id:6,l:"Atlas",v:"Chivas"},{id:7,l:"Tigres",v:"Monterrey"},{id:8,l:"Toluca",v:"FC Juárez"},{id:9,l:"Tijuana",v:"Santos"}];
+    const J10_DEF = [{id:1,l:"Mazatlán",v:"León"},{id:2,l:"Necaxa",v:"Pumas"},{id:3,l:"Cruz Azul",v:"Atl. San Luis"},{id:4,l:"Querétaro",v:"América"},{id:5,l:"Pachuca",v:"Puebla"},{id:6,l:"Atlas",v:"Chivas"},{id:7,l:"Tigres",v:"Monterrey"},{id:8,l:"Toluca",v:"FC Juárez"},{id:9,l:"Tijuana",v:"Santos"}];
     
-    let JUGADAS_ALL = [], OFICIALES_HIST = {}, PARTIDOS = EQUIPOS_INIT, CONFIG = {costo:10, jornada:"JORNADA 10"}, SEL_ADMIN = {}, SEL_USER = {};
+    let JUGADAS_ALL = [], OFICIALES_HIST = {}, PARTIDOS = J10_DEF, CONFIG = {costo:10, jornada:"JORNADA 10"}, PAGINA = 0, SEL_ADMIN = {}, SEL_USER = {};
 
-    // ESCUCHA MAESTRA
     db.ref().on('value', snap => {
         const d = snap.val() || {};
         CONFIG = d.config || {costo:10, jornada:"JORNADA 10"};
-        PARTIDOS = d.partidos || EQUIPOS_INIT;
+        PARTIDOS = d.partidos || J10_DEF;
         OFICIALES_HIST = d.oficial_historial || {};
         JUGADAS_ALL = d.jugadas ? Object.keys(d.jugadas).map(k => ({id: k, ...d.jugadas[k]})) : [];
         
         document.getElementById('display-jornada').innerText = CONFIG.jornada;
         document.querySelectorAll('.jor-act-txt').forEach(el => el.innerText = CONFIG.jornada);
         
-        // Sincronización Admin: Solo si la jornada cambió o no hay selección previa
-        const resActual = OFICIALES_HIST[CONFIG.jornada] || {};
-        if(Object.keys(SEL_ADMIN).length === 0) SEL_ADMIN = JSON.parse(JSON.stringify(resActual));
+        const resAct = OFICIALES_HIST[CONFIG.jornada] || {};
+        if(Object.keys(SEL_ADMIN).length === 0) SEL_ADMIN = JSON.parse(JSON.stringify(resAct));
 
         actualizarSelectJornadas();
         renderPartidos();
@@ -134,88 +144,89 @@
         });
     }
 
-    function renderEditor() {
-        const div = document.getElementById('editor-equipos'); if(div.innerHTML !== "") return;
-        for(let i=1; i<=9; i++) { div.innerHTML += `<div style="display:flex; gap:5px; margin-bottom:5px;"><input type="text" id="edit-l-${i}" placeholder="Local ${i}"><input type="text" id="edit-v-${i}" placeholder="Visita ${i}"></div>`; }
+    function renderAdminParticipantes() {
+        const div = document.getElementById('admin-participantes'); div.innerHTML = '';
+        const bus = document.getElementById('buscador').value.toLowerCase();
+        let filtrados = JUGADAS_ALL.filter(j => j.jornada === CONFIG.jornada && j.nombre.toLowerCase().includes(bus));
+        
+        document.getElementById('page-info').innerText = `Pág ${PAGINA+1} de ${Math.ceil(filtrados.length/10)||1}`;
+        filtrados.slice(PAGINA*10, (PAGINA*10)+10).forEach(j => {
+            div.innerHTML += `<div class="partido-card"><span>${j.nombre}</span><div><button onclick="db.ref('jugadas/${j.id}').update({pagado:${!j.pagado}})">${j.pagado?'$':'X'}</button><button onclick="verDetalle('${j.id}')">👁️</button></div></div>`;
+        });
+    }
+
+    function verDetalle(id) {
+        const j = JUGADAS_ALL.find(x => x.id === id);
+        document.getElementById('modal-nombre').innerText = j.nombre;
+        let h = '<table style="width:100%">';
+        PARTIDOS.forEach(p => {
+            h += `<tr><td>${p.l} vs ${p.v}</td><td style="font-weight:bold; color:var(--verde); text-align:right;">[${j.votos[p.id] || '-'}]</td></tr>`;
+        });
+        document.getElementById('modal-detalle').innerHTML = h + '</table>';
+        document.getElementById('modal-ver').style.display = 'block';
+    }
+
+    function setS(id, v) { SEL_USER[id] = (SEL_USER[id] === v) ? null : v; renderPartidos(); }
+    function setO(id, v) { SEL_ADMIN[id] = (SEL_ADMIN[id] === v) ? null : v; renderPartidos(); }
+    function publicarOficiales() { db.ref('oficial_historial/' + CONFIG.jornada).set(SEL_ADMIN).then(()=>alert('✅ Publicado')); }
+    function guardarNuevaJornada() {
+        const jor = document.getElementById('cfg-jornada').value.toUpperCase();
+        if(!jor) return alert("Falta nombre");
+        const nuevos = [];
+        for(let i=1; i<=9; i++) { nuevos.push({ id: i, l: document.getElementById(`edit-l-${i}`).value || "Local "+i, v: document.getElementById(`edit-v-${i}`).value || "Visita "+i }); }
+        db.ref().update({ config: { jornada: jor, costo: document.getElementById('cfg-costo').value || 10 }, partidos: nuevos, oficial: {} }).then(() => { alert("🚀 Nueva Jornada Lista"); location.reload(); });
     }
 
     function calcularLeaderboard() {
         const jorSel = document.getElementById('filtro-tabla').value || CONFIG.jornada;
-        const render = document.getElementById('render-puntos');
+        const div = document.getElementById('render-puntos');
         const resOfi = OFICIALES_HIST[jorSel] || {};
-        
-        // FILTRO ESTRICTO: Solo jugadas que coincidan exactamente con la jornada seleccionada
         let filtradas = JUGADAS_ALL.filter(j => j.jornada === jorSel);
-        if(!filtradas.length) return render.innerHTML = "<p style='text-align:center; padding:20px; color:gray;'>No hay registros en esta jornada.</p>";
-
+        if(!filtradas.length) return div.innerHTML = "<p style='text-align:center'>Vacío.</p>";
         let tabla = filtradas.map(j => {
             let pts = 0;
             PARTIDOS.forEach(p => { if(resOfi[p.id] && String(j.votos[p.id]) === String(resOfi[p.id])) pts++; });
-            return { nombre: j.nombre, pts: pts, t: j.timestamp || 0 };
-        }).sort((a,b) => b.pts - a.pts || a.t - b.t);
-
+            return { n: j.nombre, p: pts, t: j.timestamp || 0 };
+        }).sort((a,b) => b.p - a.p || a.t - b.t);
         let h = '<table><tr><th>Pos</th><th>Nombre</th><th>Pts</th></tr>';
         tabla.forEach((it, i) => {
-            const win = (tabla[0].pts > 0 && it.pts === tabla[0].pts && i === 0);
-            h += `<tr class="${win?'ganador-row':''}"><td>${i+1}</td><td>${it.nombre}${win?' 🏆':''}</td><td><strong>${it.pts}</strong></td></tr>`;
+            const win = (tabla[0].p > 0 && it.p === tabla[0].p && i === 0);
+            h += `<tr class="${win?'ganador-row':''}"><td>${i+1}</td><td>${it.n}${win?' 🏆':''}</td><td><strong>${it.p}</strong></td></tr>`;
         });
-        render.innerHTML = h + '</table>';
+        div.innerHTML = h + '</table>';
     }
 
     function actualizarSelectJornadas() {
         const sel = document.getElementById('filtro-tabla');
-        const jornadas = [...new Set(JUGADAS_ALL.map(j => j.jornada))].filter(j => j);
+        const jornadas = [...new Set(JUGADAS_ALL.map(j => j.jornada))].filter(j=>j);
         if(!jornadas.includes(CONFIG.jornada)) jornadas.push(CONFIG.jornada);
         const actual = sel.value;
         sel.innerHTML = jornadas.map(j => `<option value="${j}" ${j===actual?'selected':''}>${j}</option>`).join('');
         if(!actual) sel.value = CONFIG.jornada;
     }
 
-    function renderAdminParticipantes() {
-        const div = document.getElementById('admin-participantes'); div.innerHTML = '';
-        const bus = document.getElementById('buscador').value.toLowerCase();
-        // FILTRO ESTRICTO ADMIN: Solo los de la jornada que estás configurando
-        let filtrados = JUGADAS_ALL.filter(j => j.jornada === CONFIG.jornada && j.nombre.toLowerCase().includes(bus));
-        
-        if(!filtrados.length) return div.innerHTML = "<p style='text-align:center; font-size:0.8em; color:gray;'>Nadie se ha registrado en esta jornada.</p>";
-
-        filtrados.forEach(j => {
-            div.innerHTML += `<div class="partido-card"><span>${j.nombre}</span><div><button onclick="db.ref('jugadas/${j.id}').update({pagado:${!j.pagado}})">${j.pagado?'$':'X'}</button></div></div>`;
-        });
+    function renderEditor() {
+        const div = document.getElementById('editor-equipos'); if(div.innerHTML !== "") return;
+        for(let i=1; i<=9; i++) { div.innerHTML += `<div style="display:flex; gap:5px; margin-bottom:5px;"><input type="text" id="edit-l-${i}" placeholder="L ${i}"><input type="text" id="edit-v-${i}" placeholder="V ${i}"></div>`; }
     }
 
-    function guardarNuevaJornada() {
-        const jor = document.getElementById('cfg-jornada').value.toUpperCase();
-        if(!jor) return alert("Ponle nombre a la jornada");
-        const nuevos = [];
-        for(let i=1; i<=9; i++) { nuevos.push({ id: i, l: document.getElementById(`edit-l-${i}`).value || "Local "+i, v: document.getElementById(`edit-v-${i}`).value || "Visita "+i }); }
-        
-        if(confirm("¿Lanzar " + jor + "? Se limpiará el registro para todos.")) {
-            db.ref().update({ 
-                config: { jornada: jor, costo: document.getElementById('cfg-costo').value || 10 }, 
-                partidos: nuevos 
-            }).then(() => { 
-                alert("🚀 JORNADA LANZADA. Formulario vacío y listo."); 
-                location.reload(); 
-            });
-        }
-    }
-
-    function publicarOficiales() { db.ref('oficial_historial/' + CONFIG.jornada).set(SEL_ADMIN).then(()=>alert('✅ Resultados Publicados')); }
-    function setS(id, v) { SEL_USER[id] = (SEL_USER[id] === v) ? null : v; renderPartidos(); }
-    function setO(id, v) { SEL_ADMIN[id] = (SEL_ADMIN[id] === v) ? null : v; renderPartidos(); }
     function guardarJugada() {
         const n = document.getElementById('nombreInput').value.trim();
-        if(!n || Object.keys(SEL_USER).length < 9) return alert("Completa la quiniela");
+        if(!n || Object.keys(SEL_USER).length < 9) return alert("Incompleta");
         db.ref('jugadas').push({ nombre: n, votos: SEL_USER, pagado: false, jornada: CONFIG.jornada, timestamp: firebase.database.ServerValue.TIMESTAMP });
         document.getElementById('registro-area').style.display='none'; document.getElementById('ticket-final').style.display='block';
         let t = `👤 ${n.toUpperCase()}\n⚽ ${CONFIG.jornada}\n--------------------\n`; PARTIDOS.forEach(p => { t += `${p.l} vs ${p.v}: [${SEL_USER[p.id]}]\n`; });
         document.getElementById('mensaje-texto').innerText = t;
     }
+
+    function cambiarPagina(dir) { PAGINA = Math.max(0, dir === 0 ? 0 : PAGINA + dir); renderAdminParticipantes(); }
     function showTab(t) { document.querySelectorAll('.content').forEach(c=>c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); event.currentTarget.classList.add('active'); }
-    function activarAdmin() { if(prompt("PIN:")==="1234") document.getElementById('btn-admin').style.display='block'; }
+    function activarAdmin() { 
+        const spans = document.querySelectorAll('h2 span');
+        spans[1].onclick = () => { if(prompt("PIN:")==="1234") document.getElementById('btn-admin').style.display='block'; };
+    }
     function copiarAlPortapapeles() { navigator.clipboard.writeText(document.getElementById('mensaje-texto').innerText).then(()=>alert("Copiado ✅")); }
-    window.onload = renderPartidos;
+    window.onload = () => { renderPartidos(); activarAdmin(); };
 </script>
 </body>
 </html>
