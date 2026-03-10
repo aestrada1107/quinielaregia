@@ -30,6 +30,7 @@
         .admin-card { background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 15px; }
         input[type="text"], input[type="number"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; margin-bottom: 10px; }
         .paginacion { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
+        .finanzas-badge { background: white; padding: 10px; border-radius: 8px; border: 1px solid #ddd; text-align: center; flex: 1; margin: 0 5px; }
     </style>
 </head>
 <body>
@@ -75,18 +76,23 @@
     </div>
 
     <div id="admin" class="content">
+        <div style="display:flex; margin-bottom:15px;">
+            <div class="finanzas-badge">Cobrado: <br><strong id="fin-si" style="color:var(--verde); font-size:1.2em;">$0</strong></div>
+            <div class="finanzas-badge">Pendiente: <br><strong id="fin-no" style="color:var(--rojo); font-size:1.2em;">$0</strong></div>
+        </div>
+
         <div class="admin-card">
             <h4>🚀 Nueva Jornada</h4>
-            <input type="text" id="cfg-jornada" placeholder="Nombre (Ej: JORNADA 11)">
-            <input type="number" id="cfg-costo" placeholder="Costo $">
+            <input type="text" id="cfg-jornada" placeholder="JORNADA 11">
+            <input type="number" id="cfg-costo" placeholder="Costo por quiniela $">
             <div id="editor-equipos"></div>
-            <button class="btn-main" style="background: var(--azul); padding:10px;" onclick="guardarNuevaJornada()">LANZAR</button>
+            <button class="btn-main" style="background: var(--azul); padding:10px;" onclick="guardarNuevaJornada()">LANZAR JORNADA</button>
         </div>
 
         <div class="admin-card">
             <h4>⚽ Marcadores (<span class="jor-act-txt"></span>)</h4>
             <div id="lista-admin"></div>
-            <button class="btn-main" style="background: var(--rojo)" onclick="publicarOficiales()">PUBLICAR</button>
+            <button class="btn-main" style="background: var(--rojo)" onclick="publicarOficiales()">PUBLICAR RESULTADOS</button>
         </div>
 
         <div class="admin-card">
@@ -94,9 +100,9 @@
             <input type="text" id="buscador" placeholder="🔍 Buscar..." oninput="cambiarPagina(0)">
             <div id="admin-participantes"></div>
             <div class="paginacion">
-                <button onclick="cambiarPagina(-1)" class="btn-lev" style="padding:5px 10px; font-size: 0.8em;">« Ant</button>
-                <span id="page-info" style="font-size: 0.8em; font-weight: bold;">Pág 1</span>
-                <button onclick="cambiarPagina(1)" class="btn-lev" style="padding:5px 10px; font-size: 0.8em;">Sig »</button>
+                <button onclick="cambiarPagina(-1)" class="btn-lev" style="padding:5px 10px;">« Ant</button>
+                <span id="page-info" style="font-weight:bold;">Pág 1</span>
+                <button onclick="cambiarPagina(1)" class="btn-lev" style="padding:5px 10px;">Sig »</button>
             </div>
         </div>
     </div>
@@ -129,6 +135,7 @@
         renderEditor();
         renderAdminParticipantes();
         calcularLeaderboard();
+        actualizarFinanzas();
     });
 
     function renderPartidos() {
@@ -160,16 +167,26 @@
         document.getElementById('modal-ver').style.display = 'block';
     }
 
+    function actualizarFinanzas() {
+        let cobrado = 0, pendiente = 0;
+        const costo = parseInt(CONFIG.costo) || 10;
+        JUGADAS_ALL.filter(j => j.jornada === CONFIG.jornada).forEach(j => {
+            if(j.pagado) cobrado += costo; else pendiente += costo;
+        });
+        document.getElementById('fin-si').innerText = `$${cobrado}`;
+        document.getElementById('fin-no').innerText = `$${pendiente}`;
+    }
+
     function setS(id, v) { SEL_USER[id] = (SEL_USER[id] === v) ? null : v; renderPartidos(); }
     function setO(id, v) { SEL_ADMIN[id] = (SEL_ADMIN[id] === v) ? null : v; renderPartidos(); }
     function publicarOficiales() { db.ref('oficial_historial/' + CONFIG.jornada).set(SEL_ADMIN).then(()=>alert('✅ Publicado')); }
     
     function guardarNuevaJornada() {
         const jor = document.getElementById('cfg-jornada').value.toUpperCase();
-        if(!jor) return alert("Falta nombre");
+        if(!jor) return alert("Falta nombre de jornada");
         const nuevos = [];
         for(let i=1; i<=9; i++) { nuevos.push({ id: i, l: document.getElementById(`edit-l-${i}`).value || "Local "+i, v: document.getElementById(`edit-v-${i}`).value || "Visita "+i }); }
-        db.ref().update({ config: { jornada: jor, costo: document.getElementById('cfg-costo').value || 10 }, partidos: nuevos }).then(() => { alert("🚀 Nueva Jornada Lista"); location.reload(); });
+        db.ref().update({ config: { jornada: jor, costo: document.getElementById('cfg-costo').value || 10 }, partidos: nuevos }).then(() => { alert("🚀 Jornada Actualizada"); location.reload(); });
     }
 
     function calcularLeaderboard() {
@@ -177,7 +194,7 @@
         const div = document.getElementById('render-puntos');
         const resOfi = OFICIALES_HIST[jorSel] || {};
         let filtradas = JUGADAS_ALL.filter(j => j.jornada === jorSel);
-        if(!filtradas.length) return div.innerHTML = "<p style='text-align:center'>Vacío.</p>";
+        if(!filtradas.length) return div.innerHTML = "<p style='text-align:center'>Sin quinielas.</p>";
         let tabla = filtradas.map(j => {
             let pts = 0;
             PARTIDOS.forEach(p => { if(resOfi[p.id] && String(j.votos[p.id]) === String(resOfi[p.id])) pts++; });
@@ -207,7 +224,7 @@
 
     function guardarJugada() {
         const n = document.getElementById('nombreInput').value.trim();
-        if(!n || Object.keys(SEL_USER).length < 9) return alert("Incompleta");
+        if(!n || Object.keys(SEL_USER).length < 9) return alert("Faltan resultados");
         db.ref('jugadas').push({ nombre: n, votos: SEL_USER, pagado: false, jornada: CONFIG.jornada, timestamp: firebase.database.ServerValue.TIMESTAMP });
         document.getElementById('registro-area').style.display='none'; document.getElementById('ticket-final').style.display='block';
         let t = `👤 ${n.toUpperCase()}\n⚽ ${CONFIG.jornada}\n--------------------\n`; PARTIDOS.forEach(p => { t += `${p.l} vs ${p.v}: [${SEL_USER[p.id]}]\n`; });
