@@ -29,8 +29,8 @@
         .ganador-row { background: var(--oro) !important; color: var(--oro-txt) !important; font-weight: bold; }
         .admin-card { background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 15px; }
         input[type="text"], input[type="number"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; margin-bottom: 10px; }
-        .paginacion { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
         .finanzas-badge { background: white; padding: 10px; border-radius: 8px; border: 1px solid #ddd; text-align: center; flex: 1; margin: 0 5px; }
+        .status-box { background: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 10px; border: 1px solid #ffeeba; }
     </style>
 </head>
 <body>
@@ -56,6 +56,9 @@
     </div>
 
     <div id="jugador" class="content active">
+        <div id="area-cerrada" class="status-box" style="display:none;">
+            🚫 REGISTROS CERRADOS <br> <span style="font-size: 0.8em; font-weight: normal;">La jornada ha comenzado. ¡Suerte a todos!</span>
+        </div>
         <div id="registro-area">
             <input type="text" id="nombreInput" placeholder="Nombre completo">
             <div id="lista-jugador"></div>
@@ -81,10 +84,18 @@
             <div class="finanzas-badge">Pendiente: <br><strong id="fin-no" style="color:var(--rojo); font-size:1.2em;">$0</strong></div>
         </div>
 
+        <div class="admin-card" style="background: #fff3cd; border: 2px solid #ffeeba;">
+            <h4 style="margin:0 0 10px 0;">🔒 Estado de Registros</h4>
+            <label style="display:flex; align-items:center; cursor:pointer; font-weight:bold;">
+                <input type="checkbox" id="switch-cierre" onchange="toggleCierre(this.checked)" style="width:25px; height:25px; margin-right:10px;"> 
+                <span id="txt-cierre">ABIERTOS</span>
+            </label>
+        </div>
+
         <div class="admin-card">
             <h4>🚀 Nueva Jornada</h4>
             <input type="text" id="cfg-jornada" placeholder="JORNADA 11">
-            <input type="number" id="cfg-costo" placeholder="Costo por quiniela $">
+            <input type="number" id="cfg-costo" placeholder="Costo $">
             <div id="editor-equipos"></div>
             <button class="btn-main" style="background: var(--azul); padding:10px;" onclick="guardarNuevaJornada()">LANZAR JORNADA</button>
         </div>
@@ -99,9 +110,9 @@
             <h4>👥 Participantes (<span class="jor-act-txt"></span>)</h4>
             <input type="text" id="buscador" placeholder="🔍 Buscar..." oninput="cambiarPagina(0)">
             <div id="admin-participantes"></div>
-            <div class="paginacion">
+            <div style="display:flex; justify-content:space-between; margin-top:15px;">
                 <button onclick="cambiarPagina(-1)" class="btn-lev" style="padding:5px 10px;">« Ant</button>
-                <span id="page-info" style="font-weight:bold;">Pág 1</span>
+                <span id="page-info" style="font-weight:bold; font-size:0.8em;">Pág 1</span>
                 <button onclick="cambiarPagina(1)" class="btn-lev" style="padding:5px 10px;">Sig »</button>
             </div>
         </div>
@@ -115,11 +126,11 @@
     
     const J10_INIT = [{id:1,l:"Mazatlán",v:"León"},{id:2,l:"Necaxa",v:"Pumas"},{id:3,l:"Cruz Azul",v:"Atl. San Luis"},{id:4,l:"Querétaro",v:"América"},{id:5,l:"Pachuca",v:"Puebla"},{id:6,l:"Atlas",v:"Chivas"},{id:7,l:"Tigres",v:"Monterrey"},{id:8,l:"Toluca",v:"FC Juárez"},{id:9,l:"Tijuana",v:"Santos"}];
     
-    let JUGADAS_ALL = [], OFICIALES_HIST = {}, PARTIDOS = J10_INIT, CONFIG = {costo:10, jornada:"JORNADA 10"}, PAGINA = 0, SEL_ADMIN = {}, SEL_USER = {};
+    let JUGADAS_ALL = [], OFICIALES_HIST = {}, PARTIDOS = J10_INIT, CONFIG = {costo:10, jornada:"JORNADA 10", cerrada: false}, PAGINA = 0, SEL_ADMIN = {}, SEL_USER = {};
 
     db.ref().on('value', snap => {
         const d = snap.val() || {};
-        CONFIG = d.config || {costo:10, jornada:"JORNADA 10"};
+        CONFIG = d.config || {costo:10, jornada:"JORNADA 10", cerrada: false};
         PARTIDOS = d.partidos || J10_INIT;
         OFICIALES_HIST = d.oficial_historial || {};
         JUGADAS_ALL = d.jugadas ? Object.keys(d.jugadas).map(k => ({id: k, ...d.jugadas[k]})) : [];
@@ -127,6 +138,13 @@
         document.getElementById('display-jornada').innerText = CONFIG.jornada;
         document.querySelectorAll('.jor-act-txt').forEach(el => el.innerText = CONFIG.jornada);
         
+        // Manejo de Cierre
+        const estaCerrada = CONFIG.cerrada || false;
+        document.getElementById('switch-cierre').checked = estaCerrada;
+        document.getElementById('txt-cierre').innerText = estaCerrada ? "CERRADOS" : "ABIERTOS";
+        document.getElementById('area-cerrada').style.display = estaCerrada ? 'block' : 'none';
+        document.getElementById('registro-area').style.display = estaCerrada ? 'none' : 'block';
+
         const resAct = OFICIALES_HIST[CONFIG.jornada] || {};
         if(Object.keys(SEL_ADMIN).length === 0) SEL_ADMIN = JSON.parse(JSON.stringify(resAct));
 
@@ -137,6 +155,8 @@
         calcularLeaderboard();
         actualizarFinanzas();
     });
+
+    function toggleCierre(val) { db.ref('config').update({ cerrada: val }); }
 
     function renderPartidos() {
         const dj = document.getElementById('lista-jugador'), da = document.getElementById('lista-admin');
@@ -183,10 +203,10 @@
     
     function guardarNuevaJornada() {
         const jor = document.getElementById('cfg-jornada').value.toUpperCase();
-        if(!jor) return alert("Falta nombre de jornada");
+        if(!jor) return alert("Falta nombre");
         const nuevos = [];
         for(let i=1; i<=9; i++) { nuevos.push({ id: i, l: document.getElementById(`edit-l-${i}`).value || "Local "+i, v: document.getElementById(`edit-v-${i}`).value || "Visita "+i }); }
-        db.ref().update({ config: { jornada: jor, costo: document.getElementById('cfg-costo').value || 10 }, partidos: nuevos }).then(() => { alert("🚀 Jornada Actualizada"); location.reload(); });
+        db.ref().update({ config: { jornada: jor, costo: document.getElementById('cfg-costo').value || 10, cerrada: false }, partidos: nuevos }).then(() => { alert("🚀 Nueva Jornada Lista"); location.reload(); });
     }
 
     function calcularLeaderboard() {
@@ -194,7 +214,7 @@
         const div = document.getElementById('render-puntos');
         const resOfi = OFICIALES_HIST[jorSel] || {};
         let filtradas = JUGADAS_ALL.filter(j => j.jornada === jorSel);
-        if(!filtradas.length) return div.innerHTML = "<p style='text-align:center'>Sin quinielas.</p>";
+        if(!filtradas.length) return div.innerHTML = "<p style='text-align:center'>Vacío.</p>";
         let tabla = filtradas.map(j => {
             let pts = 0;
             PARTIDOS.forEach(p => { if(resOfi[p.id] && String(j.votos[p.id]) === String(resOfi[p.id])) pts++; });
@@ -224,7 +244,7 @@
 
     function guardarJugada() {
         const n = document.getElementById('nombreInput').value.trim();
-        if(!n || Object.keys(SEL_USER).length < 9) return alert("Faltan resultados");
+        if(!n || Object.keys(SEL_USER).length < 9) return alert("Incompleta");
         db.ref('jugadas').push({ nombre: n, votos: SEL_USER, pagado: false, jornada: CONFIG.jornada, timestamp: firebase.database.ServerValue.TIMESTAMP });
         document.getElementById('registro-area').style.display='none'; document.getElementById('ticket-final').style.display='block';
         let t = `👤 ${n.toUpperCase()}\n⚽ ${CONFIG.jornada}\n--------------------\n`; PARTIDOS.forEach(p => { t += `${p.l} vs ${p.v}: [${SEL_USER[p.id]}]\n`; });
