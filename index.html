@@ -72,6 +72,7 @@
     </div>
 
     <div id="posiciones" class="content">
+        <p style="font-size: 0.8em; color: #666; text-align: center; margin-bottom: 10px;">⚠️ Solo aparecen quinielas pagadas.</p>
         <div style="margin-bottom:10px; text-align:right;">
             <select id="filtro-tabla" onchange="calcularLeaderboard()" style="padding:5px; border-radius:5px;"></select>
         </div>
@@ -138,7 +139,6 @@
         document.getElementById('display-jornada').innerText = CONFIG.jornada;
         document.querySelectorAll('.jor-act-txt').forEach(el => el.innerText = CONFIG.jornada);
         
-        // Manejo de Cierre
         const estaCerrada = CONFIG.cerrada || false;
         document.getElementById('switch-cierre').checked = estaCerrada;
         document.getElementById('txt-cierre').innerText = estaCerrada ? "CERRADOS" : "ABIERTOS";
@@ -174,7 +174,7 @@
         let filtrados = JUGADAS_ALL.filter(j => j.jornada === CONFIG.jornada && j.nombre.toLowerCase().includes(bus));
         document.getElementById('page-info').innerText = `Pág ${PAGINA+1} de ${Math.ceil(filtrados.length/10)||1}`;
         filtrados.slice(PAGINA*10, (PAGINA*10)+10).forEach(j => {
-            div.innerHTML += `<div class="partido-card"><span>${j.nombre}</span><div><button onclick="db.ref('jugadas/${j.id}').update({pagado:${!j.pagado}})">${j.pagado?'$':'X'}</button><button onclick="verDetalle('${j.id}')">👁️</button></div></div>`;
+            div.innerHTML += `<div class="partido-card"><span>${j.nombre}</span><div><button style="background:${j.pagado? 'var(--verde)':'#ccc'}; color:white; border:none; border-radius:4px; padding:5px 10px;" onclick="db.ref('jugadas/${j.id}').update({pagado:${!j.pagado}})">${j.pagado?'$':'X'}</button><button onclick="verDetalle('${j.id}')">👁️</button></div></div>`;
         });
     }
 
@@ -213,13 +213,18 @@
         const jorSel = document.getElementById('filtro-tabla').value || CONFIG.jornada;
         const div = document.getElementById('render-puntos');
         const resOfi = OFICIALES_HIST[jorSel] || {};
-        let filtradas = JUGADAS_ALL.filter(j => j.jornada === jorSel);
-        if(!filtradas.length) return div.innerHTML = "<p style='text-align:center'>Vacío.</p>";
+        
+        // FILTRO CLAVE: Solo jugadores con pagado: true
+        let filtradas = JUGADAS_ALL.filter(j => j.jornada === jorSel && j.pagado === true);
+        
+        if(!filtradas.length) return div.innerHTML = "<p style='text-align:center; color:#999;'>No hay quinielas pagadas aún.</p>";
+        
         let tabla = filtradas.map(j => {
             let pts = 0;
             PARTIDOS.forEach(p => { if(resOfi[p.id] && String(j.votos[p.id]) === String(resOfi[p.id])) pts++; });
             return { n: j.nombre, p: pts, t: j.timestamp || 0 };
         }).sort((a,b) => b.p - a.p || a.t - b.t);
+        
         let h = '<table><tr><th>Pos</th><th>Nombre</th><th>Pts</th></tr>';
         tabla.forEach((it, i) => {
             const win = (tabla[0].p > 0 && it.p === tabla[0].p && i === 0);
