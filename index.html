@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QUINIELAS REGIAS - YEMI PRO</title>
+    <title>QUINIELAS REGIAS - SEMIFINALES</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
@@ -18,7 +18,7 @@
         .content { padding: 15px; display: none; }
         .content.active { display: block; }
         .partido-card { background: #fff; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 12px; padding: 12px; }
-        .serie-header { font-size: 0.7em; font-weight: bold; color: #777; margin-bottom: 5px; display: flex; justify-content: space-between; }
+        .serie-header { font-size: 0.7em; font-weight: bold; color: #777; margin-bottom: 5px; display: flex; justify-content: space-between; text-transform: uppercase; }
         .partido-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
         .equipo { font-weight: 700; width: 30%; font-size: 0.85em; text-align: center; color: #333; }
         .lev-container { display: flex; gap: 4px; width: 40%; }
@@ -88,14 +88,19 @@
                 <option value="NORMAL">Jornada Regular (9 juegos)</option>
                 <option value="LIGUILLA">Liguilla (IDA/VUELTA + Avanza)</option>
             </select>
-            <label>Estado:</label>
-            <button id="btn-toggle-cierre" onclick="toggleCierre()" style="width:100%; padding:10px; margin-bottom:10px; font-weight:bold;"></button>
+            <button id="btn-toggle-cierre" onclick="toggleCierre()" style="width:100%; padding:10px; margin-bottom:10px; font-weight:bold; border:none; border-radius:8px;"></button>
         </div>
 
         <div class="admin-card">
             <h4>🚀 Lanzar Nueva Etapa</h4>
             <input type="text" id="new-jornada" placeholder="Ej: SEMIFINALES">
             <input type="number" id="new-costo" placeholder="Costo $">
+            <label id="label-num-series" style="display:none;">Número de Series (Llaves):</label>
+            <select id="num-series" style="display:none;" onchange="renderEditor()">
+                <option value="4">Cuartos (4 Series)</option>
+                <option value="2" selected>Semis (2 Series)</option>
+                <option value="1">Final (1 Serie)</option>
+            </select>
             <div id="editor-dinamico"></div>
             <button class="btn-main" style="background: var(--azul)" onclick="lanzarEtapa()">PUBLICAR ETAPA</button>
         </div>
@@ -107,7 +112,7 @@
         </div>
 
         <div class="admin-card">
-            <h4>👥 Pagos y Participantes</h4>
+            <h4>👥 Pagos</h4>
             <input type="text" id="buscador" placeholder="🔍 Buscar..." oninput="renderAdminParticipantes()">
             <div id="admin-participantes"></div>
         </div>
@@ -132,6 +137,10 @@
         document.getElementById('display-jornada').innerText = conf.jornada;
         document.getElementById('cfg-modo').value = conf.modo;
         
+        const isLiguilla = conf.modo === 'LIGUILLA';
+        document.getElementById('num-series').style.display = isLiguilla ? 'block' : 'none';
+        document.getElementById('label-num-series').style.display = isLiguilla ? 'block' : 'none';
+
         const btnC = document.getElementById('btn-toggle-cierre');
         btnC.innerText = conf.cerrada ? "🔓 ABRIR REGISTROS" : "🔒 CERRAR REGISTROS";
         btnC.style.background = conf.cerrada ? "#28a745" : "#dc3545";
@@ -180,10 +189,13 @@
     }
 
     function renderEditor() {
-        const div = document.getElementById('editor-dinamico'); if(div.innerHTML !== "") return;
-        const num = DATA.config.modo === 'LIGUILLA' ? 8 : 9;
+        const div = document.getElementById('editor-dinamico');
+        div.innerHTML = "";
+        const modo = document.getElementById('cfg-modo').value;
+        const num = modo === 'LIGUILLA' ? parseInt(document.getElementById('num-series').value) * 2 : 9;
+        
         for(let i=1; i<=num; i++) {
-            const label = DATA.config.modo === 'LIGUILLA' ? (i%2!==0?`Serie ${(i+1)/2} Ida`:`Serie ${i/2} Vuelta`) : `Partido ${i}`;
+            const label = modo === 'LIGUILLA' ? (i%2!==0?`Serie ${(i+1)/2} Ida`:`Serie ${i/2} Vuelta`) : `Partido ${i}`;
             div.innerHTML += `<div style="margin-bottom:8px;"><small>${label}</small><div style="display:flex;gap:4px;"><input type="text" id="edit-l-${i}" placeholder="Local"><input type="text" id="edit-v-${i}" placeholder="Visita"></div></div>`;
         }
     }
@@ -191,7 +203,7 @@
     function lanzarEtapa() {
         const jor = document.getElementById('new-jornada').value.toUpperCase();
         const modo = DATA.config.modo;
-        const num = modo === 'LIGUILLA' ? 8 : 9;
+        const num = modo === 'LIGUILLA' ? parseInt(document.getElementById('num-series').value) * 2 : 9;
         const partidos = [];
         for(let i=1; i<=num; i++){
             partidos.push({
@@ -217,12 +229,10 @@
         
         let tabla = jugadas.map(j => {
             let pts = 0;
-            // Puntos LEV
-            DATA.partidos.forEach(p => { if(resOfi[p.id] && String(j.votos[p.id]) === String(resOfi[p.id])) pts++; });
-            // Puntos Avanza (Extra)
-            if(DATA.config.modo === 'LIGUILLA') {
-                [1,2,3,4].forEach(s => { if(resOfi['avanza_'+s] && j.votos['avanza_'+s] === resOfi['avanza_'+s]) pts++; });
-            }
+            DATA.partidos.forEach(p => { 
+                if(resOfi[p.id] && String(j.votos[p.id]) === String(resOfi[p.id])) pts++; 
+                if(p.tipo === 'VUELTA' && resOfi['avanza_'+p.serie] && j.votos['avanza_'+p.serie] === resOfi['avanza_'+p.serie]) pts++;
+            });
             return { n: j.nombre, p: pts, t: j.timestamp };
         }).sort((a,b) => b.p - a.p || a.t - b.t);
 
@@ -233,7 +243,10 @@
 
     function guardarJugada() {
         const n = document.getElementById('nombreInput').value.trim();
-        const numReq = DATA.config.modo === 'LIGUILLA' ? 12 : 9; // 8 juegos + 4 avanza
+        const esLiguilla = DATA.config.modo === 'LIGUILLA';
+        const numSeries = esLiguilla ? DATA.partidos.length / 2 : 0;
+        const numReq = esLiguilla ? (DATA.partidos.length + numSeries) : 9;
+        
         if(!n || Object.keys(SEL_USER).length < numReq) return alert("Completa todos los pronósticos");
         
         db.ref('jugadas').push({ nombre: n, votos: SEL_USER, pagado: false, jornada: DATA.config.jornada, timestamp: firebase.database.ServerValue.TIMESTAMP });
@@ -248,7 +261,6 @@
         document.getElementById('mensaje-texto').innerText = t;
     }
 
-    // Funciones Helper
     function setS(id, v) { SEL_USER[id] = v; renderListaPartidos(); }
     function setO(id, v) { SEL_ADMIN[id] = v; renderListaPartidos(); }
     function toggleCierre() { db.ref('config').update({ cerrada: !DATA.config.cerrada }); }
@@ -268,11 +280,9 @@
         Object.keys(DATA.jugadas || {}).forEach(id => {
             const j = DATA.jugadas[id];
             if(j.jornada === DATA.config.jornada && j.nombre.toLowerCase().includes(bus)){
-                div.innerHTML += `<div class="partido-card" style="display:flex; justify-content:space-between; align-items:center;">
+                div.innerHTML += `<div class="partido-card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
                     <span>${j.nombre}</span>
-                    <div>
-                        <button style="background:${j.pagado?'var(--verde)':'#ccc'}; color:white; border:none; padding:5px 10px; border-radius:4px;" onclick="db.ref('jugadas/${id}').update({pagado:${!j.pagado}})">${j.pagado?'$':'X'}</button>
-                    </div>
+                    <button style="background:${j.pagado?'var(--verde)':'#ccc'}; color:white; border:none; padding:5px 10px; border-radius:4px;" onclick="db.ref('jugadas/${id}').update({pagado:${!j.pagado}})">${j.pagado?'$':'X'}</button>
                 </div>`;
             }
         });
@@ -283,6 +293,17 @@
             spans[1].style.cursor = "pointer";
             spans[1].onclick = () => { if(prompt("PIN:")==="1234") document.getElementById('btn-admin').style.display='block'; };
         }
+    }
+    function verDetalle(id) {
+        const j = DATA.jugadas[id];
+        document.getElementById('modal-nombre').innerText = j.nombre;
+        let h = '<table style="width:100%">';
+        DATA.partidos.forEach(p => { 
+            h += `<tr><td><small>${p.tipo}</small><br>${p.l} vs ${p.v}</td><td style="font-weight:bold; color:var(--verde); text-align:right;">[${j.votos[p.id] || '-'}]</td></tr>`; 
+            if(p.tipo === 'VUELTA') h += `<tr style="background:#f0f7f4;"><td colspan="2"><small>AVANZA:</small> <b>${j.votos['avanza_'+p.serie] || '-'}</b></td></tr>`;
+        });
+        document.getElementById('modal-detalle').innerHTML = h + '</table>';
+        document.getElementById('modal-ver').style.display = 'block';
     }
     window.onload = activarAdmin;
 </script>
