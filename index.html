@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QUINIELAS REGIAS - RESET FIX REAL</title>
+    <title>QUINIELAS REGIAS - RESET TOTAL</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
@@ -95,17 +95,17 @@
         </div>
 
         <div class="admin-card">
-            <h4>⚽ Marcadores Oficiales</h4>
+            <h4>⚽ Configuración de Partidos y Marcadores</h4>
             <div id="lista-admin"></div>
             <div style="display:flex; gap:10px;">
-                <button class="btn-main" style="background: var(--verde); flex:2;" onclick="publicarResultados()">GUARDAR</button>
-                <button class="btn-main" style="background: var(--rojo); flex:1;" onclick="resetResultadosAdmin()">RESET</button>
+                <button class="btn-main" style="background: var(--verde); flex:2;" onclick="publicarResultados()">GUARDAR RESULTADOS</button>
+                <button class="btn-main" style="background: var(--rojo); flex:1;" onclick="resetResultadosAdmin()">ELIMINAR PARTIDOS</button>
             </div>
         </div>
 
         <div class="admin-card">
-            <h4>🚀 Lanzar Nueva Etapa</h4>
-            <input type="text" id="new-jornada" placeholder="Ej: SEMIFINALES">
+            <h4>🚀 Lanzar Nueva Etapa / Corregir</h4>
+            <input type="text" id="new-jornada" placeholder="Ej: FINAL">
             <input type="number" id="new-costo" placeholder="Costo $">
             <label>¿Cuántas llaves o series vas a capturar?</label>
             <select id="num-series" onchange="renderEditor()">
@@ -140,7 +140,6 @@
         if(!DATA.jugadas) DATA.jugadas = {};
         if(!DATA.oficial_historial) DATA.oficial_historial = {};
 
-        // Sincronizar marcadores oficiales de Firebase a la variable local solo si cambió la jornada
         const conf = DATA.config;
         if (conf.jornada !== JORNADA_ANTERIOR) {
             SEL_ADMIN = JSON.parse(JSON.stringify(DATA.oficial_historial[conf.jornada] || {}));
@@ -296,14 +295,21 @@
         document.getElementById('render-puntos').innerHTML = h + '</table>';
     }
 
-    // FIX DEFINITIVO DEL RESET: Limpia base de datos, memoria RAM local y fuerza recarga de interfaz
+    // 🌟 CORRECCIÓN MAESTRA: Ahora elimina completamente los partidos cargados del sistema
     function resetResultadosAdmin() {
-        if(confirm("¿Seguro que quieres borrar todos los marcadores oficiales de la etapa actual?")) {
-            SEL_ADMIN = {}; // Forzar vaciado en memoria inmediata
-            db.ref('oficial_historial/' + DATA.config.jornada).remove().then(() => {
-                alert("Resultados Oficiales Eliminados. Todo limpio para volver a capturar.");
-                location.reload(); // Forzar el repintado en limpio
-            }).catch(err => alert("Error: " + err));
+        if(confirm("🚨 ¡ATENCIÓN! Esto borrará por completo los partidos cargados actuales y sus resultados para que puedas capturar todo desde cero. ¿Deseas continuar?")) {
+            SEL_ADMIN = {};
+            SEL_USER = {};
+            
+            // Borrado masivo de los nodos de la etapa actual
+            const actualizaciones = {};
+            actualizaciones['partidos'] = null; // Elimina las tarjetas de la pantalla pública
+            actualizaciones['oficial_historial/' + DATA.config.jornada] = null; // Elimina resultados viejos
+            
+            db.ref().update(actualizaciones).then(() => {
+                alert("🧼 Sistema limpio. Los partidos anteriores han sido eliminados por completo.");
+                location.reload();
+            }).catch(err => alert("Error al limpiar base de datos: " + err));
         }
     }
 
