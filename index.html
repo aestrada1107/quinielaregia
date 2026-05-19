@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QUINIELAS REGIAS - FIX TOTAL</title>
+    <title>QUINIELAS REGIAS - RESET FIX</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
@@ -105,7 +105,7 @@
 
         <div class="admin-card">
             <h4>🚀 Lanzar Nueva Etapa</h4>
-            <input type="text" id="new-jornada" placeholder="Ej: FINAL">
+            <input type="text" id="new-jornada" placeholder="Ej: SEMIFINALES">
             <input type="number" id="new-costo" placeholder="Costo $">
             <label>¿Cuántas llaves o series vas a capturar?</label>
             <select id="num-series" onchange="renderEditor()">
@@ -135,7 +135,6 @@
     db.ref().on('value', snap => {
         DATA = snap.val() || { config: { modo: 'NORMAL', cerrada: false, jornada: '---' }, partidos: [] };
         
-        // Evitar que la lista de partidos venga como nula o vacía de forma incorrecta
         if(!DATA.partidos) DATA.partidos = [];
         if(!DATA.jugadas) DATA.jugadas = {};
         if(!DATA.oficial_historial) DATA.oficial_historial = {};
@@ -223,7 +222,6 @@
             });
         }
         
-        // Limpiamos selecciones anteriores
         SEL_USER = {};
         SEL_ADMIN = {};
         
@@ -242,10 +240,9 @@
         const n = document.getElementById('nombreInput').value.trim();
         if(!n) return alert("Escribe tu nombre completo");
         
-        // CONTADOR DINÁMICO DE RESPUESTAS REQUERIDAS
         let respuestasRequeridas = DATA.partidos.length;
         if(DATA.config.modo === 'LIGUILLA') {
-            respuestasRequeridas += (DATA.partidos.length / 2); // Suma un botón "Avanza" por cada serie de Ida/Vuelta
+            respuestasRequeridas += (DATA.partidos.length / 2);
         }
 
         if(Object.keys(SEL_USER).length < respuestasRequeridas) {
@@ -278,7 +275,6 @@
         
         let tabla = jugadas.map(j => {
             let pts = 0;
-            // Evaluamos dinámicamente según los partidos guardados de ESA jornada
             DATA.partidos.forEach(p => { 
                 if(resOfi[p.id] && String(j.votos[p.id]) === String(resOfi[p.id])) pts++; 
                 if(p.tipo === 'VUELTA' && resOfi['avanza_'+p.serie] && j.votos['avanza_'+p.serie] === resOfi['avanza_'+p.serie]) pts++;
@@ -293,6 +289,17 @@
             tabla.forEach((it, i) => { h += `<tr class="${i===0 && it.p>0?'ganador-row':''}"><td>${i+1}</td><td>${it.n}</td><td><strong>${it.p}</strong></td></tr>`; });
         }
         document.getElementById('render-puntos').innerHTML = h + '</table>';
+    }
+
+    // FIX ATÓMICO: Limpia la variable local además del nodo en Firebase para refresco inmediato
+    function resetResultadosAdmin() {
+        if(confirm("¿Seguro que quieres borrar todos los marcadores oficiales de esta etapa?")) {
+            SEL_ADMIN = {}; // Limpieza local inmediata
+            db.ref('oficial_historial/' + DATA.config.jornada).remove().then(() => {
+                alert("Marcadores borrados correctamente.");
+                location.reload();
+            });
+        }
     }
 
     function renderAdminParticipantes() {
@@ -329,7 +336,6 @@
 
     function setS(id, v) { SEL_USER[id] = v; renderListaPartidos(); }
     function setO(id, v) { SEL_ADMIN[id] = v; renderListaPartidos(); }
-    function resetResultadosAdmin() { if(confirm("¿Seguro que quieres borrar los marcadores oficiales?")) db.ref('oficial_historial/' + DATA.config.jornada).remove().then(() => location.reload()); }
     function toggleCierre() { db.ref('config').update({ cerrada: !DATA.config.cerrada }); }
     function actualizarModo(v) { db.ref('config').update({ modo: v }).then(()=>location.reload()); }
     function publicarResultados() { db.ref('oficial_historial/'+DATA.config.jornada).set(SEL_ADMIN).then(()=>alert("Resultados Guardados Oficialmente")); }
