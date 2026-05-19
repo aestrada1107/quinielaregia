@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QUINIELAS REGIAS - FIX AVANZA</title>
+    <title>QUINIELAS REGIAS - FIX TOTAL</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
@@ -22,11 +22,11 @@
         .partido-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
         .equipo { font-weight: 700; width: 30%; font-size: 0.85em; text-align: center; color: #333; }
         .lev-container { display: flex; gap: 4px; width: 40%; }
-        .btn-lev { border: 1px solid #ccc; background: #fdfdfd; padding: 10px 0; border-radius: 6px; font-weight: 900; flex: 1; color: #666; cursor: pointer; font-size: 0.8em; }
+        .btn-lev { border: 1px solid #ccc; background: #fdfdfd; padding: 10px 0; border-radius: 8px; font-weight: 900; flex: 1; color: #666; cursor: pointer; font-size: 0.8em; }
         .btn-lev.selected { background: var(--verde); color: white; border-color: var(--verde); }
         .btn-lev.real { background: var(--rojo); color: white; border-color: var(--rojo); }
         .avanza-box { background: #f0f7f4; border-radius: 8px; padding: 8px; margin-top: 5px; border: 1px dashed var(--verde); display: flex; align-items: center; justify-content: space-around; }
-        .btn-avanza { padding: 8px 12px; border-radius: 20px; border: 1px solid #ccc; font-size: 0.75em; cursor: pointer; font-weight: bold; background: white; }
+        .btn-avanza { padding: 8px 12px; border-radius: 20px; border: 1px solid #ccc; font-size: 0.75em; cursor: pointer; font-weight: bold; background: white; color: #333; }
         .btn-avanza.selected { background: var(--azul); color: white; border-color: var(--azul); }
         .btn-main { width: 100%; padding: 18px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
@@ -39,6 +39,7 @@
 </head>
 <body>
 
+<!-- MODAL VER DETALLE -->
 <div id="modal-ver" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; overflow-y:auto; color: #333; padding: 20px;">
     <div style="background:white; margin:10% auto; padding:20px; width:90%; border-radius:12px; max-width:400px;">
         <h3 id="modal-nombre" style="text-align:center; color:var(--verde);"></h3>
@@ -104,19 +105,20 @@
 
         <div class="admin-card">
             <h4>🚀 Lanzar Nueva Etapa</h4>
-            <input type="text" id="new-jornada" placeholder="NOMBRE ETAPA">
+            <input type="text" id="new-jornada" placeholder="Ej: FINAL">
             <input type="number" id="new-costo" placeholder="Costo $">
+            <label>¿Cuántas llaves o series vas a capturar?</label>
             <select id="num-series" onchange="renderEditor()">
-                <option value="4">Cuartos (4 Series)</option>
-                <option value="2">Semis (2 Series)</option>
-                <option value="1">Final (1 Serie)</option>
+                <option value="4">Cuartos (4 Series / 8 Juegos)</option>
+                <option value="2">Semis (2 Series / 4 Juegos)</option>
+                <option value="1">Final (1 Serie / 2 Juegos)</option>
             </select>
             <div id="editor-dinamico"></div>
-            <button class="btn-main" style="background: var(--azul)" onclick="lanzarEtapa()">PUBLICAR</button>
+            <button class="btn-main" style="background: var(--azul)" onclick="lanzarEtapa()">PUBLICAR ETAPA</button>
         </div>
 
         <div class="admin-card">
-            <h4>👥 Participantes</h4>
+            <h4>👥 Participantes de esta Etapa</h4>
             <div id="admin-participantes"></div>
         </div>
     </div>
@@ -132,6 +134,12 @@
 
     db.ref().on('value', snap => {
         DATA = snap.val() || { config: { modo: 'NORMAL', cerrada: false, jornada: '---' }, partidos: [] };
+        
+        // Evitar que la lista de partidos venga como nula o vacía de forma incorrecta
+        if(!DATA.partidos) DATA.partidos = [];
+        if(!DATA.jugadas) DATA.jugadas = {};
+        if(!DATA.oficial_historial) DATA.oficial_historial = {};
+
         actualizarUI();
     });
 
@@ -152,7 +160,6 @@
         document.getElementById('registro-area').style.display = conf.cerrada ? 'none' : 'block';
 
         renderListaPartidos();
-        renderEditor();
         renderAdminParticipantes();
         actualizarSelectJornadas();
         calcularLeaderboard();
@@ -161,8 +168,7 @@
     function renderListaPartidos() {
         const dj = document.getElementById('lista-jugador'), da = document.getElementById('lista-admin');
         dj.innerHTML = ''; da.innerHTML = '';
-        if(!DATA.partidos) return;
-
+        
         DATA.partidos.forEach(p => {
             const esLiguilla = DATA.config.modo === 'LIGUILLA';
             const html = (sel, cb, isReal) => `
@@ -177,7 +183,7 @@
                     </div>
                     ${esLiguilla && p.tipo === 'VUELTA' ? `
                         <div class="avanza-box">
-                            <span style="font-size:0.7em; font-weight:bold;">AVANZA:</span>
+                            <span style="font-size:0.7em; font-weight:bold; color:#005cbf;">🏆 CAMPEÓN / AVANZA:</span>
                             <button class="btn-avanza ${sel['avanza_'+p.serie]===p.l?'selected':''}" onclick="${cb}('avanza_${p.serie}', '${p.l}')">${p.l}</button>
                             <button class="btn-avanza ${sel['avanza_'+p.serie]===p.v?'selected':''}" onclick="${cb}('avanza_${p.serie}', '${p.v}')">${p.v}</button>
                         </div>
@@ -190,114 +196,170 @@
 
     function renderEditor() {
         const div = document.getElementById('editor-dinamico');
-        if(div.innerHTML !== "") return;
+        div.innerHTML = "";
         const modo = document.getElementById('cfg-modo').value;
         const num = modo === 'LIGUILLA' ? parseInt(document.getElementById('num-series').value) * 2 : 9;
+        
         for(let i=1; i<=num; i++) {
-            const label = modo === 'LIGUILLA' ? (i%2!==0?`S${Math.ceil(i/2)} IDA`:`S${Math.ceil(i/2)} VUELTA`) : `P${i}`;
-            div.innerHTML += `<div style="margin-bottom:5px;"><small>${label}</small><div style="display:flex;gap:4px;"><input type="text" id="edit-l-${i}" placeholder="L"><input type="text" id="edit-v-${i}" placeholder="V"></div></div>`;
+            const label = modo === 'LIGUILLA' ? (i%2!==0?`SERIE ${Math.ceil(i/2)} IDA`:`SERIE ${Math.ceil(i/2)} VUELTA`) : `PARTIDO ${i}`;
+            div.innerHTML += `<div style="margin-bottom:5px;"><small style="font-weight:bold; color:var(--azul);">${label}</small><div style="display:flex;gap:4px;"><input type="text" id="edit-l-${i}" placeholder="Local"><input type="text" id="edit-v-${i}" placeholder="Visita"></div></div>`;
         }
     }
 
     function lanzarEtapa() {
-        const jor = document.getElementById('new-jornada').value.toUpperCase();
-        if(!jor) return alert("Nombre requerido");
+        const jor = document.getElementById('new-jornada').value.toUpperCase().trim();
+        if(!jor) return alert("Ponle nombre a la etapa");
         const modo = DATA.config.modo;
         const num = modo === 'LIGUILLA' ? parseInt(document.getElementById('num-series').value) * 2 : 9;
         const partidos = [];
+        
         for(let i=1; i<=num; i++){
-            partidos.push({ id: i, l: document.getElementById(`edit-l-${i}`).value || 'TBD', v: document.getElementById(`edit-v-${i}`).value || 'TBD', tipo: modo === 'LIGUILLA' ? (i%2!==0?'IDA':'VUELTA') : 'NORMAL', serie: modo === 'LIGUILLA' ? Math.ceil(i/2) : null });
+            partidos.push({ 
+                id: i, 
+                l: document.getElementById(`edit-l-${i}`).value.trim() || 'Por definir', 
+                v: document.getElementById(`edit-v-${i}`).value.trim() || 'Por definir', 
+                tipo: modo === 'LIGUILLA' ? (i%2!==0?'IDA':'VUELTA') : 'NORMAL', 
+                serie: modo === 'LIGUILLA' ? Math.ceil(i/2) : null 
+            });
         }
-        db.ref().update({ 'config/jornada': jor, 'config/costo': document.getElementById('new-costo').value || 10, 'config/cerrada': false, 'partidos': partidos }).then(()=>location.reload());
+        
+        // Limpiamos selecciones anteriores
+        SEL_USER = {};
+        SEL_ADMIN = {};
+        
+        db.ref().update({ 
+            'config/jornada': jor, 
+            'config/costo': document.getElementById('new-costo').value || 10, 
+            'config/cerrada': false, 
+            'partidos': partidos 
+        }).then(() => {
+            alert("🚀 Etapa lanzada con éxito.");
+            location.reload();
+        });
+    }
+
+    function guardarJugada() {
+        const n = document.getElementById('nombreInput').value.trim();
+        if(!n) return alert("Escribe tu nombre completo");
+        
+        // CONTADOR DINÁMICO DE RESPUESTAS REQUERIDAS
+        let respuestasRequeridas = DATA.partidos.length;
+        if(DATA.config.modo === 'LIGUILLA') {
+            respuestasRequeridas += (DATA.partidos.length / 2); // Suma un botón "Avanza" por cada serie de Ida/Vuelta
+        }
+
+        if(Object.keys(SEL_USER).length < respuestasRequeridas) {
+            return alert("Faltan pronósticos por llenar. Revisa que hayas elegido LEV de cada juego y quién avanza.");
+        }
+
+        db.ref('jugadas').push({ 
+            nombre: n, 
+            votos: SEL_USER, 
+            pagado: false, 
+            jornada: DATA.config.jornada, 
+            timestamp: firebase.database.ServerValue.TIMESTAMP 
+        });
+        
+        document.getElementById('registro-area').style.display='none'; 
+        document.getElementById('ticket-final').style.display='block';
+        
+        let t = `👤 ${n.toUpperCase()}\n⚽ ${DATA.config.jornada}\n--------------------\n`;
+        DATA.partidos.forEach(p => {
+            t += `${p.tipo==='NORMAL'?'':p.tipo+': '}${p.l} vs ${p.v} [${SEL_USER[p.id] || '-'}]\n`;
+            if(p.tipo === 'VUELTA') t += `>> AVANZA/CAMPEÓN: ${SEL_USER['avanza_'+p.serie] || '-'}\n`;
+        });
+        document.getElementById('mensaje-texto').innerText = t;
     }
 
     function calcularLeaderboard() {
         const jorSel = document.getElementById('filtro-tabla').value || DATA.config.jornada;
         const resOfi = DATA.oficial_historial[jorSel] || {};
         const jugadas = Object.values(DATA.jugadas || {}).filter(j => j.jornada === jorSel && j.pagado);
+        
         let tabla = jugadas.map(j => {
             let pts = 0;
-            if(DATA.partidos) {
-                DATA.partidos.forEach(p => { 
-                    if(resOfi[p.id] && String(j.votos[p.id]) === String(resOfi[p.id])) pts++; 
-                    if(p.tipo === 'VUELTA' && resOfi['avanza_'+p.serie] && j.votos['avanza_'+p.serie] === resOfi['avanza_'+p.serie]) pts++;
-                });
-            }
+            // Evaluamos dinámicamente según los partidos guardados de ESA jornada
+            DATA.partidos.forEach(p => { 
+                if(resOfi[p.id] && String(j.votos[p.id]) === String(resOfi[p.id])) pts++; 
+                if(p.tipo === 'VUELTA' && resOfi['avanza_'+p.serie] && j.votos['avanza_'+p.serie] === resOfi['avanza_'+p.serie]) pts++;
+            });
             return { n: j.nombre, p: pts, t: j.timestamp };
         }).sort((a,b) => b.p - a.p || a.t - b.t);
+        
         let h = '<table><tr><th>#</th><th>Nombre</th><th>Pts</th></tr>';
-        tabla.forEach((it, i) => { h += `<tr class="${i===0 && it.p>0?'ganador-row':''}"><td>${i+1}</td><td>${it.n}</td><td><strong>${it.p}</strong></td></tr>`; });
+        if(tabla.length === 0) {
+            h += `<tr><td colspan="3" style="text-align:center; color:gray;">Sin quinielas pagadas en esta etapa.</td></tr>`;
+        } else {
+            tabla.forEach((it, i) => { h += `<tr class="${i===0 && it.p>0?'ganador-row':''}"><td>${i+1}</td><td>${it.n}</td><td><strong>${it.p}</strong></td></tr>`; });
+        }
         document.getElementById('render-puntos').innerHTML = h + '</table>';
     }
 
-    function guardarJugada() {
-        const n = document.getElementById('nombreInput').value.trim();
-        if(!n) return alert("Escribe tu nombre");
-        const esLiguilla = DATA.config.modo === 'LIGUILLA';
-        const numReq = esLiguilla ? (DATA.partidos.length + (DATA.partidos.length/2)) : 9;
-        if(Object.keys(SEL_USER).length < numReq) return alert("Faltan pronósticos por llenar");
-
-        db.ref('jugadas').push({ nombre: n, votos: SEL_USER, pagado: false, jornada: DATA.config.jornada, timestamp: firebase.database.ServerValue.TIMESTAMP });
-        document.getElementById('registro-area').style.display='none'; document.getElementById('ticket-final').style.display='block';
+    function renderAdminParticipantes() {
+        const div = document.getElementById('admin-participantes'); div.innerHTML = '';
+        const actuales = Object.keys(DATA.jugadas || {}).filter(id => DATA.jugadas[id].jornada === DATA.config.jornada);
         
-        let t = `👤 ${n.toUpperCase()}\n⚽ ${DATA.config.jornada}\n--------------------\n`;
-        DATA.partidos.forEach(p => {
-            t += `${p.tipo==='NORMAL'?'':p.tipo+': '}${p.l} vs ${p.v} [${SEL_USER[p.id] || '-'}]\n`;
-            if(p.tipo === 'VUELTA') t += `>> AVANZA: ${SEL_USER['avanza_'+p.serie] || '-'}\n`;
+        if(actuales.length === 0) {
+            return div.innerHTML = "<p style='font-size:0.85em; color:gray; text-align:center;'>Nadie registrado en esta etapa todavía.</p>";
+        }
+
+        actuales.forEach(id => {
+            const j = DATA.jugadas[id];
+            div.innerHTML += `<div class="partido-card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                <span style="font-size:0.9em; font-weight:bold;">${j.nombre}</span>
+                <div style="display:flex; gap:5px;">
+                    <button style="background:${j.pagado?'var(--verde)':'#ccc'}; color:white; border:none; padding:8px 12px; border-radius:6px; font-weight:bold;" onclick="db.ref('jugadas/${id}').update({pagado:${!j.pagado}})">${j.pagado?'$':'X'}</button>
+                    <button style="background:#333; color:white; border:none; padding:8px 12px; border-radius:6px;" onclick="verDetalle('${id}')">👁️</button>
+                </div>
+            </div>`;
         });
-        document.getElementById('mensaje-texto').innerText = t;
+    }
+
+    function verDetalle(id) {
+        const j = DATA.jugadas[id];
+        document.getElementById('modal-nombre').innerText = j.nombre;
+        let h = '<table style="width:100%">';
+        DATA.partidos.forEach(p => { 
+            h += `<tr><td><small style="color:gray;">${p.tipo}</small><br>${p.l} vs ${p.v}</td><td style="text-align:right; font-weight:bold;">[${j.votos[p.id] || '-'}]</td></tr>`; 
+            if(p.tipo === 'VUELTA') h += `<tr style="background:#e3f2fd;"><td colspan="2" style="font-size:0.8em; font-weight:bold; color:var(--azul);">ELEGIDO PARA AVANZAR: ${j.votos['avanza_'+p.serie] || '-'}</td></tr>`;
+        });
+        document.getElementById('modal-detalle').innerHTML = h + '</table>';
+        document.getElementById('modal-ver').style.display = 'block';
     }
 
     function setS(id, v) { SEL_USER[id] = v; renderListaPartidos(); }
     function setO(id, v) { SEL_ADMIN[id] = v; renderListaPartidos(); }
-    function resetResultadosAdmin() { if(confirm("¿Borrar?")) db.ref('oficial_historial/' + DATA.config.jornada).remove().then(() => location.reload()); }
+    function resetResultadosAdmin() { if(confirm("¿Seguro que quieres borrar los marcadores oficiales?")) db.ref('oficial_historial/' + DATA.config.jornada).remove().then(() => location.reload()); }
     function toggleCierre() { db.ref('config').update({ cerrada: !DATA.config.cerrada }); }
-    function publicarResultados() { db.ref('oficial_historial/'+DATA.config.jornada).set(SEL_ADMIN).then(()=>alert("Guardado")); }
+    function actualizarModo(v) { db.ref('config').update({ modo: v }).then(()=>location.reload()); }
+    function publicarResultados() { db.ref('oficial_historial/'+DATA.config.jornada).set(SEL_ADMIN).then(()=>alert("Resultados Guardados Oficialmente")); }
     function showTab(t) { document.querySelectorAll('.content').forEach(c=>c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); event.currentTarget.classList.add('active'); }
-    function copiarAlPortapapeles() { navigator.clipboard.writeText(document.getElementById('mensaje-texto').innerText).then(()=>alert("Copiado ✅")); }
+    function copiarAlPortapapeles() { navigator.clipboard.writeText(document.getElementById('mensaje-texto').innerText).then(()=>alert("Ticket copiado con éxito ✅")); }
+    
     function actualizarSelectJornadas() {
         const sel = document.getElementById('filtro-tabla');
         const jornadas = [...new Set(Object.values(DATA.jugadas || {}).map(j => j.jornada))].filter(j=>j);
         if(!jornadas.includes(DATA.config.jornada)) jornadas.push(DATA.config.jornada);
         sel.innerHTML = jornadas.map(j => `<option value="${j}" ${j===DATA.config.jornada?'selected':''}>${j}</option>`).join('');
     }
-    function renderAdminParticipantes() {
-        const div = document.getElementById('admin-participantes'); div.innerHTML = '';
-        Object.keys(DATA.jugadas || {}).forEach(id => {
-            const j = DATA.jugadas[id];
-            if(j.jornada === DATA.config.jornada){
-                div.innerHTML += `<div class="partido-card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                    <span>${j.nombre}</span>
-                    <div style="display:flex; gap:5px;">
-                        <button style="background:${j.pagado?'var(--verde)':'#ccc'}; color:white; border:none; padding:5px 10px; border-radius:4px;" onclick="db.ref('jugadas/${id}').update({pagado:${!j.pagado}})">${j.pagado?'$':'X'}</button>
-                        <button style="background:#333; color:white; border:none; padding:5px 10px; border-radius:4px;" onclick="verDetalle('${id}')">👁️</button>
-                    </div>
-                </div>`;
-            }
-        });
-    }
-    function verDetalle(id) {
-        const j = DATA.jugadas[id];
-        document.getElementById('modal-nombre').innerText = j.nombre;
-        let h = '<table>';
-        DATA.partidos.forEach(p => { 
-            h += `<tr><td>${p.tipo}: ${p.l}-${p.v}</td><td>[${j.votos[p.id] || '-'}]</td></tr>`; 
-            if(p.tipo === 'VUELTA') h += `<tr><td colspan="2" style="font-size:0.7em; color:blue;">AVANZA: ${j.votos['avanza_'+p.serie] || '-'}</td></tr>`;
-        });
-        document.getElementById('modal-detalle').innerHTML = h + '</table>';
-        document.getElementById('modal-ver').style.display = 'block';
-    }
+
     function activarAdmin() {
         const spans = document.querySelectorAll('#main-title span');
         if (spans.length >= 2) {
             spans[1].style.cursor = "pointer";
             spans[1].onclick = () => {
-                const pass = prompt("Password:");
-                if(btoa(pass) === "RmlicmEyMDI1LjA=") { document.getElementById('btn-admin').style.display='block'; alert("OK"); }
+                const pass = prompt("Password de Administrador:");
+                if(btoa(pass) === "RmlicmEyMDI1LjA=") { 
+                    document.getElementById('btn-admin').style.display='block'; 
+                    alert("Acceso Concedido."); 
+                } else {
+                    alert("Invalido.");
+                }
             };
         }
     }
-    window.onload = activarAdmin;
+
+    window.onload = () => { setTimeout(renderEditor, 500); activarAdmin(); };
 </script>
 </body>
 </html>
