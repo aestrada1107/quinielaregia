@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QUINIELAS REGIAS - RESET FIX</title>
+    <title>QUINIELAS REGIAS - RESET FIX REAL</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
@@ -66,7 +66,7 @@
         <div id="registro-area">
             <input type="text" id="nombreInput" placeholder="Nombre completo">
             <div id="lista-jugador"></div>
-            <button class="btn-main" style="background: var(--verde)" onclick="guardarJugada()">✅ GENERAR TICKET</button>
+            <button class="btn-main" style="background: var(--verde)" onclick="guardajugada()">✅ GENERAR TICKET</button>
         </div>
         <div id="ticket-final" style="display:none; border:2px solid var(--verde); padding:15px; border-radius:8px; margin-top:10px;">
             <div id="mensaje-texto" style="white-space:pre-wrap; font-family:monospace; background:#f4f4f4; padding:10px; font-size:0.85em;"></div>
@@ -131,6 +131,7 @@
 
     let DATA = { config: {}, partidos: [], jugadas: {}, oficial_historial: {} };
     let SEL_USER = {}, SEL_ADMIN = {};
+    let JORNADA_ANTERIOR = "";
 
     db.ref().on('value', snap => {
         DATA = snap.val() || { config: { modo: 'NORMAL', cerrada: false, jornada: '---' }, partidos: [] };
@@ -139,6 +140,13 @@
         if(!DATA.jugadas) DATA.jugadas = {};
         if(!DATA.oficial_historial) DATA.oficial_historial = {};
 
+        // Sincronizar marcadores oficiales de Firebase a la variable local solo si cambió la jornada
+        const conf = DATA.config;
+        if (conf.jornada !== JORNADA_ANTERIOR) {
+            SEL_ADMIN = JSON.parse(JSON.stringify(DATA.oficial_historial[conf.jornada] || {}));
+            JORNADA_ANTERIOR = conf.jornada;
+        }
+
         actualizarUI();
     });
 
@@ -146,9 +154,6 @@
         const conf = DATA.config;
         document.getElementById('display-jornada').innerText = conf.jornada || "---";
         document.getElementById('cfg-modo').value = conf.modo || "NORMAL";
-
-        const resAct = DATA.oficial_historial[conf.jornada] || {};
-        if(Object.keys(SEL_ADMIN).length === 0) SEL_ADMIN = JSON.parse(JSON.stringify(resAct));
 
         const btnC = document.getElementById('btn-toggle-cierre');
         btnC.innerText = conf.cerrada ? "🔓 ABRIR REGISTROS" : "🔒 CERRAR REGISTROS";
@@ -236,7 +241,7 @@
         });
     }
 
-    function guardarJugada() {
+    function guardajugada() {
         const n = document.getElementById('nombreInput').value.trim();
         if(!n) return alert("Escribe tu nombre completo");
         
@@ -246,7 +251,7 @@
         }
 
         if(Object.keys(SEL_USER).length < respuestasRequeridas) {
-            return alert("Faltan pronósticos por llenar. Revisa que hayas elegido LEV de cada juego y quién avanza.");
+            return alert("Faltan pronósticos por llenar.");
         }
 
         db.ref('jugadas').push({ 
@@ -291,14 +296,14 @@
         document.getElementById('render-puntos').innerHTML = h + '</table>';
     }
 
-    // FIX ATÓMICO: Limpia la variable local además del nodo en Firebase para refresco inmediato
+    // FIX DEFINITIVO DEL RESET: Limpia base de datos, memoria RAM local y fuerza recarga de interfaz
     function resetResultadosAdmin() {
-        if(confirm("¿Seguro que quieres borrar todos los marcadores oficiales de esta etapa?")) {
-            SEL_ADMIN = {}; // Limpieza local inmediata
+        if(confirm("¿Seguro que quieres borrar todos los marcadores oficiales de la etapa actual?")) {
+            SEL_ADMIN = {}; // Forzar vaciado en memoria inmediata
             db.ref('oficial_historial/' + DATA.config.jornada).remove().then(() => {
-                alert("Marcadores borrados correctamente.");
-                location.reload();
-            });
+                alert("Resultados Oficiales Eliminados. Todo limpio para volver a capturar.");
+                location.reload(); // Forzar el repintado en limpio
+            }).catch(err => alert("Error: " + err));
         }
     }
 
