@@ -3,46 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QUINIELAS REGIAS - RESET TOTAL</title>
+    <title>QUINIELA MUNDIALISTA FIBRAINN</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
-        :root { --verde: #006847; --rojo: #CE1126; --azul: #007bff; --oro: #fff3cd; --oro-txt: #856404; --oscuro: #222; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f4f4; margin: 0; padding: 10px; -webkit-tap-highlight-color: transparent; }
-        .container { max-width: 600px; margin: auto; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; }
-        .header-main { background: var(--verde); color: white; padding: 20px; text-align: center; border-bottom: 5px solid var(--rojo); }
-        .header-main h1 { margin: 0; font-size: 1.5em; text-transform: uppercase; letter-spacing: 2px; }
-        .tabs { display: flex; background: var(--oscuro); }
-        .tab-btn { flex: 1; padding: 15px; color: #bbb; border: none; background: none; cursor: pointer; font-weight: bold; font-size: 0.85em; }
-        .tab-btn.active { color: white; background: var(--verde); border-bottom: 4px solid var(--rojo); }
-        .content { padding: 15px; display: none; }
+        :root { --corporativo: #0a2540; --verde-cancha: #1e7e34; --rojo-alerta: #dc3545; --oro-premium: #ffc107; --gris-fondo: #f8f9fa; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--gris-fondo); margin: 0; padding: 12px; -webkit-tap-highlight-color: transparent; }
+        .container { max-width: 600px; margin: auto; background: white; border-radius: 16px; box-shadow: 0 12px 30px rgba(0,0,0,0.12); overflow: hidden; }
+        .header-main { background: var(--corporativo); color: white; padding: 24px 15px; text-align: center; border-bottom: 6px solid var(--verde-cancha); position: relative; }
+        .header-main h1 { margin: 0; font-size: 1.4em; text-transform: uppercase; letter-spacing: 1px; font-weight: 800; }
+        .tabs { display: flex; background: #111; }
+        .tab-btn { flex: 1; padding: 16px; color: #aaa; border: none; background: none; cursor: pointer; font-weight: bold; font-size: 0.85em; text-transform: uppercase; }
+        .tab-btn.active { color: white; background: var(--verde-cancha); border-bottom: 4px solid var(--oro-premium); }
+        .content { padding: 16px; display: none; }
         .content.active { display: block; }
-        .partido-card { background: #fff; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 12px; padding: 12px; }
-        .serie-header { font-size: 0.7em; font-weight: bold; color: #777; margin-bottom: 5px; display: flex; justify-content: space-between; text-transform: uppercase; }
-        .partido-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-        .equipo { font-weight: 700; width: 30%; font-size: 0.85em; text-align: center; color: #333; }
-        .lev-container { display: flex; gap: 4px; width: 40%; }
-        .btn-lev { border: 1px solid #ccc; background: #fdfdfd; padding: 10px 0; border-radius: 8px; font-weight: 900; flex: 1; color: #666; cursor: pointer; font-size: 0.8em; }
-        .btn-lev.selected { background: var(--verde); color: white; border-color: var(--verde); }
-        .btn-lev.real { background: var(--rojo); color: white; border-color: var(--rojo); }
-        .avanza-box { background: #f0f7f4; border-radius: 8px; padding: 8px; margin-top: 5px; border: 1px dashed var(--verde); display: flex; align-items: center; justify-content: space-around; }
-        .btn-avanza { padding: 8px 12px; border-radius: 20px; border: 1px solid #ccc; font-size: 0.75em; cursor: pointer; font-weight: bold; background: white; color: #333; }
-        .btn-avanza.selected { background: var(--azul); color: white; border-color: var(--azul); }
-        .btn-main { width: 100%; padding: 18px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
-        th, td { padding: 12px 8px; border-bottom: 1px solid #eee; text-align: left; }
-        .ganador-row { background: var(--oro) !important; color: var(--oro-txt) !important; font-weight: bold; }
-        .admin-card { background: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 15px; }
-        input[type="text"], input[type="number"], select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; margin-bottom: 10px; }
-        .status-box { background: #fff3cd; color: #856404; padding: 10px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 10px; }
+        .partido-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 12px; padding: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .serie-header { font-size: 0.7em; font-weight: 800; color: #4a5568; margin-bottom: 6px; display: flex; justify-content: space-between; text-transform: uppercase; background: #edf2f7; padding: 4px 8px; border-radius: 4px; }
+        .partido-row { display: flex; align-items: center; justify-content: space-between; }
+        .equipo { font-weight: 700; width: 32%; font-size: 0.85em; text-align: center; color: #2d3748; word-wrap: break-word; }
+        .lev-container { display: flex; gap: 5px; width: 36%; }
+        .btn-lev { border: 1px solid #cbd5e0; background: #fff; padding: 12px 0; border-radius: 8px; font-weight: 900; flex: 1; color: #4a5568; cursor: pointer; font-size: 0.85em; transition: all 0.2s; }
+        .btn-lev.selected { background: var(--verde-cancha); color: white; border-color: var(--verde-cancha); }
+        .btn-lev.real { background: var(--rojo-alerta); color: white; border-color: var(--rojo-alerta); }
+        .avanza-box { background: #f7fafc; border-radius: 8px; padding: 8px; margin-top: 10px; border: 1px dashed var(--verde-cancha); display: flex; align-items: center; justify-content: space-around; }
+        .btn-avanza { padding: 8px 14px; border-radius: 20px; border: 1px solid #cbd5e0; font-size: 0.75em; cursor: pointer; font-weight: bold; background: white; color: #2d3748; }
+        .btn-avanza.selected { background: var(--corporativo); color: white; border-color: var(--corporativo); }
+        .btn-main { width: 100%; padding: 18px; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; font-size: 0.95em; letter-spacing: 0.5px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9em; margin-top: 10px; }
+        th, td { padding: 14px 10px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+        th { background: #f7fafc; color: #4a5568; font-weight: 700; }
+        .ganador-row { background: var(--oro-premium) !important; color: #2d3748 !important; font-weight: bold; }
+        .admin-card { background: #f8f9fa; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 16px; }
+        input[type="text"], input[type="number"], select { width: 100%; padding: 12px; border: 1px solid #cbd5e0; border-radius: 8px; box-sizing: border-box; margin-bottom: 12px; background: white; font-size: 0.9em; }
+        .status-box { background: #fff3cd; color: #856404; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 12px; border: 1px solid #ffeeba; }
     </style>
 </head>
 <body>
 
-<!-- MODAL VER DETALLE -->
-<div id="modal-ver" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; overflow-y:auto; color: #333; padding: 20px;">
-    <div style="background:white; margin:10% auto; padding:20px; width:90%; border-radius:12px; max-width:400px;">
-        <h3 id="modal-nombre" style="text-align:center; color:var(--verde);"></h3>
+<!-- MODAL DETALLE DE PRONÓSTICOS -->
+<div id="modal-ver" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:1000; overflow-y:auto; padding: 20px; box-sizing: border-box;">
+    <div style="background:white; margin:10% auto; padding:20px; width:100%; max-width:400px; border-radius:14px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
+        <h3 id="modal-nombre" style="text-align:center; color:var(--corporativo); margin-top:0;"></h3>
         <div id="modal-detalle"></div>
         <button onclick="document.getElementById('modal-ver').style.display='none'" class="btn-main" style="background:#333;">CERRAR</button>
     </div>
@@ -50,81 +51,88 @@
 
 <div class="container">
     <div class="header-main">
-        <h1 id="main-title">QU<span>I</span>N<span>I</span>ELAS REGIAS</h1>
-        <p id="display-jornada" style="margin: 5px 0 0; font-weight: bold; opacity: 0.9;">---</p>
+        <h1 id="main-title">QU<span>I</span>NIELA MUNDIALISTA F<span>I</span>BRAINN</h1>
+        <p id="display-jornada" style="margin: 6px 0 0; font-weight: 700; color: var(--oro-premium); font-size: 0.9em; text-transform: uppercase; letter-spacing: 0.5px;">---</p>
     </div>
     
     <div class="tabs">
         <button class="tab-btn active" onclick="showTab('jugador')">REGISTRO</button>
-        <button class="tab-btn" onclick="showTab('posiciones')">TABLA</button>
+        <button class="tab-btn" onclick="showTab('posiciones')">POSICIONES</button>
         <button class="tab-btn" id="btn-admin" style="display:none;" onclick="showTab('admin')">ADMIN</button>
     </div>
 
-    <!-- REGISTRO -->
+    <!-- PANELES PÚBLICOS -->
     <div id="jugador" class="content active">
-        <div id="area-cerrada" class="status-box" style="display:none;">🚫 REGISTROS CERRADOS</div>
+        <div id="area-cerrada" class="status-box" style="display:none;">🚫 REGISTROS CERRADOS PARA ESTA ETAPA</div>
         <div id="registro-area">
-            <input type="text" id="nombreInput" placeholder="Nombre completo">
+            <input type="text" id="nombreInput" placeholder="Tu Nombre Completo">
             <div id="lista-jugador"></div>
-            <button class="btn-main" style="background: var(--verde)" onclick="guardajugada()">✅ GENERAR TICKET</button>
+            <button class="btn-main" style="background: var(--verde-cancha)" onclick="guardajugada()">✅ GENERAR TICKET DIGITAL</button>
         </div>
-        <div id="ticket-final" style="display:none; border:2px solid var(--verde); padding:15px; border-radius:8px; margin-top:10px;">
-            <div id="mensaje-texto" style="white-space:pre-wrap; font-family:monospace; background:#f4f4f4; padding:10px; font-size:0.85em;"></div>
-            <button onclick="copiarAlPortapapeles()" class="btn-main" style="background: var(--azul);">📋 COPIAR WHATSAPP</button>
-            <button onclick="location.reload()" style="width:100%; border:none; background:none; color:gray; margin-top:15px; cursor:pointer;">Registrar otra</button>
+        <div id="ticket-final" style="display:none; border:2px solid var(--verde-cancha); padding:15px; border-radius:10px; margin-top:10px; background: #f0fdf4;">
+            <p style="margin-top:0; font-weight:bold; color: var(--verde-cancha);">¡Ticket Generado! Copia el texto y envíalo por WhatsApp:</p>
+            <div id="mensaje-texto" style="white-space:pre-wrap; font-family:monospace; background:white; padding:12px; font-size:0.85em; border:1px solid #cbd5e0; border-radius:6px; max-height:200px; overflow-y:auto;"></div>
+            <button onclick="copiarAlPortapapeles()" class="btn-main" style="background: var(--azul);">📋 COPIAR TEXTO WHATSAPP</button>
+            <button onclick="location.reload()" style="width:100%; border:none; background:none; color:gray; margin-top:15px; cursor:pointer; font-weight:bold;">Registrar otra quiniela</button>
         </div>
     </div>
 
-    <!-- TABLA -->
     <div id="posiciones" class="content">
-        <div style="margin-bottom:10px; text-align:right;">
-            <select id="filtro-tabla" onchange="calcularLeaderboard()"></select>
+        <p style="font-size: 0.8em; color: #718096; text-align: center; margin-top: 0; margin-bottom: 12px;">⚠️ Solo se muestran participantes con pago validado.</p>
+        <div style="margin-bottom:12px; text-align:right;">
+            <select id="filtro-tabla" onchange="calcularLeaderboard()" style="padding:8px; margin:0;"></select>
         </div>
         <div id="render-puntos"></div>
     </div>
 
-    <!-- ADMIN -->
+    <!-- PANEL DE CONTROL (ADMIN) -->
     <div id="admin" class="content">
-        <div class="admin-card" style="background: #e3f2fd;">
-            <h4>⚙️ Configuración Global</h4>
+        <div class="admin-card" style="background: #ebf8ff; border-color: #bee3f8;">
+            <h4>⚙️ Estado de la Plataforma</h4>
             <select id="cfg-modo" onchange="actualizarModo(this.value)">
-                <option value="NORMAL">Jornada Regular</option>
-                <option value="LIGUILLA">Liguilla (IDA/VUELTA + Avanza)</option>
+                <option value="NORMAL">Fase de Grupos (NORMAL)</option>
+                <option value="LIGUILLA">Eliminación Directa (LIGUILLA)</option>
             </select>
-            <button id="btn-toggle-cierre" onclick="toggleCierre()" style="width:100%; padding:10px; font-weight:bold; border:none; border-radius:8px;"></button>
+            <button id="btn-toggle-cierre" onclick="toggleCierre()" style="width:100%; padding:12px; font-weight:bold; border:none; border-radius:8px; cursor:pointer;"></button>
         </div>
 
         <div class="admin-card">
-            <h4>⚽ Configuración de Partidos y Marcadores</h4>
+            <h4>⚽ Registro de Resultados Oficiales</h4>
             <div id="lista-admin"></div>
             <div style="display:flex; gap:10px;">
-                <button class="btn-main" style="background: var(--verde); flex:2;" onclick="publicarResultados()">GUARDAR RESULTADOS</button>
-                <button class="btn-main" style="background: var(--rojo); flex:1;" onclick="resetResultadosAdmin()">ELIMINAR PARTIDOS</button>
+                <button class="btn-main" style="background: var(--verde-cancha); flex:2; margin:0;" onclick="publicarResultados()">GUARDAR RESULTADOS</button>
+                <button class="btn-main" style="background: var(--rojo-alerta); flex:1; margin:0;" onclick="resetResultadosAdmin()">LIMPIAR ETAPA</button>
             </div>
         </div>
 
         <div class="admin-card">
-            <h4>🚀 Lanzar Nueva Etapa / Corregir</h4>
-            <input type="text" id="new-jornada" placeholder="Ej: FINAL">
-            <input type="number" id="new-costo" placeholder="Costo $">
-            <label>¿Cuántas llaves o series vas a capturar?</label>
+            <h4>🚀 Configurar / Lanzar Nueva Etapa</h4>
+            <p style="font-size: 0.75em; color: gray; margin-top: -8px;">Al publicar una etapa nueva, la cartelera actual se sobreescribirá en limpio.</p>
+            <input type="text" id="new-jornada" placeholder="Ej: GRUPOS - JORNADA 1">
+            <input type="number" id="new-costo" placeholder="Costo de Inscripción $">
+            <label style="font-size:0.85em; font-weight:bold; color:#4a5568;">Cantidad de Series / Juegos:</label>
             <select id="num-series" onchange="renderEditor()">
-                <option value="4">Cuartos (4 Series / 8 Juegos)</option>
-                <option value="2">Semis (2 Series / 4 Juegos)</option>
-                <option value="1">Final (1 Serie / 2 Juegos)</option>
+                <option value="12">Grupos (12 Juegos / 24 Equipos)</option>
+                <option value="24">Grupos Expandido (24 Juegos / 48 Equipos)</option>
+                <option value="16">Dieciseisavos (16 Series)</option>
+                <option value="8">Octavos (8 Series)</option>
+                <option value="4">Cuartos (4 Series)</option>
+                <option value="2">Semifinales (2 Series)</option>
+                <option value="1">Gran Final (1 Serie)</option>
             </select>
-            <div id="editor-dinamico"></div>
-            <button class="btn-main" style="background: var(--azul)" onclick="lanzarEtapa()">PUBLICAR ETAPA</button>
+            <div id="editor-dinamico" style="max-height: 250px; overflow-y: auto; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; background: white; margin-bottom: 12px;"></div>
+            <button class="btn-main" style="background: var(--corporativo); margin:0;" onclick="lanzarEtapa()">PUBLICAR CARTELERA MUNDIAL</button>
         </div>
 
         <div class="admin-card">
-            <h4>👥 Participantes de esta Etapa</h4>
+            <h4>👥 Control de Pagos Validaciones</h4>
             <div id="admin-participantes"></div>
         </div>
     </div>
 </div>
 
 <script>
+    // CONFIGURACIÓN DE FIREBASE SINCED CON TU BASE DE DATOS
     const firebaseConfig = { apiKey: "AIzaSyBgmqQLnUIPuaDgXOEvuBAoY_mcd69Qw7E", authDomain: "quinielaligamx-68b52.firebaseapp.com", databaseURL: "https://quinielaligamx-68b52-default-rtdb.firebaseio.com", projectId: "quinielaligamx-68b52", storageBucket: "quinielaligamx-68b52.firebasestorage.app", messagingSenderId: "745257098090", appId: "1:745257098090:web:3c13bf19a1a0c1718ca313" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -186,9 +194,9 @@
                     </div>
                     ${esLiguilla && p.tipo === 'VUELTA' ? `
                         <div class="avanza-box">
-                            <span style="font-size:0.7em; font-weight:bold; color:#005cbf;">🏆 CAMPEÓN / AVANZA:</span>
-                            <button class="btn-avanza ${sel['avanza_'+p.serie]===p.l?'selected':''}" onclick="${cb}('avanza_${p.serie}', '${p.l}')">${p.l}</button>
-                            <button class="btn-avanza ${sel['avanza_'+p.serie]===p.v?'selected':''}" onclick="${cb}('avanza_${p.serie}', '${p.v}')">${p.v}</button>
+                            <span style="font-size:0.75em; font-weight:bold; color:var(--corporativo);">🏆 AVANZA / CAMPEÓN (90' + ET/PK):</span>
+                            <button class="btn-avanza ${sel['avanza_'+p.serie]===p.l?'selected':''}" onclick="${cb}('avanza_'+p.serie, '${p.l}')">${p.l}</button>
+                            <button class="btn-avanza ${sel['avanza_'+p.serie]===p.v?'selected':''}" onclick="${cb}('avanza_'+p.serie, '${p.v}')">${p.v}</button>
                         </div>
                     ` : ''}
                 </div>`;
@@ -201,19 +209,21 @@
         const div = document.getElementById('editor-dinamico');
         div.innerHTML = "";
         const modo = document.getElementById('cfg-modo').value;
-        const num = modo === 'LIGUILLA' ? parseInt(document.getElementById('num-series').value) * 2 : 9;
+        const selection = parseInt(document.getElementById('num-series').value);
+        const num = modo === 'LIGUILLA' ? selection * 2 : selection;
         
         for(let i=1; i<=num; i++) {
-            const label = modo === 'LIGUILLA' ? (i%2!==0?`SERIE ${Math.ceil(i/2)} IDA`:`SERIE ${Math.ceil(i/2)} VUELTA`) : `PARTIDO ${i}`;
-            div.innerHTML += `<div style="margin-bottom:5px;"><small style="font-weight:bold; color:var(--azul);">${label}</small><div style="display:flex;gap:4px;"><input type="text" id="edit-l-${i}" placeholder="Local"><input type="text" id="edit-v-${i}" placeholder="Visita"></div></div>`;
+            const label = modo === 'LIGUILLA' ? (i%2!==0?`S${Math.ceil(i/2)} IDA`:`S${Math.ceil(i/2)} VUELTA`) : `PARTIDO ${i}`;
+            div.innerHTML += `<div style="margin-bottom:8px; display:flex; flex-direction:column;"><small style="font-weight:bold; color:var(--verde-cancha); margin-bottom:2px;">${label}</small><div style="display:flex;gap:4px;"><input type="text" id="edit-l-${i}" placeholder="Equipo Local" style="margin:0;"><input type="text" id="edit-v-${i}" placeholder="Equipo Visitante" style="margin:0;"></div></div>`;
         }
     }
 
     function lanzarEtapa() {
         const jor = document.getElementById('new-jornada').value.toUpperCase().trim();
-        if(!jor) return alert("Ponle nombre a la etapa");
+        if(!jor) return alert("Asigna un nombre a la etapa actual");
         const modo = DATA.config.modo;
-        const num = modo === 'LIGUILLA' ? parseInt(document.getElementById('num-series').value) * 2 : 9;
+        const selection = parseInt(document.getElementById('num-series').value);
+        const num = modo === 'LIGUILLA' ? selection * 2 : selection;
         const partidos = [];
         
         for(let i=1; i<=num; i++){
@@ -231,18 +241,18 @@
         
         db.ref().update({ 
             'config/jornada': jor, 
-            'config/costo': document.getElementById('new-costo').value || 10, 
+            'config/costo': document.getElementById('new-costo').value || 50, 
             'config/cerrada': false, 
             'partidos': partidos 
         }).then(() => {
-            alert("🚀 Etapa lanzada con éxito.");
+            alert("🚀 Nueva Cartelera Mundialista Publicada.");
             location.reload();
         });
     }
 
     function guardajugada() {
         const n = document.getElementById('nombreInput').value.trim();
-        if(!n) return alert("Escribe tu nombre completo");
+        if(!n) return alert("Es obligatorio ingresar tu nombre");
         
         let respuestasRequeridas = DATA.partidos.length;
         if(DATA.config.modo === 'LIGUILLA') {
@@ -250,7 +260,7 @@
         }
 
         if(Object.keys(SEL_USER).length < respuestasRequeridas) {
-            return alert("Faltan pronósticos por llenar.");
+            return alert("Error: Tienes que llenar todos los partidos y selecciones de clasificados.");
         }
 
         db.ref('jugadas').push({ 
@@ -264,10 +274,10 @@
         document.getElementById('registro-area').style.display='none'; 
         document.getElementById('ticket-final').style.display='block';
         
-        let t = `👤 ${n.toUpperCase()}\n⚽ ${DATA.config.jornada}\n--------------------\n`;
+        let t = `👤 COLLAB: ${n.toUpperCase()}\n🏆 QUINIELA MUNDIALISTA FIBRAINN\n⚽ ETAPA: ${DATA.config.jornada}\n--------------------\n`;
         DATA.partidos.forEach(p => {
-            t += `${p.tipo==='NORMAL'?'':p.tipo+': '}${p.l} vs ${p.v} [${SEL_USER[p.id] || '-'}]\n`;
-            if(p.tipo === 'VUELTA') t += `>> AVANZA/CAMPEÓN: ${SEL_USER['avanza_'+p.serie] || '-'}\n`;
+            t += `${p.tipo==='NORMAL'?'':p.tipo+': '}${p.l} vs ${p.v} [${SEL_USER[p.id]}]\n`;
+            if(p.tipo === 'VUELTA') t += `>> GANADOR SERIE: ${SEL_USER['avanza_'+p.serie]}\n`;
         });
         document.getElementById('mensaje-texto').innerText = t;
     }
@@ -286,30 +296,27 @@
             return { n: j.nombre, p: pts, t: j.timestamp };
         }).sort((a,b) => b.p - a.p || a.t - b.t);
         
-        let h = '<table><tr><th>#</th><th>Nombre</th><th>Pts</th></tr>';
+        let h = '<table><tr><th>Pos</th><th>Colaborador</th><th>Pts</th></tr>';
         if(tabla.length === 0) {
-            h += `<tr><td colspan="3" style="text-align:center; color:gray;">Sin quinielas pagadas en esta etapa.</td></tr>`;
+            h += `<tr><td colspan="3" style="text-align:center; color:gray;">No hay registros validados en esta etapa.</td></tr>`;
         } else {
-            tabla.forEach((it, i) => { h += `<tr class="${i===0 && it.p>0?'ganador-row':''}"><td>${i+1}</td><td>${it.n}</td><td><strong>${it.p}</strong></td></tr>`; });
+            tabla.forEach((it, i) => { h += `<tr class="${i===0 && it.p>0?'ganador-row':''}"><td>${i+1}</td><td>${it.n} ${i===0 && it.p>0?'🏆':''}</td><td><strong>${it.p}</strong></td></tr>`; });
         }
         document.getElementById('render-puntos').innerHTML = h + '</table>';
     }
 
-    // 🌟 CORRECCIÓN MAESTRA: Ahora elimina completamente los partidos cargados del sistema
     function resetResultadosAdmin() {
-        if(confirm("🚨 ¡ATENCIÓN! Esto borrará por completo los partidos cargados actuales y sus resultados para que puedas capturar todo desde cero. ¿Deseas continuar?")) {
+        if(confirm("🚨 ALERTA: Esta acción vaciará completamente las tarjetas de partidos actuales y los resultados oficiales del servidor de forma definitiva. ¿Proceder con la purga?")) {
             SEL_ADMIN = {};
             SEL_USER = {};
-            
-            // Borrado masivo de los nodos de la etapa actual
             const actualizaciones = {};
-            actualizaciones['partidos'] = null; // Elimina las tarjetas de la pantalla pública
-            actualizaciones['oficial_historial/' + DATA.config.jornada] = null; // Elimina resultados viejos
+            actualizaciones['partidos'] = null;
+            actualizaciones['oficial_historial/' + DATA.config.jornada] = null;
             
             db.ref().update(actualizaciones).then(() => {
-                alert("🧼 Sistema limpio. Los partidos anteriores han sido eliminados por completo.");
+                alert("🧼 Purga total de la etapa ejecutada.");
                 location.reload();
-            }).catch(err => alert("Error al limpiar base de datos: " + err));
+            });
         }
     }
 
@@ -318,16 +325,16 @@
         const actuales = Object.keys(DATA.jugadas || {}).filter(id => DATA.jugadas[id].jornada === DATA.config.jornada);
         
         if(actuales.length === 0) {
-            return div.innerHTML = "<p style='font-size:0.85em; color:gray; text-align:center;'>Nadie registrado en esta etapa todavía.</p>";
+            return div.innerHTML = "<p style='font-size:0.85em; color:gray; text-align:center;'>Sin participantes registrados.</p>";
         }
 
         actuales.forEach(id => {
             const j = DATA.jugadas[id];
-            div.innerHTML += `<div class="partido-card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                <span style="font-size:0.9em; font-weight:bold;">${j.nombre}</span>
+            div.innerHTML += `<div class="partido-card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding:10px;">
+                <span style="font-size:0.85em; font-weight:bold; color:var(--corporativo);">${j.nombre}</span>
                 <div style="display:flex; gap:5px;">
-                    <button style="background:${j.pagado?'var(--verde)':'#ccc'}; color:white; border:none; padding:8px 12px; border-radius:6px; font-weight:bold;" onclick="db.ref('jugadas/${id}').update({pagado:${!j.pagado}})">${j.pagado?'$':'X'}</button>
-                    <button style="background:#333; color:white; border:none; padding:8px 12px; border-radius:6px;" onclick="verDetalle('${id}')">👁️</button>
+                    <button style="background:${j.pagado?'var(--verde-cancha)':'#ccc'}; color:white; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="db.ref('jugadas/${id}').update({pagado:${!j.pagado}})">${j.pagado?'PAGADO $':'PENDIENTE X'}</button>
+                    <button style="background:#333; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;" onclick="verDetalle('${id}')">👁️</button>
                 </div>
             </div>`;
         });
@@ -338,8 +345,8 @@
         document.getElementById('modal-nombre').innerText = j.nombre;
         let h = '<table style="width:100%">';
         DATA.partidos.forEach(p => { 
-            h += `<tr><td><small style="color:gray;">${p.tipo}</small><br>${p.l} vs ${p.v}</td><td style="text-align:right; font-weight:bold;">[${j.votos[p.id] || '-'}]</td></tr>`; 
-            if(p.tipo === 'VUELTA') h += `<tr style="background:#e3f2fd;"><td colspan="2" style="font-size:0.8em; font-weight:bold; color:var(--azul);">ELEGIDO PARA AVANZAR: ${j.votos['avanza_'+p.serie] || '-'}</td></tr>`;
+            h += `<tr><td><small style="color:gray;">${p.tipo}</small><br>${p.l} vs ${p.v}</td><td style="text-align:right; font-weight:bold; color:var(--verde-cancha);">[${j.votos[p.id] || '-'}]</td></tr>`; 
+            if(p.tipo === 'VUELTA') h += `<tr style="background:#edf2f7;"><td colspan="2" style="font-size:0.8em; font-weight:bold; color:var(--corporativo);">AVANZA: ${j.votos['avanza_'+p.serie] || '-'}</td></tr>`;
         });
         document.getElementById('modal-detalle').innerHTML = h + '</table>';
         document.getElementById('modal-ver').style.display = 'block';
@@ -349,9 +356,9 @@
     function setO(id, v) { SEL_ADMIN[id] = v; renderListaPartidos(); }
     function toggleCierre() { db.ref('config').update({ cerrada: !DATA.config.cerrada }); }
     function actualizarModo(v) { db.ref('config').update({ modo: v }).then(()=>location.reload()); }
-    function publicarResultados() { db.ref('oficial_historial/'+DATA.config.jornada).set(SEL_ADMIN).then(()=>alert("Resultados Guardados Oficialmente")); }
+    function publicarResultados() { db.ref('oficial_historial/'+DATA.config.jornada).set(SEL_ADMIN).then(()=>alert("Resultados Oficiales Sincronizados")); }
     function showTab(t) { document.querySelectorAll('.content').forEach(c=>c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); event.currentTarget.classList.add('active'); }
-    function copiarAlPortapapeles() { navigator.clipboard.writeText(document.getElementById('mensaje-texto').innerText).then(()=>alert("Ticket copiado con éxito ✅")); }
+    function copiarAlPortapapeles() { navigator.clipboard.writeText(document.getElementById('mensaje-texto').innerText).then(()=>alert("Copiado al portapapeles ✅")); }
     
     function actualizarSelectJornadas() {
         const sel = document.getElementById('filtro-tabla');
@@ -365,12 +372,12 @@
         if (spans.length >= 2) {
             spans[1].style.cursor = "pointer";
             spans[1].onclick = () => {
-                const pass = prompt("Password de Administrador:");
+                const pass = prompt("Clave de Seguridad Corporativa TI:");
                 if(btoa(pass) === "RmlicmEyMDI1LjA=") { 
                     document.getElementById('btn-admin').style.display='block'; 
-                    alert("Acceso Concedido."); 
+                    alert("Acceso Autorizado. Bienvenido Ingeniero."); 
                 } else {
-                    alert("Invalido.");
+                    alert("Denegado.");
                 }
             };
         }
