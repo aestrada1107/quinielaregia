@@ -88,7 +88,7 @@
     <!-- PANEL DE CONTROL (ADMIN) -->
     <div id="admin" class="content">
         <div class="admin-card" style="background: #ebf8ff; border-color: #bee3f8;">
-            <h4>⚙️ Estado de la Plataforma</h4>
+            <h4>⚙️ Configuración Global</h4>
             <select id="cfg-modo" onchange="actualizarModo(this.value)">
                 <option value="NORMAL">Fase de Grupos (NORMAL)</option>
                 <option value="LIGUILLA">Eliminación Directa (LIGUILLA)</option>
@@ -101,7 +101,7 @@
             <div id="lista-admin"></div>
             <div style="display:flex; gap:10px;">
                 <button class="btn-main" style="background: var(--verde-cancha); flex:2; margin:0;" onclick="publicarResultados()">GUARDAR RESULTADOS</button>
-                <button class="btn-main" style="background: var(--rojo-alerta); flex:1; margin:0;" onclick="resetResultadosAdmin()">LIMPIAR ETAPA</button>
+                <button class="btn-main" style="background: var(--rojo-alerta); flex:1; margin:0;" onclick="resetResultadosAdmin()">ELIMINAR PARTIDOS</button>
             </div>
         </div>
 
@@ -112,8 +112,7 @@
             <input type="number" id="new-costo" placeholder="Costo de Inscripción $">
             <label style="font-size:0.85em; font-weight:bold; color:#4a5568;">Cantidad de Series / Juegos:</label>
             <select id="num-series" onchange="renderEditor()">
-                <option value="12">Grupos (12 Juegos / 24 Equipos)</option>
-                <option value="24">Grupos Expandido (24 Juegos / 48 Equipos)</option>
+                <option value="12" selected>Grupos ( Bloque de 12 Juegos )</option>
                 <option value="16">Dieciseisavos (16 Series)</option>
                 <option value="8">Octavos (8 Series)</option>
                 <option value="4">Cuartos (4 Series)</option>
@@ -132,7 +131,6 @@
 </div>
 
 <script>
-    // CONFIGURACIÓN DE FIREBASE SINCED CON TU BASE DE DATOS
     const firebaseConfig = { apiKey: "AIzaSyBgmqQLnUIPuaDgXOEvuBAoY_mcd69Qw7E", authDomain: "quinielaligamx-68b52.firebaseapp.com", databaseURL: "https://quinielaligamx-68b52-default-rtdb.firebaseio.com", projectId: "quinielaligamx-68b52", storageBucket: "quinielaligamx-68b52.firebasestorage.app", messagingSenderId: "745257098090", appId: "1:745257098090:web:3c13bf19a1a0c1718ca313" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -213,7 +211,7 @@
         const num = modo === 'LIGUILLA' ? selection * 2 : selection;
         
         for(let i=1; i<=num; i++) {
-            const label = modo === 'LIGUILLA' ? (i%2!==0?`S${Math.ceil(i/2)} IDA`:`S${Math.ceil(i/2)} VUELTA`) : `PARTIDO ${i}`;
+            const label = modo === 'LIGUILLA' ? (i%2!==0?`S${Math.ceil(i/2)} IDA`:`S${Math.ceil(i/2)} VUELTA`) : `JUEGO ${i}`;
             div.innerHTML += `<div style="margin-bottom:8px; display:flex; flex-direction:column;"><small style="font-weight:bold; color:var(--verde-cancha); margin-bottom:2px;">${label}</small><div style="display:flex;gap:4px;"><input type="text" id="edit-l-${i}" placeholder="Equipo Local" style="margin:0;"><input type="text" id="edit-v-${i}" placeholder="Equipo Visitante" style="margin:0;"></div></div>`;
         }
     }
@@ -260,7 +258,7 @@
         }
 
         if(Object.keys(SEL_USER).length < respuestasRequeridas) {
-            return alert("Error: Tienes que llenar todos los partidos y selecciones de clasificados.");
+            return alert("Error: Tienes que llenar todos los partidos y clasificados.");
         }
 
         db.ref('jugadas').push({ 
