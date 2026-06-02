@@ -136,11 +136,17 @@
             <h4>👥 Control de Pagos Validaciones</h4>
             <div id="admin-participantes"></div>
         </div>
+
+        <!-- 🧪 MÓDULO EXCLUSIVO PARA FASE DE PRUEBAS QA -->
+        <div class="admin-card" style="border: 2px dashed var(--rojo-alerta); background: #fff5f5;">
+            <h4 style="color: var(--rojo-alerta); margin-top: 0;">🧪 Entorno de Pruebas y QA</h4>
+            <p style="font-size: 0.75em; color: #555; margin-top: -8px;">Usa este botón para borrar partidos, jugadas de usuarios y todo el historial de pruebas para iniciar limpio.</p>
+            <button class="btn-main" style="background: var(--rojo-alerta); margin: 0;" onclick="purgaTotalEntornoPruebas()">🔥 RESET TOTAL (BORRAR TODO)</button>
+        </div>
     </div>
 </div>
 
 <script>
-    // BASE DE DATOS DE PARTIDOS OFICIALES DE LA FIFA 2026 DEPURADA AL 100%
     const BASE_PARTIDOS_MUNDIAL = {
         "ETAPA 1": {
             info: "Vigencia: 11 al 14 de Junio. Incluye el debut de México, EE. UU. y Canadá.",
@@ -154,7 +160,7 @@
                 { id: 7, l: "Haití", v: "Escocia", grupo: "Grupo C", meta: "13 Jun - 21:00h | Estadio Boston" },
                 { id: 8, l: "Australia", v: "Turquía", grupo: "Grupo D", meta: "13 Jun - 00:00h | Estadio BC Place Vancouver" },
                 { id: 9, l: "Alemania", v: "Curazao", grupo: "Grupo E", meta: "14 Jun - 13:00h | Estadio Houston" },
-                { id: 10, l: "Países Bajos", v: "Japón", group: "Grupo F", meta: "14 Jun - 16:00h | Estadio Dallas" },
+                { id: 10, l: "Países Bajos", v: "Japón", grupo: "Grupo F", meta: "14 Jun - 16:00h | Estadio Dallas" },
                 { id: 11, l: "Costa de Marfil", v: "Ecuador", grupo: "Grupo E", meta: "14 Jun - 19:00h | Estadio Filadelfia" },
                 { id: 12, l: "Suecia", v: "Túnez", grupo: "Grupo F", meta: "14 Jun - 22:00h | Estadio Monterrey (BBVA)" }
             ]
@@ -440,12 +446,40 @@
     }
 
     function resetResultadosAdmin() {
-        if(confirm("🚨 ¡ATENCIÓN INGENIERO!: Esto borrará la base de partidos y resultados oficiales de la etapa actual. Las jugadas guardadas de los usuarios no se perderán. ¿Proceder?")) {
+        if(confirm("¿Borrar la base de partidos y resultados oficiales de la etapa actual?")) {
             SEL_ADMIN = {};
             const actualizaciones = {};
             actualizaciones['partidos'] = null;
             actualizaciones['oficial_historial/' + DATA.config.jornada] = null;
             db.ref().update(actualizaciones).then(() => location.reload());
+        }
+    }
+
+    // 🔥 DETONADOR DE PRUEBAS: Limpieza absoluta de la base de datos
+    function purgaTotalEntornoPruebas() {
+        if(confirm("⚠ ATENCIÓN: Estás por ejecutar una purga absoluta de base de datos. Se borrarán TODOS los partidos, TODOS los registros de los jugadores y sus históricos de puntos. ¿Deseas continuar?")) {
+            if(confirm("¿Completamente seguro? Esta acción no se puede deshacer y vaciará tu base de datos de Firebase.")) {
+                SEL_USER = {};
+                SEL_ADMIN = {};
+                
+                const resetEstructura = {
+                    config: {
+                        modo: 'NORMAL',
+                        cerrada: false,
+                        jornada: '---',
+                        info_etapa: 'Base de datos limpia. Lista para iniciar producción.',
+                        costo: 50
+                    },
+                    partidos: null,
+                    jugadas: null,
+                    oficial_historial: null
+                };
+                
+                db.ref().set(resetEstructura).then(() => {
+                    alert("🧼 PURGA EXITOSA: La base de datos ha sido reseteada a ceros. Todo limpio para tus nuevas pruebas.");
+                    location.reload();
+                }).catch(err => alert("Error en los servidores: " + err));
+            }
         }
     }
 
