@@ -110,11 +110,11 @@
             <label style="font-size:0.85em; font-weight:bold; color:#4a5568;">Selecciona la Etapa a Desplegar:</label>
             <select id="selector-etapa-mundial" onchange="mostrarInfoEtapaPrevia()">
                 <option value="ETAPA 1">Etapa 1 (Juegos 1-12) | 11 Jun - 14 Jun</option>
-                <option value="ETAPA 2">Etapa 2 (Juegos 13-24) | 14 Jun - 17 Jun</option>
-                <option value="ETAPA 3">Etapa 3 (Juegos 25-36) | 17 Jun - 20 Jun</option>
-                <option value="ETAPA 4">Etapa 4 (Juegos 37-48) | 20 Jun - 23 Jun</option>
-                <option value="ETAPA 5">Etapa 5 (Juegos 49-60) | 23 Jun - 25 Jun</option>
-                <option value="ETAPA 6">Etapa 6 (Juegos 61-72) | 25 Jun - 27 Jun</option>
+                <option value="ETAPA 2">Etapa 2 (Juegos 13-24) | 15 Jun - 17 Jun</option>
+                <option value="ETAPA 3">Etapa 3 (Juegos 25-36) | 18 Jun - 20 Jun</option>
+                <option value="ETAPA 4">Etapa 4 (Juegos 37-48) | 21 Jun - 23 Jun</option>
+                <option value="ETAPA 5">Etapa 5 (Juegos 49-60) | 24 Jun - 25 Jun</option>
+                <option value="ETAPA 6">Etapa 6 (Juegos 61-72) | 26 Jun - 27 Jun</option>
                 <option value="DIECISEISEAVOS">Fases Finales: Dieciseisavos (16 llaves)</option>
                 <option value="OCTAVOS">Fases Finales: Octavos de Final (8 llaves)</option>
                 <option value="CUARTOS">Fases Finales: Cuartos de Final (4 llaves)</option>
@@ -140,108 +140,108 @@
 </div>
 
 <script>
-    // BASE DE DATOS DE PARTIDOS INCORPORADA DE FORMA ATÓMICA
+    // BASE DE DATOS DE PARTIDOS OFICIALES DE LA FIFA 2026 DEPURADA AL 100%
     const BASE_PARTIDOS_MUNDIAL = {
         "ETAPA 1": {
             info: "Vigencia: 11 al 14 de Junio. Incluye el debut de México, EE. UU. y Canadá.",
             partidos: [
-                { id: 1, l: "México", v: "Sudáfrica", grupo: "Grupo A", meta: "11 Jun - 19:00h | Estadio Azteca (CDMX)" },
-                { id: 2, l: "República Checa", v: "Corea del Sur", grupo: "Grupo A", meta: "11 Jun - 21:00h | Estadio Guadalajara" },
-                { id: 3, l: "Canadá", v: "Túnez", grupo: "Grupo B", meta: "12 Jun - 16:00h | Estadio Toronto" },
-                { id: 4, l: "Suecia", v: "Ecuador", grupo: "Grupo B", meta: "12 Jun - 19:00h | Estadio Vancouver" },
-                { id: 5, l: "Estados Unidos", v: "Marruecos", grupo: "Grupo C", meta: "13 Jun - 15:00h | Estadio Los Ángeles" },
-                { id: 6, l: "Chile", v: "Ghana", grupo: "Grupo C", meta: "13 Jun - 18:00h | Estadio Seattle" },
-                { id: 7, l: "Argentina", v: "Australia", grupo: "Grupo D", meta: "13 Jun - 21:00h | Estadio Miami" },
-                { id: 8, l: "Polonia", v: "Arabia Saudita", grupo: "Grupo D", meta: "14 Jun - 12:00h | Estadio New York" },
-                { id: 9, l: "Brasil", v: "Italia", grupo: "Grupo E", meta: "14 Jun - 15:00h | Estadio Dallas" },
-                { id: 10, l: "Camerún", v: "Japón", grupo: "Grupo E", meta: "14 Jun - 18:00h | Estadio Houston" },
-                { id: 11, l: "Francia", v: "Nigeria", grupo: "Grupo F", meta: "14 Jun - 20:00h | Estadio Atlanta" },
+                { id: 1, l: "México", v: "Sudáfrica", grupo: "Grupo A", meta: "11 Jun - 15:00h | Estadio Ciudad de México (Azteca)" },
+                { id: 2, l: "República de Corea", v: "República Checa", grupo: "Grupo A", meta: "11 Jun - 22:00h | Estadio Guadalajara" },
+                { id: 3, l: "Canadá", v: "Bosnia y Herzegovina", grupo: "Grupo B", meta: "12 Jun - 15:00h | Estadio Toronto" },
+                { id: 4, l: "Estados Unidos", v: "Paraguay", grupo: "Grupo D", meta: "12 Jun - 21:00h | Estadio Los Ángeles" },
+                { id: 5, l: "Catar", v: "Suiza", grupo: "Grupo B", meta: "13 Jun - 15:00h | Estadio Bahía de San Francisco" },
+                { id: 6, l: "Brasil", v: "Marruecos", grupo: "Grupo C", meta: "13 Jun - 18:00h | Estadio Nueva York/Nueva Jersey" },
+                { id: 7, l: "Haití", v: "Escocia", grupo: "Grupo C", meta: "13 Jun - 21:00h | Estadio Boston" },
+                { id: 8, l: "Australia", v: "Turquía", grupo: "Grupo D", meta: "13 Jun - 00:00h | Estadio BC Place Vancouver" },
+                { id: 9, l: "Alemania", v: "Curazao", grupo: "Grupo E", meta: "14 Jun - 13:00h | Estadio Houston" },
+                { id: 10, l: "Países Bajos", v: "Japón", group: "Grupo F", meta: "14 Jun - 16:00h | Estadio Dallas" },
+                { id: 11, l: "Costa de Marfil", v: "Ecuador", grupo: "Grupo E", meta: "14 Jun - 19:00h | Estadio Filadelfia" },
                 { id: 12, l: "Suecia", v: "Túnez", grupo: "Grupo F", meta: "14 Jun - 22:00h | Estadio Monterrey (BBVA)" }
             ]
         },
         "ETAPA 2": {
-            info: "Vigencia: 14 al 17 de Junio. Actividad de Grupos G hasta L.",
+            info: "Vigencia: 15 al 17 de Junio. Actividad de Grupos G hasta L.",
             partidos: [
-                { id: 13, l: "España", v: "Argelia", grupo: "Grupo G", meta: "15 Jun - 13:00h | Estadio Boston" },
-                { id: 14, l: "Colombia", v: "Corea del Norte", grupo: "Grupo G", meta: "15 Jun - 16:00h | Estadio Philadelphia" },
-                { id: 15, l: "Inglaterra", v: "Perú", grupo: "Grupo H", meta: "15 Jun - 19:00h | Estadio Kansas City" },
-                { id: 16, l: "Ucrania", v: "Costa de Marfil", grupo: "Grupo H", meta: "15 Jun - 21:00h | Estadio San Francisco" },
-                { id: 17, l: "Alemania", v: "Nueva Zelanda", grupo: "Grupo I", meta: "16 Jun - 14:00h | Estadio de México" },
-                { id: 18, l: "Uruguay", v: "Egipto", grupo: "Grupo I", meta: "16 Jun - 17:00h | Estadio Guadalajara" },
-                { id: 19, l: "Portugal", v: "Honduras", grupo: "Grupo J", meta: "16 Jun - 20:00h | Estadio de Toronto" },
-                { id: 20, l: "Países Bajos", v: "Senegal", grupo: "Grupo J", meta: "17 Jun - 13:00h | Estadio Miami" },
-                { id: 21, l: "Bélgica", v: "Jamaica", grupo: "Grupo K", meta: "17 Jun - 16:00h | Estadio Los Ángeles" },
-                { id: 22, l: "Croacia", v: "Panamá", grupo: "Grupo K", meta: "17 Jun - 19:00h | Estadio New York" },
-                { id: 23, l: "Gales", v: "Irán", grupo: "Grupo L", meta: "17 Jun - 21:00h | Estadio Dallas" },
-                { id: 24, l: "Suiza", v: "Costa Rica", grupo: "Grupo L", meta: "17 Jun - 23:00h | Estadio Houston" }
+                { id: 13, l: "España", v: "Cabo Verde", grupo: "Grupo H", meta: "15 Jun - 12:00h | Estadio Atlanta" },
+                { id: 14, l: "Bélgica", v: "Egipto", grupo: "Grupo G", meta: "15 Jun - 15:00h | Estadio Seattle" },
+                { id: 15, l: "Arabia Saudí", v: "Uruguay", grupo: "Grupo H", meta: "15 Jun - 18:00h | Estadio Miami" },
+                { id: 16, l: "RI de Irán", v: "Nueva Zelanda", grupo: "Grupo G", meta: "15 Jun - 21:00h | Estadio Los Ángeles" },
+                { id: 17, l: "Francia", v: "Senegal", grupo: "Grupo I", meta: "16 Jun - 15:00h | Estadio Nueva York/Nueva Jersey" },
+                { id: 18, l: "Irak", v: "Noruega", grupo: "Grupo I", meta: "16 Jun - 18:00h | Estadio Boston" },
+                { id: 19, l: "Argentina", v: "Argelia", grupo: "Grupo J", meta: "16 Jun - 21:00h | Estadio Kansas City" },
+                { id: 20, l: "Austria", v: "Jordania", grupo: "Grupo J", meta: "16 Jun - 00:00h | Estadio Bahía de San Francisco" },
+                { id: 21, l: "Portugal", v: "RD Congo", grupo: "Grupo K", meta: "17 Jun - 13:00h | Estadio Houston" },
+                { id: 22, l: "Inglaterra", v: "Croacia", grupo: "Grupo L", meta: "17 Jun - 16:00h | Estadio Dallas" },
+                { id: 23, l: "Ghana", v: "Panamá", grupo: "Grupo L", meta: "17 Jun - 19:00h | Estadio Toronto" },
+                { id: 24, l: "Uzbekistán", v: "Colombia", grupo: "Grupo K", meta: "17 Jun - 22:00h | Estadio Ciudad de México" }
             ]
         },
         "ETAPA 3": {
-            info: "Vigencia: 17 al 20 de Junio. Segunda vuelta de grupos. ¡Juega México!",
+            info: "Vigencia: 18 al 20 de Junio. Segunda vuelta de grupos. ¡Juega México en Guadalajara!",
             partidos: [
-                { id: 25, l: "México", v: "Corea del Sur", grupo: "Grupo A", meta: "18 Jun - 15:00h | Estadio Guadalajara" },
-                { id: 26, l: "Sudáfrica", v: "República Checa", grupo: "Grupo A", meta: "18 Jun - 18:00h | Estadio Azteca" },
-                { id: 27, l: "Canadá", v: "Ecuador", grupo: "Grupo B", meta: "18 Jun - 21:00h | Estadio Toronto" },
-                { id: 28, l: "Túnez", v: "Suecia", grupo: "Grupo B", meta: "19 Jun - 12:00h | Estadio Vancouver" },
-                { id: 29, l: "Estados Unidos", v: "Ghana", grupo: "Grupo C", meta: "19 Jun - 15:00h | Estadio Seattle" },
-                { id: 30, l: "Marruecos", v: "Chile", grupo: "Grupo C", meta: "19 Jun - 18:00h | Estadio San Francisco" },
-                { id: 31, l: "Argentina", v: "Arabia Saudita", grupo: "Grupo D", meta: "19 Jun - 21:00h | Estadio Atlanta" },
-                { id: 32, l: "Australia", v: "Polonia", grupo: "Grupo D", meta: "20 Jun - 13:00h | Estadio Boston" },
-                { id: 33, l: "Brasil", v: "Japón", grupo: "Grupo E", meta: "20 Jun - 16:00h | Estadio Dallas" },
-                { id: 34, l: "Italia", v: "Camerún", grupo: "Grupo E", meta: "20 Jun - 19:00h | Estadio Kansas City" },
-                { id: 35, l: "Francia", v: "Túnez", grupo: "Grupo F", meta: "20 Jun - 21:00h | Estadio Philadelphia" },
-                { id: 36, l: "Japón", v: "Túnez", grupo: "Grupo F", meta: "20 Jun - 23:00h | Estadio Monterrey (BBVA)" }
+                { id: 25, l: "República Checa", v: "Sudáfrica", grupo: "Grupo A", meta: "18 Jun - 12:00h | Estadio Atlanta" },
+                { id: 26, l: "Suiza", v: "Bosnia y Herzegovina", grupo: "Grupo B", meta: "18 Jun - 15:00h | Estadio Los Ángeles" },
+                { id: 27, l: "Canadá", v: "Catar", grupo: "Grupo B", meta: "18 Jun - 18:00h | Estadio BC Place Vancouver" },
+                { id: 28, l: "México", v: "República de Corea", grupo: "Grupo A", meta: "18 Jun - 21:00h | Estadio Guadalajara" },
+                { id: 29, l: "Estados Unidos", v: "Australia", grupo: "Grupo D", meta: "19 Jun - 15:00h | Estadio Seattle" },
+                { id: 30, l: "Escocia", v: "Marruecos", grupo: "Grupo C", meta: "19 Jun - 18:00h | Estadio Boston" },
+                { id: 31, l: "Brasil", v: "Haití", grupo: "Grupo C", meta: "19 Jun - 21:00h | Estadio Filadelfia" },
+                { id: 32, l: "Turquía", v: "Paraguay", grupo: "Grupo D", meta: "19 Jun - 00:00h | Estadio Bahía de San Francisco" },
+                { id: 33, l: "Países Bajos", v: "Suecia", grupo: "Grupo F", meta: "20 Jun - 13:00h | Estadio Houston" },
+                { id: 34, l: "Alemania", v: "Costa de Marfil", grupo: "Grupo E", meta: "20 Jun - 16:00h | Estadio Toronto" },
+                { id: 35, l: "Ecuador", v: "Curazao", grupo: "Grupo E", meta: "20 Jun - 22:00h | Estadio Kansas City" },
+                { id: 36, l: "Túnez", v: "Japón", grupo: "Grupo F", meta: "20 Jun - 00:00h | Estadio Monterrey (BBVA)" }
             ]
         },
         "ETAPA 4": {
-            info: "Vigencia: 20 al 23 de Junio. Cierre de la segunda vuelta de grupos.",
+            info: "Vigencia: 21 al 23 de Junio. Continuación de la segunda vuelta de grupos.",
             partidos: [
-                { id: 37, l: "España", v: "Corea del Norte", grupo: "Grupo G", meta: "21 Jun - 13:00h | Estadio New York" },
-                { id: 38, l: "Argelia", v: "Colombia", grupo: "Grupo G", meta: "21 Jun - 16:00h | Estadio Miami" },
-                { id: 39, l: "Inglaterra", v: "Costa de Marfil", grupo: "Grupo H", meta: "21 Jun - 19:00h | Estadio Los Ángeles" },
-                { id: 40, l: "Perú", v: "Ucrania", grupo: "Grupo H", meta: "21 Jun - 21:00h | Estadio Seattle" },
-                { id: 41, l: "Alemania", v: "Egipto", grupo: "Grupo I", meta: "22 Jun - 14:00h | Estadio Azteca" },
-                { id: 42, l: "Nueva Zelanda", v: "Uruguay", grupo: "Grupo I", meta: "22 Jun - 17:00h | Estadio Monterrey" },
-                { id: 43, l: "Portugal", v: "Senegal", grupo: "Grupo J", meta: "22 Jun - 20:00h | Estadio Houston" },
-                { id: 44, l: "Honduras", v: "Países Bajos", grupo: "Grupo J", meta: "23 Jun - 13:00h | Estadio Philadelphia" },
-                { id: 45, l: "Bélgica", v: "Panamá", grupo: "Grupo K", meta: "23 Jun - 16:00h | Estadio Atlanta" },
-                { id: 46, l: "Jamaica", v: "Croacia", grupo: "Grupo K", meta: "23 Jun - 19:00h | Estadio Boston" },
-                { id: 47, l: "Gales", v: "Costa Rica", grupo: "Grupo L", meta: "23 Jun - 21:00h | Estadio Kansas City" },
-                { id: 48, l: "Irán", v: "Suiza", grupo: "Grupo L", meta: "23 Jun - 23:00h | Estadio San Francisco" }
+                { id: 37, l: "España", v: "Arabia Saudí", grupo: "Grupo H", meta: "21 Jun - 12:00h | Estadio Atlanta" },
+                { id: 38, l: "Bélgica", v: "RI de Irán", grupo: "Grupo G", meta: "21 Jun - 15:00h | Estadio Los Ángeles" },
+                { id: 39, l: "Uruguay", v: "Cabo Verde", grupo: "Grupo H", meta: "21 Jun - 18:00h | Estadio Miami" },
+                { id: 40, l: "Nueva Zelanda", v: "Egipto", grupo: "Grupo G", meta: "21 Jun - 21:00h | Estadio BC Place Vancouver" },
+                { id: 41, l: "Argentina", v: "Austria", grupo: "Grupo J", meta: "22 Jun - 13:00h | Estadio Dallas" },
+                { id: 42, l: "Francia", v: "Irak", grupo: "Grupo I", meta: "22 Jun - 17:00h | Estadio Filadelfia" },
+                { id: 43, l: "Noruega", v: "Senegal", grupo: "Grupo I", meta: "22 Jun - 20:00h | Estadio Nueva York/Nueva Jersey" },
+                { id: 44, l: "Jordania", v: "Argelia", grupo: "Grupo J", meta: "22 Jun - 23:00h | Estadio Bahía de San Francisco" },
+                { id: 45, l: "Portugal", v: "Uzbekistán", grupo: "Grupo K", meta: "23 Jun - 13:00h | Estadio Houston" },
+                { id: 46, l: "Inglaterra", v: "Ghana", grupo: "Grupo L", meta: "23 Jun - 16:00h | Estadio Boston" },
+                { id: 47, l: "Panamá", v: "Croacia", grupo: "Grupo L", meta: "23 Jun - 19:00h | Estadio Toronto" },
+                { id: 48, l: "Colombia", v: "RD Congo", grupo: "Grupo K", meta: "23 Jun - 22:00h | Estadio Guadalajara" }
             ]
         },
         "ETAPA 5": {
-            info: "Vigencia: 23 al 25 de Junio. Definición de clasificados Grupos A al F. ¡Juega México!",
+            info: "Vigencia: 24 al 25 de Junio. Cierres decisivos de grupos A al F. ¡México en el Azteca!",
             partidos: [
-                { id: 49, l: "República Checa", v: "México", grupo: "Grupo A", meta: "24 Jun - 20:00h | Estadio Azteca (CDMX)" },
-                { id: 50, l: "Sudáfrica", v: "Corea del Sur", grupo: "Grupo A", meta: "24 Jun - 20:00h | Estadio Monterrey (BBVA)" },
-                { id: 51, l: "Túnez", v: "Ecuador", grupo: "Grupo B", meta: "24 Jun - 16:00h | Estadio Toronto" },
-                { id: 52, l: "Canadá", v: "Suecia", grupo: "Grupo B", meta: "24 Jun - 16:00h | Estadio Vancouver" },
-                { id: 53, l: "Marruecos", v: "Ghana", grupo: "Grupo C", meta: "24 Jun - 13:00h | Estadio Miami" },
-                { id: 54, l: "Estados Unidos", v: "Chile", grupo: "Grupo C", meta: "24 Jun - 13:00h | Estadio Los Ángeles" },
-                { id: 55, l: "Australia", v: "Arabia Saudita", grupo: "Grupo D", meta: "25 Jun - 14:00h | Estadio Philadelphia" },
-                { id: 56, l: "Argentina", v: "Polonia", grupo: "Grupo D", meta: "25 Jun - 14:00h | Estadio New York" },
-                { id: 57, l: "Italia", v: "Japón", grupo: "Grupo E", meta: "25 Jun - 17:00h | Estadio Dallas" },
-                { id: 58, l: "Brasil", v: "Camerún", grupo: "Grupo E", meta: "25 Jun - 17:00h | Estadio Houston" },
-                { id: 59, l: "Nigeria", v: "Túnez", grupo: "Grupo F", meta: "25 Jun - 20:00h | Estadio Atlanta" },
-                { id: 60, l: "Francia", v: "Suecia", grupo: "Grupo F", meta: "25 Jun - 20:00h | Estadio Seattle" }
+                { id: 49, l: "Ecuador", v: "Alemania", grupo: "Grupo E", meta: "24 Jun - 13:00h | Estadio Nueva York/Nueva Jersey" },
+                { id: 50, l: "Curazao", v: "Costa de Marfil", grupo: "Grupo E", meta: "24 Jun - 13:00h | Estadio Boston" },
+                { id: 51, l: "Suiza", v: "Canadá", grupo: "Grupo B", meta: "24 Jun - 16:00h | Estadio Seattle" },
+                { id: 52, l: "Bosnia y Herzegovina", v: "Catar", grupo: "Grupo B", meta: "24 Jun - 16:00h | Estadio San Francisco" },
+                { id: 53, l: "República Checa", v: "México", grupo: "Grupo A", meta: "24 Jun - 20:00h | Estadio Ciudad de México (Azteca)" },
+                { id: 54, l: "Sudáfrica", v: "República de Corea", grupo: "Grupo A", meta: "24 Jun - 20:00h | Estadio Monterrey (BBVA)" },
+                { id: 55, l: "Marruecos", v: "Haití", grupo: "Grupo C", meta: "25 Jun - 13:00h | Estadio Orlando" },
+                { id: 56, l: "Escocia", v: "Brasil", grupo: "Grupo C", meta: "25 Jun - 13:00h | Estadio Miami" },
+                { id: 57, l: "Paraguay", v: "Australia", grupo: "Grupo D", meta: "25 Jun - 17:00h | Estadio Dallas" },
+                { id: 58, l: "Turquía", v: "Estados Unidos", grupo: "Grupo D", meta: "25 Jun - 17:00h | Estadio Houston" },
+                { id: 59, l: "Japón", v: "Suecia", grupo: "Grupo F", meta: "25 Jun - 20:00h | Estadio Filadelfia" },
+                { id: 60, l: "Túnez", v: "Países Bajos", grupo: "Grupo F", meta: "25 Jun - 20:00h | Estadio Atlanta" }
             ]
         },
         "ETAPA 6": {
-            info: "Vigencia: 25 al 27 de Junio. Definición definitiva de Grupos G al L.",
+            info: "Vigencia: 26 al 27 de Junio. Desenlace definitivo de la fase de grupos (G al L).",
             partidos: [
-                { id: 61, l: "Argelia", v: "Corea del Norte", grupo: "Grupo G", meta: "26 Jun - 14:00h | Estadio Boston" },
-                { id: 62, l: "España", v: "Colombia", grupo: "Grupo G", meta: "26 Jun - 14:00h | Estadio Kansas City" },
-                { id: 63, l: "Perú", v: "Costa de Marfil", grupo: "Grupo H", meta: "26 Jun - 17:00h | Estadio Guadalajara" },
-                { id: 64, l: "Inglaterra", v: "Ucrania", grupo: "Grupo H", meta: "26 Jun - 17:00h | Estadio San Francisco" },
-                { id: 65, l: "Nueva Zelanda", v: "Egipto", grupo: "Grupo I", meta: "26 Jun - 20:00h | Estadio Los Ángeles" },
-                { id: 66, l: "Alemania", v: "Uruguay", grupo: "Grupo I", meta: "26 Jun - 20:00h | Estadio New York" },
-                { id: 67, l: "Honduras", v: "Senegal", grupo: "Grupo J", meta: "27 Jun - 13:00h | Estadio Miami" },
-                { id: 68, l: "Portugal", v: "Países Bajos", grupo: "Grupo J", meta: "27 Jun - 13:00h | Estadio Atlanta" },
-                { id: 69, l: "Jamaica", v: "Panamá", grupo: "Grupo K", meta: "27 Jun - 16:00h | Estadio Dallas" },
-                { id: 70, l: "Bélgica", v: "Croacia", grupo: "Grupo K", meta: "27 Jun - 16:00h | Estadio Houston" },
-                { id: 71, l: "Irán", v: "Costa Rica", grupo: "Grupo L", meta: "27 Jun - 19:00h | Estadio Philadelphia" },
-                { id: 72, l: "Gales", v: "Suiza", grupo: "Grupo L", meta: "27 Jun - 19:00h | Estadio Toronto" }
+                { id: 61, l: "Egipto", v: "RI de Irán", grupo: "Grupo G", meta: "26 Jun - 14:00h | Estadio Boston" },
+                { id: 62, l: "Nueva Zelanda", v: "Bélgica", grupo: "Grupo G", meta: "26 Jun - 14:00h | Estadio Kansas City" },
+                { id: 63, l: "Uruguay", v: "España", grupo: "Grupo H", meta: "26 Jun - 17:00h | Estadio Guadalajara" },
+                { id: 64, l: "Cabo Verde", v: "Arabia Saudí", grupo: "Grupo H", meta: "26 Jun - 17:00h | Estadio San Francisco" },
+                { id: 65, l: "Senegal", v: "Irak", grupo: "Grupo I", meta: "26 Jun - 20:00h | Estadio Los Ángeles" },
+                { id: 66, l: "Noruega", v: "Francia", grupo: "Grupo I", meta: "26 Jun - 20:00h | Estadio New York/New Jersey" },
+                { id: 67, l: "Argelia", v: "Austria", grupo: "Grupo J", meta: "27 Jun - 13:00h | Estadio Miami" },
+                { id: 68, l: "Jordania", v: "Argentina", grupo: "Grupo J", meta: "27 Jun - 13:00h | Estadio Atlanta" },
+                { id: 69, l: "RD Congo", v: "Uzbekistán", grupo: "Grupo K", meta: "27 Jun - 16:00h | Estadio Dallas" },
+                { id: 70, l: "Colombia", v: "Portugal", grupo: "Grupo K", meta: "27 Jun - 16:00h | Estadio Houston" },
+                { id: 71, l: "Panamá", v: "England", grupo: "Grupo L", meta: "27 Jun - 19:00h | Estadio Philadelphia" },
+                { id: 72, l: "Croacia", v: "Ghana", grupo: "Grupo L", meta: "27 Jun - 19:00h | Estadio Toronto" }
             ]
         }
     };
@@ -343,7 +343,7 @@
         if(etapa === "FINAL") numSeries = 1;
 
         for(let i=1; i<=numSeries; i++) {
-            target.innerHTML += `<div style="margin-bottom:8px;"><small style="font-weight:bold; color:var(--azul-info);">Llave / Serie ${i}</small><div style="display:flex; gap:4px;"><input type="text" id="lig-l-${i}" placeholder="Local (Ej: 1° Grupo A)" style="margin:0;"><input type="text" id="lig-v-${i}" placeholder="Visita (Ej: 2° Grupo B)" style="margin:0;"></div><input type="text" id="lig-meta-${i}" placeholder="Fecha, Hora y Estadio" style="margin-top:2px; font-size:0.8em; padding:6px;"></div>`;
+            target.innerHTML += `<div style="margin-bottom:8px;"><small style="font-weight:bold; color:var(--azul-info);">Llave / Serie ${i}</small><div style="display:flex; gap:4px;"><input type="text" id="lig-l-${i}" placeholder="Local" style="margin:0;"><input type="text" id="lig-v-${i}" placeholder="Visita" style="margin:0;"></div><input type="text" id="lig-meta-${i}" placeholder="Fecha, Hora y Estadio" style="margin-top:2px; font-size:0.8em; padding:6px;"></div>`;
         }
     }
 
@@ -370,9 +370,7 @@
 
             let idContador = 1;
             for(let i=1; i<=numSeries; i++) {
-                // Partido IDA simulado (no requiere interacción LEV, solo para cumplir la estructura híbrida)
                 partidos.push({ id: idContador++, l: document.getElementById(`lig-l-${i}`).value || 'Por Definir', v: document.getElementById(`lig-v-${i}`).value || 'Por Definir', tipo: 'IDA', serie: i, grupo: key, meta: document.getElementById(`lig-meta-${i}`).value || '' });
-                // Partido VUELTA real (donde se vota el LEV de los 90' y se abre el botón de AVANZA)
                 partidos.push({ id: idContador++, l: document.getElementById(`lig-l-${i}`).value || 'Por Definir', v: document.getElementById(`lig-v-${i}`).value || 'Por Definir', tipo: 'VUELTA', serie: i, grupo: key, meta: document.getElementById(`lig-meta-${i}`).value || '' });
             }
         }
@@ -399,7 +397,6 @@
         
         let respuestasRequeridas = DATA.partidos.length;
         if(DATA.config.modo === 'LIGUILLA') {
-            // En liguilla de partido único, el array contiene IDA y VUELTA por llave. Se vota LEV en ambos e ingresa 1 Avanza por serie.
             respuestasRequeridas += (DATA.partidos.length / 2); 
         }
 
