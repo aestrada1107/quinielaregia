@@ -7,7 +7,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
-        :root { --corporativo: #0a2540; --verde-cancha: #1e7e34; --rojo-alerta: #dc3545; --oro-premium: #ffc107; --gris-fondo: #f8f9fa; }
+        :root { --corporativo: #0a2540; --verde-cancha: #1e7e34; --rojo-alerta: #dc3545; --oro-premium: #ffc107; --gris-fondo: #f8f9fa; --azul-info: #007bff; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--gris-fondo); margin: 0; padding: 12px; -webkit-tap-highlight-color: transparent; }
         .container { max-width: 600px; margin: auto; background: white; border-radius: 16px; box-shadow: 0 12px 30px rgba(0,0,0,0.12); overflow: hidden; }
         .header-main { background: var(--corporativo); color: white; padding: 24px 15px; text-align: center; border-bottom: 6px solid var(--verde-cancha); position: relative; }
@@ -17,8 +17,10 @@
         .tab-btn.active { color: white; background: var(--verde-cancha); border-bottom: 4px solid var(--oro-premium); }
         .content { padding: 16px; display: none; }
         .content.active { display: block; }
+        .info-etapa-box { background: #eef2f7; border-left: 5px solid var(--azul-info); padding: 10px 14px; border-radius: 4px; margin-bottom: 15px; font-size: 0.85em; color: #333; }
         .partido-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 12px; padding: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .serie-header { font-size: 0.7em; font-weight: 800; color: #4a5568; margin-bottom: 6px; display: flex; justify-content: space-between; text-transform: uppercase; background: #edf2f7; padding: 4px 8px; border-radius: 4px; }
+        .meta-header { font-size: 0.7em; font-weight: 800; color: #4a5568; margin-bottom: 6px; display: flex; justify-content: space-between; text-transform: uppercase; background: #edf2f7; padding: 4px 8px; border-radius: 4px; }
+        .meta-footer { font-size: 0.65em; color: #718096; margin-top: 6px; text-align: center; font-style: italic; background: #f7fafc; padding: 3px; border-radius: 4px; }
         .partido-row { display: flex; align-items: center; justify-content: space-between; }
         .equipo { font-weight: 700; width: 32%; font-size: 0.85em; text-align: center; color: #2d3748; word-wrap: break-word; }
         .lev-container { display: flex; gap: 5px; width: 36%; }
@@ -40,9 +42,8 @@
 </head>
 <body>
 
-<!-- MODAL DETALLE DE PRONÓSTICOS -->
 <div id="modal-ver" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:1000; overflow-y:auto; padding: 20px; box-sizing: border-box;">
-    <div style="background:white; margin:10% auto; padding:20px; width:100%; max-width:400px; border-radius:14px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
+    <div style="background:white; margin:10% auto; padding:20px; width:100%; max-width:400px; border-radius:14px;">
         <h3 id="modal-nombre" style="text-align:center; color:var(--corporativo); margin-top:0;"></h3>
         <div id="modal-detalle"></div>
         <button onclick="document.getElementById('modal-ver').style.display='none'" class="btn-main" style="background:#333;">CERRAR</button>
@@ -52,7 +53,7 @@
 <div class="container">
     <div class="header-main">
         <h1 id="main-title">QU<span>I</span>NIELA MUNDIALISTA F<span>I</span>BRAINN</h1>
-        <p id="display-jornada" style="margin: 6px 0 0; font-weight: 700; color: var(--oro-premium); font-size: 0.9em; text-transform: uppercase; letter-spacing: 0.5px;">---</p>
+        <p id="display-jornada" style="margin: 6px 0 0; font-weight: 700; color: var(--oro-premium); font-size: 0.9em; text-transform: uppercase;">---</p>
     </div>
     
     <div class="tabs">
@@ -61,8 +62,9 @@
         <button class="tab-btn" id="btn-admin" style="display:none;" onclick="showTab('admin')">ADMIN</button>
     </div>
 
-    <!-- PANELES PÚBLICOS -->
+    <!-- REGISTRO -->
     <div id="jugador" class="content active">
+        <div id="info-etapa-usuario" class="info-etapa-box"></div>
         <div id="area-cerrada" class="status-box" style="display:none;">🚫 REGISTROS CERRADOS PARA ESTA ETAPA</div>
         <div id="registro-area">
             <input type="text" id="nombreInput" placeholder="Tu Nombre Completo">
@@ -72,11 +74,12 @@
         <div id="ticket-final" style="display:none; border:2px solid var(--verde-cancha); padding:15px; border-radius:10px; margin-top:10px; background: #f0fdf4;">
             <p style="margin-top:0; font-weight:bold; color: var(--verde-cancha);">¡Ticket Generado! Copia el texto y envíalo por WhatsApp:</p>
             <div id="mensaje-texto" style="white-space:pre-wrap; font-family:monospace; background:white; padding:12px; font-size:0.85em; border:1px solid #cbd5e0; border-radius:6px; max-height:200px; overflow-y:auto;"></div>
-            <button onclick="copiarAlPortapapeles()" class="btn-main" style="background: var(--azul);">📋 COPIAR TEXTO WHATSAPP</button>
+            <button onclick="copiarAlPortapapeles()" class="btn-main" style="background: var(--azul-info);">📋 COPIAR TEXTO WHATSAPP</button>
             <button onclick="location.reload()" style="width:100%; border:none; background:none; color:gray; margin-top:15px; cursor:pointer; font-weight:bold;">Registrar otra quiniela</button>
         </div>
     </div>
 
+    <!-- POSICIONES -->
     <div id="posiciones" class="content">
         <p style="font-size: 0.8em; color: #718096; text-align: center; margin-top: 0; margin-bottom: 12px;">⚠️ Solo se muestran participantes con pago validado.</p>
         <div style="margin-bottom:12px; text-align:right;">
@@ -88,7 +91,7 @@
     <!-- PANEL DE CONTROL (ADMIN) -->
     <div id="admin" class="content">
         <div class="admin-card" style="background: #ebf8ff; border-color: #bee3f8;">
-            <h4>⚙️ Configuración Global</h4>
+            <h4>⚙️ Configuración de Modo Global</h4>
             <select id="cfg-modo" onchange="actualizarModo(this.value)">
                 <option value="NORMAL">Fase de Grupos (NORMAL)</option>
                 <option value="LIGUILLA">Eliminación Directa (LIGUILLA)</option>
@@ -99,28 +102,34 @@
         <div class="admin-card">
             <h4>⚽ Registro de Resultados Oficiales</h4>
             <div id="lista-admin"></div>
-            <div style="display:flex; gap:10px;">
-                <button class="btn-main" style="background: var(--verde-cancha); flex:2; margin:0;" onclick="publicarResultados()">GUARDAR RESULTADOS</button>
-                <button class="btn-main" style="background: var(--rojo-alerta); flex:1; margin:0;" onclick="resetResultadosAdmin()">ELIMINAR PARTIDOS</button>
-            </div>
+            <button class="btn-main" style="background: var(--verde-cancha); margin:0;" onclick="publicarResultados()">GUARDAR RESULTADOS OFICIALES</button>
         </div>
 
         <div class="admin-card">
-            <h4>🚀 Configurar / Lanzar Nueva Etapa</h4>
-            <p style="font-size: 0.75em; color: gray; margin-top: -8px;">Al publicar una etapa nueva, la cartelera actual se sobreescribirá en limpio.</p>
-            <input type="text" id="new-jornada" placeholder="Ej: GRUPOS - JORNADA 1">
-            <input type="number" id="new-costo" placeholder="Costo de Inscripción $">
-            <label style="font-size:0.85em; font-weight:bold; color:#4a5568;">Cantidad de Series / Juegos:</label>
-            <select id="num-series" onchange="renderEditor()">
-                <option value="12" selected>Grupos ( Bloque de 12 Juegos )</option>
-                <option value="16">Dieciseisavos (16 Series)</option>
-                <option value="8">Octavos (8 Series)</option>
-                <option value="4">Cuartos (4 Series)</option>
-                <option value="2">Semifinales (2 Series)</option>
-                <option value="1">Gran Final (1 Serie)</option>
+            <h4>🚀 Automatización: Lanzar Etapas del Mundial</h4>
+            <label style="font-size:0.85em; font-weight:bold; color:#4a5568;">Selecciona la Etapa a Desplegar:</label>
+            <select id="selector-etapa-mundial" onchange="mostrarInfoEtapaPrevia()">
+                <option value="ETAPA 1">Etapa 1 (Juegos 1-12) | 11 Jun - 14 Jun</option>
+                <option value="ETAPA 2">Etapa 2 (Juegos 13-24) | 14 Jun - 17 Jun</option>
+                <option value="ETAPA 3">Etapa 3 (Juegos 25-36) | 17 Jun - 20 Jun</option>
+                <option value="ETAPA 4">Etapa 4 (Juegos 37-48) | 20 Jun - 23 Jun</option>
+                <option value="ETAPA 5">Etapa 5 (Juegos 49-60) | 23 Jun - 25 Jun</option>
+                <option value="ETAPA 6">Etapa 6 (Juegos 61-72) | 25 Jun - 27 Jun</option>
+                <option value="DIECISEISEAVOS">Fases Finales: Dieciseisavos (16 llaves)</option>
+                <option value="OCTAVOS">Fases Finales: Octavos de Final (8 llaves)</option>
+                <option value="CUARTOS">Fases Finales: Cuartos de Final (4 llaves)</option>
+                <option value="SEMIFINALES">Fases Finales: Semifinales (2 llaves)</option>
+                <option value="FINAL">Fases Finales: Gran Final (1 llave)</option>
             </select>
-            <div id="editor-dinamico" style="max-height: 250px; overflow-y: auto; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; background: white; margin-bottom: 12px;"></div>
-            <button class="btn-main" style="background: var(--corporativo); margin:0;" onclick="lanzarEtapa()">PUBLICAR CARTELERA MUNDIAL</button>
+            <div id="info-previa-lanzamiento" style="margin-bottom:10px; font-size:0.8em; color:gray; font-style:italic;"></div>
+            <input type="number" id="new-costo" placeholder="Costo de Inscripción $" value="50">
+            
+            <div id="editor-personalizado-liguilla" style="display:none; border:1px solid #cbd5e0; padding:10px; border-radius:8px; background:white; margin-bottom:12px; max-height:200px; overflow-y:auto;">
+                <p style="font-size:0.75em; font-weight:bold; color:var(--azul-info); margin-top:0;">Escribe los cruces de eliminación directa:</p>
+                <div id="inputs-dinamicos-finales"></div>
+            </div>
+
+            <button class="btn-main" style="background: var(--corporativo); margin:0;" onclick="lanzarEtapaAutomatica()">PUBLICAR ETAPA EN SISTEMA</button>
         </div>
 
         <div class="admin-card">
@@ -131,6 +140,112 @@
 </div>
 
 <script>
+    // BASE DE DATOS DE PARTIDOS INCORPORADA DE FORMA ATÓMICA
+    const BASE_PARTIDOS_MUNDIAL = {
+        "ETAPA 1": {
+            info: "Vigencia: 11 al 14 de Junio. Incluye el debut de México, EE. UU. y Canadá.",
+            partidos: [
+                { id: 1, l: "México", v: "Sudáfrica", grupo: "Grupo A", meta: "11 Jun - 19:00h | Estadio Azteca (CDMX)" },
+                { id: 2, l: "República Checa", v: "Corea del Sur", grupo: "Grupo A", meta: "11 Jun - 21:00h | Estadio Guadalajara" },
+                { id: 3, l: "Canadá", v: "Túnez", grupo: "Grupo B", meta: "12 Jun - 16:00h | Estadio Toronto" },
+                { id: 4, l: "Suecia", v: "Ecuador", grupo: "Grupo B", meta: "12 Jun - 19:00h | Estadio Vancouver" },
+                { id: 5, l: "Estados Unidos", v: "Marruecos", grupo: "Grupo C", meta: "13 Jun - 15:00h | Estadio Los Ángeles" },
+                { id: 6, l: "Chile", v: "Ghana", grupo: "Grupo C", meta: "13 Jun - 18:00h | Estadio Seattle" },
+                { id: 7, l: "Argentina", v: "Australia", grupo: "Grupo D", meta: "13 Jun - 21:00h | Estadio Miami" },
+                { id: 8, l: "Polonia", v: "Arabia Saudita", grupo: "Grupo D", meta: "14 Jun - 12:00h | Estadio New York" },
+                { id: 9, l: "Brasil", v: "Italia", grupo: "Grupo E", meta: "14 Jun - 15:00h | Estadio Dallas" },
+                { id: 10, l: "Camerún", v: "Japón", grupo: "Grupo E", meta: "14 Jun - 18:00h | Estadio Houston" },
+                { id: 11, l: "Francia", v: "Nigeria", grupo: "Grupo F", meta: "14 Jun - 20:00h | Estadio Atlanta" },
+                { id: 12, l: "Suecia", v: "Túnez", grupo: "Grupo F", meta: "14 Jun - 22:00h | Estadio Monterrey (BBVA)" }
+            ]
+        },
+        "ETAPA 2": {
+            info: "Vigencia: 14 al 17 de Junio. Actividad de Grupos G hasta L.",
+            partidos: [
+                { id: 13, l: "España", v: "Argelia", grupo: "Grupo G", meta: "15 Jun - 13:00h | Estadio Boston" },
+                { id: 14, l: "Colombia", v: "Corea del Norte", grupo: "Grupo G", meta: "15 Jun - 16:00h | Estadio Philadelphia" },
+                { id: 15, l: "Inglaterra", v: "Perú", grupo: "Grupo H", meta: "15 Jun - 19:00h | Estadio Kansas City" },
+                { id: 16, l: "Ucrania", v: "Costa de Marfil", grupo: "Grupo H", meta: "15 Jun - 21:00h | Estadio San Francisco" },
+                { id: 17, l: "Alemania", v: "Nueva Zelanda", grupo: "Grupo I", meta: "16 Jun - 14:00h | Estadio de México" },
+                { id: 18, l: "Uruguay", v: "Egipto", grupo: "Grupo I", meta: "16 Jun - 17:00h | Estadio Guadalajara" },
+                { id: 19, l: "Portugal", v: "Honduras", grupo: "Grupo J", meta: "16 Jun - 20:00h | Estadio de Toronto" },
+                { id: 20, l: "Países Bajos", v: "Senegal", grupo: "Grupo J", meta: "17 Jun - 13:00h | Estadio Miami" },
+                { id: 21, l: "Bélgica", v: "Jamaica", grupo: "Grupo K", meta: "17 Jun - 16:00h | Estadio Los Ángeles" },
+                { id: 22, l: "Croacia", v: "Panamá", grupo: "Grupo K", meta: "17 Jun - 19:00h | Estadio New York" },
+                { id: 23, l: "Gales", v: "Irán", grupo: "Grupo L", meta: "17 Jun - 21:00h | Estadio Dallas" },
+                { id: 24, l: "Suiza", v: "Costa Rica", grupo: "Grupo L", meta: "17 Jun - 23:00h | Estadio Houston" }
+            ]
+        },
+        "ETAPA 3": {
+            info: "Vigencia: 17 al 20 de Junio. Segunda vuelta de grupos. ¡Juega México!",
+            partidos: [
+                { id: 25, l: "México", v: "Corea del Sur", grupo: "Grupo A", meta: "18 Jun - 15:00h | Estadio Guadalajara" },
+                { id: 26, l: "Sudáfrica", v: "República Checa", grupo: "Grupo A", meta: "18 Jun - 18:00h | Estadio Azteca" },
+                { id: 27, l: "Canadá", v: "Ecuador", grupo: "Grupo B", meta: "18 Jun - 21:00h | Estadio Toronto" },
+                { id: 28, l: "Túnez", v: "Suecia", grupo: "Grupo B", meta: "19 Jun - 12:00h | Estadio Vancouver" },
+                { id: 29, l: "Estados Unidos", v: "Ghana", grupo: "Grupo C", meta: "19 Jun - 15:00h | Estadio Seattle" },
+                { id: 30, l: "Marruecos", v: "Chile", grupo: "Grupo C", meta: "19 Jun - 18:00h | Estadio San Francisco" },
+                { id: 31, l: "Argentina", v: "Arabia Saudita", grupo: "Grupo D", meta: "19 Jun - 21:00h | Estadio Atlanta" },
+                { id: 32, l: "Australia", v: "Polonia", grupo: "Grupo D", meta: "20 Jun - 13:00h | Estadio Boston" },
+                { id: 33, l: "Brasil", v: "Japón", grupo: "Grupo E", meta: "20 Jun - 16:00h | Estadio Dallas" },
+                { id: 34, l: "Italia", v: "Camerún", grupo: "Grupo E", meta: "20 Jun - 19:00h | Estadio Kansas City" },
+                { id: 35, l: "Francia", v: "Túnez", grupo: "Grupo F", meta: "20 Jun - 21:00h | Estadio Philadelphia" },
+                { id: 36, l: "Japón", v: "Túnez", grupo: "Grupo F", meta: "20 Jun - 23:00h | Estadio Monterrey (BBVA)" }
+            ]
+        },
+        "ETAPA 4": {
+            info: "Vigencia: 20 al 23 de Junio. Cierre de la segunda vuelta de grupos.",
+            partidos: [
+                { id: 37, l: "España", v: "Corea del Norte", grupo: "Grupo G", meta: "21 Jun - 13:00h | Estadio New York" },
+                { id: 38, l: "Argelia", v: "Colombia", grupo: "Grupo G", meta: "21 Jun - 16:00h | Estadio Miami" },
+                { id: 39, l: "Inglaterra", v: "Costa de Marfil", grupo: "Grupo H", meta: "21 Jun - 19:00h | Estadio Los Ángeles" },
+                { id: 40, l: "Perú", v: "Ucrania", grupo: "Grupo H", meta: "21 Jun - 21:00h | Estadio Seattle" },
+                { id: 41, l: "Alemania", v: "Egipto", grupo: "Grupo I", meta: "22 Jun - 14:00h | Estadio Azteca" },
+                { id: 42, l: "Nueva Zelanda", v: "Uruguay", grupo: "Grupo I", meta: "22 Jun - 17:00h | Estadio Monterrey" },
+                { id: 43, l: "Portugal", v: "Senegal", grupo: "Grupo J", meta: "22 Jun - 20:00h | Estadio Houston" },
+                { id: 44, l: "Honduras", v: "Países Bajos", grupo: "Grupo J", meta: "23 Jun - 13:00h | Estadio Philadelphia" },
+                { id: 45, l: "Bélgica", v: "Panamá", grupo: "Grupo K", meta: "23 Jun - 16:00h | Estadio Atlanta" },
+                { id: 46, l: "Jamaica", v: "Croacia", grupo: "Grupo K", meta: "23 Jun - 19:00h | Estadio Boston" },
+                { id: 47, l: "Gales", v: "Costa Rica", grupo: "Grupo L", meta: "23 Jun - 21:00h | Estadio Kansas City" },
+                { id: 48, l: "Irán", v: "Suiza", grupo: "Grupo L", meta: "23 Jun - 23:00h | Estadio San Francisco" }
+            ]
+        },
+        "ETAPA 5": {
+            info: "Vigencia: 23 al 25 de Junio. Definición de clasificados Grupos A al F. ¡Juega México!",
+            partidos: [
+                { id: 49, l: "República Checa", v: "México", grupo: "Grupo A", meta: "24 Jun - 20:00h | Estadio Azteca (CDMX)" },
+                { id: 50, l: "Sudáfrica", v: "Corea del Sur", grupo: "Grupo A", meta: "24 Jun - 20:00h | Estadio Monterrey (BBVA)" },
+                { id: 51, l: "Túnez", v: "Ecuador", grupo: "Grupo B", meta: "24 Jun - 16:00h | Estadio Toronto" },
+                { id: 52, l: "Canadá", v: "Suecia", grupo: "Grupo B", meta: "24 Jun - 16:00h | Estadio Vancouver" },
+                { id: 53, l: "Marruecos", v: "Ghana", grupo: "Grupo C", meta: "24 Jun - 13:00h | Estadio Miami" },
+                { id: 54, l: "Estados Unidos", v: "Chile", grupo: "Grupo C", meta: "24 Jun - 13:00h | Estadio Los Ángeles" },
+                { id: 55, l: "Australia", v: "Arabia Saudita", grupo: "Grupo D", meta: "25 Jun - 14:00h | Estadio Philadelphia" },
+                { id: 56, l: "Argentina", v: "Polonia", grupo: "Grupo D", meta: "25 Jun - 14:00h | Estadio New York" },
+                { id: 57, l: "Italia", v: "Japón", grupo: "Grupo E", meta: "25 Jun - 17:00h | Estadio Dallas" },
+                { id: 58, l: "Brasil", v: "Camerún", grupo: "Grupo E", meta: "25 Jun - 17:00h | Estadio Houston" },
+                { id: 59, l: "Nigeria", v: "Túnez", grupo: "Grupo F", meta: "25 Jun - 20:00h | Estadio Atlanta" },
+                { id: 60, l: "Francia", v: "Suecia", grupo: "Grupo F", meta: "25 Jun - 20:00h | Estadio Seattle" }
+            ]
+        },
+        "ETAPA 6": {
+            info: "Vigencia: 25 al 27 de Junio. Definición definitiva de Grupos G al L.",
+            partidos: [
+                { id: 61, l: "Argelia", v: "Corea del Norte", grupo: "Grupo G", meta: "26 Jun - 14:00h | Estadio Boston" },
+                { id: 62, l: "España", v: "Colombia", grupo: "Grupo G", meta: "26 Jun - 14:00h | Estadio Kansas City" },
+                { id: 63, l: "Perú", v: "Costa de Marfil", grupo: "Grupo H", meta: "26 Jun - 17:00h | Estadio Guadalajara" },
+                { id: 64, l: "Inglaterra", v: "Ucrania", grupo: "Grupo H", meta: "26 Jun - 17:00h | Estadio San Francisco" },
+                { id: 65, l: "Nueva Zelanda", v: "Egipto", grupo: "Grupo I", meta: "26 Jun - 20:00h | Estadio Los Ángeles" },
+                { id: 66, l: "Alemania", v: "Uruguay", grupo: "Grupo I", meta: "26 Jun - 20:00h | Estadio New York" },
+                { id: 67, l: "Honduras", v: "Senegal", grupo: "Grupo J", meta: "27 Jun - 13:00h | Estadio Miami" },
+                { id: 68, l: "Portugal", v: "Países Bajos", grupo: "Grupo J", meta: "27 Jun - 13:00h | Estadio Atlanta" },
+                { id: 69, l: "Jamaica", v: "Panamá", grupo: "Grupo K", meta: "27 Jun - 16:00h | Estadio Dallas" },
+                { id: 70, l: "Bélgica", v: "Croacia", grupo: "Grupo K", meta: "27 Jun - 16:00h | Estadio Houston" },
+                { id: 71, l: "Irán", v: "Costa Rica", grupo: "Grupo L", meta: "27 Jun - 19:00h | Estadio Philadelphia" },
+                { id: 72, l: "Gales", v: "Suiza", grupo: "Grupo L", meta: "27 Jun - 19:00h | Estadio Toronto" }
+            ]
+        }
+    };
+
     const firebaseConfig = { apiKey: "AIzaSyBgmqQLnUIPuaDgXOEvuBAoY_mcd69Qw7E", authDomain: "quinielaligamx-68b52.firebaseapp.com", databaseURL: "https://quinielaligamx-68b52-default-rtdb.firebaseio.com", projectId: "quinielaligamx-68b52", storageBucket: "quinielaligamx-68b52.firebasestorage.app", messagingSenderId: "745257098090", appId: "1:745257098090:web:3c13bf19a1a0c1718ca313" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -140,8 +255,7 @@
     let JORNADA_ANTERIOR = "";
 
     db.ref().on('value', snap => {
-        DATA = snap.val() || { config: { modo: 'NORMAL', cerrada: false, jornada: '---' }, partidos: [] };
-        
+        DATA = snap.val() || { config: { modo: 'NORMAL', cerrada: false, jornada: '---', info_etapa: '' }, partidos: [] };
         if(!DATA.partidos) DATA.partidos = [];
         if(!DATA.jugadas) DATA.jugadas = {};
         if(!DATA.oficial_historial) DATA.oficial_historial = {};
@@ -151,7 +265,6 @@
             SEL_ADMIN = JSON.parse(JSON.stringify(DATA.oficial_historial[conf.jornada] || {}));
             JORNADA_ANTERIOR = conf.jornada;
         }
-
         actualizarUI();
     });
 
@@ -159,6 +272,7 @@
         const conf = DATA.config;
         document.getElementById('display-jornada').innerText = conf.jornada || "---";
         document.getElementById('cfg-modo').value = conf.modo || "NORMAL";
+        document.getElementById('info-etapa-usuario').innerText = conf.info_etapa || "Información de etapa no configurada.";
 
         const btnC = document.getElementById('btn-toggle-cierre');
         btnC.innerText = conf.cerrada ? "🔓 ABRIR REGISTROS" : "🔒 CERRAR REGISTROS";
@@ -182,7 +296,7 @@
             const esLiguilla = DATA.config.modo === 'LIGUILLA';
             const html = (sel, cb, isReal) => `
                 <div class="partido-card">
-                    ${esLiguilla ? `<div class="serie-header"><span>SERIE ${p.serie}</span> <span>${p.tipo}</span></div>` : ''}
+                    <div class="meta-header"><span>${p.grupo || 'FASE FINAL'}</span> <span>ID: ${p.id}</span></div>
                     <div class="partido-row">
                         <div class="equipo">${p.l}</div>
                         <div class="lev-container">
@@ -190,11 +304,12 @@
                         </div>
                         <div class="equipo">${p.v}</div>
                     </div>
+                    ${p.meta ? `<div class="meta-footer">${p.meta}</div>` : ''}
                     ${esLiguilla && p.tipo === 'VUELTA' ? `
                         <div class="avanza-box">
-                            <span style="font-size:0.75em; font-weight:bold; color:var(--corporativo);">🏆 AVANZA / CAMPEÓN (90' + ET/PK):</span>
-                            <button class="btn-avanza ${sel['avanza_'+p.serie]===p.l?'selected':''}" onclick="${cb}('avanza_'+p.serie, '${p.l}')">${p.l}</button>
-                            <button class="btn-avanza ${sel['avanza_'+p.serie]===p.v?'selected':''}" onclick="${cb}('avanza_'+p.serie, '${p.v}')">${p.v}</button>
+                            <span style="font-size:0.72em; font-weight:bold; color:var(--corporativo);">🏆 AVANZA / CAMPEÓN:</span>
+                            <button class="btn-avanza ${sel['avanza_'+p.serie]===p.l?'selected':''}" onclick="${cb}('avanza_${p.serie}', '${p.l}')">${p.l}</button>
+                            <button class="btn-avanza ${sel['avanza_'+p.serie]===p.v?'selected':''}" onclick="${cb}('avanza_${p.serie}', '${p.v}')">${p.v}</button>
                         </div>
                     ` : ''}
                 </div>`;
@@ -203,79 +318,103 @@
         });
     }
 
-    function renderEditor() {
-        const div = document.getElementById('editor-dinamico');
-        div.innerHTML = "";
-        const modo = document.getElementById('cfg-modo').value;
-        const selection = parseInt(document.getElementById('num-series').value);
-        const num = modo === 'LIGUILLA' ? selection * 2 : selection;
+    function mostrarInfoEtapaPrevia() {
+        const key = document.getElementById('selector-etapa-mundial').value;
+        const divInfo = document.getElementById('info-previa-lanzamiento');
+        const divEditor = document.getElementById('editor-personalizado-liguilla');
         
-        for(let i=1; i<=num; i++) {
-            const label = modo === 'LIGUILLA' ? (i%2!==0?`S${Math.ceil(i/2)} IDA`:`S${Math.ceil(i/2)} VUELTA`) : `JUEGO ${i}`;
-            div.innerHTML += `<div style="margin-bottom:8px; display:flex; flex-direction:column;"><small style="font-weight:bold; color:var(--verde-cancha); margin-bottom:2px;">${label}</small><div style="display:flex;gap:4px;"><input type="text" id="edit-l-${i}" placeholder="Equipo Local" style="margin:0;"><input type="text" id="edit-v-${i}" placeholder="Equipo Visitante" style="margin:0;"></div></div>`;
+        if (BASE_PARTIDOS_MUNDIAL[key]) {
+            divInfo.innerText = "ℹ️ " + BASE_PARTIDOS_MUNDIAL[key].info;
+            divEditor.style.display = "none";
+        } else {
+            divInfo.innerText = "ℹ️ Configurar llaves vacías para que la raza llene sus pronósticos de eliminación directa.";
+            divEditor.style.display = "block";
+            renderInputsLiguilla(key);
         }
     }
 
-    function lanzarEtapa() {
-        const jor = document.getElementById('new-jornada').value.toUpperCase().trim();
-        if(!jor) return alert("Asigna un nombre a la etapa actual");
-        const modo = DATA.config.modo;
-        const selection = parseInt(document.getElementById('num-series').value);
-        const num = modo === 'LIGUILLA' ? selection * 2 : selection;
-        const partidos = [];
-        
-        for(let i=1; i<=num; i++){
-            partidos.push({ 
-                id: i, 
-                l: document.getElementById(`edit-l-${i}`).value.trim() || 'Por definir', 
-                v: document.getElementById(`edit-v-${i}`).value.trim() || 'Por definir', 
-                tipo: modo === 'LIGUILLA' ? (i%2!==0?'IDA':'VUELTA') : 'NORMAL', 
-                serie: modo === 'LIGUILLA' ? Math.ceil(i/2) : null 
-            });
+    function renderInputsLiguilla(etapa) {
+        const target = document.getElementById('inputs-dinamicos-finales');
+        target.innerHTML = "";
+        let numSeries = 16;
+        if(etapa === "OCTAVOS") numSeries = 8;
+        if(etapa === "CUARTOS") numSeries = 4;
+        if(etapa === "SEMIFINALES") numSeries = 2;
+        if(etapa === "FINAL") numSeries = 1;
+
+        for(let i=1; i<=numSeries; i++) {
+            target.innerHTML += `<div style="margin-bottom:8px;"><small style="font-weight:bold; color:var(--azul-info);">Llave / Serie ${i}</small><div style="display:flex; gap:4px;"><input type="text" id="lig-l-${i}" placeholder="Local (Ej: 1° Grupo A)" style="margin:0;"><input type="text" id="lig-v-${i}" placeholder="Visita (Ej: 2° Grupo B)" style="margin:0;"></div><input type="text" id="lig-meta-${i}" placeholder="Fecha, Hora y Estadio" style="margin-top:2px; font-size:0.8em; padding:6px;"></div>`;
         }
-        
+    }
+
+    function lanzarEtapaAutomatica() {
+        const key = document.getElementById('selector-etapa-mundial').value;
+        const costo = document.getElementById('new-costo').value || 50;
+        let partidos = [];
+        let modoGlobal = "NORMAL";
+        let infoTexto = "";
+
+        if (BASE_PARTIDOS_MUNDIAL[key]) {
+            partidos = BASE_PARTIDOS_MUNDIAL[key].partidos;
+            infoTexto = BASE_PARTIDOS_MUNDIAL[key].info;
+            modoGlobal = "NORMAL";
+        } else {
+            modoGlobal = "LIGUILLA";
+            let numSeries = 16;
+            if(key === "OCTAVOS") numSeries = 8;
+            if(key === "CUARTOS") numSeries = 4;
+            if(key === "SEMIFINALES") numSeries = 2;
+            if(key === "FINAL") numSeries = 1;
+            
+            infoTexto = `Etapa de ${key}. Formato eliminación directa a partido único con Tiempos Extras/Penales.`;
+
+            let idContador = 1;
+            for(let i=1; i<=numSeries; i++) {
+                // Partido IDA simulado (no requiere interacción LEV, solo para cumplir la estructura híbrida)
+                partidos.push({ id: idContador++, l: document.getElementById(`lig-l-${i}`).value || 'Por Definir', v: document.getElementById(`lig-v-${i}`).value || 'Por Definir', tipo: 'IDA', serie: i, grupo: key, meta: document.getElementById(`lig-meta-${i}`).value || '' });
+                // Partido VUELTA real (donde se vota el LEV de los 90' y se abre el botón de AVANZA)
+                partidos.push({ id: idContador++, l: document.getElementById(`lig-l-${i}`).value || 'Por Definir', v: document.getElementById(`lig-v-${i}`).value || 'Por Definir', tipo: 'VUELTA', serie: i, grupo: key, meta: document.getElementById(`lig-meta-${i}`).value || '' });
+            }
+        }
+
         SEL_USER = {};
         SEL_ADMIN = {};
-        
-        db.ref().update({ 
-            'config/jornada': jor, 
-            'config/costo': document.getElementById('new-costo').value || 50, 
-            'config/cerrada': false, 
-            'partidos': partidos 
+
+        db.ref().update({
+            'config/jornada': key,
+            'config/costo': costo,
+            'config/cerrada': false,
+            'config/modo': modoGlobal,
+            'config/info_etapa': infoTexto,
+            'partidos': partidos
         }).then(() => {
-            alert("🚀 Nueva Cartelera Mundialista Publicada.");
+            alert(`🚀 ${key} desplegada correctamente en los servidores de FibraInn.`);
             location.reload();
         });
     }
 
     function guardajugada() {
         const n = document.getElementById('nombreInput').value.trim();
-        if(!n) return alert("Es obligatorio ingresar tu nombre");
+        if(!n) return alert("Por favor ingresa tu nombre");
         
         let respuestasRequeridas = DATA.partidos.length;
         if(DATA.config.modo === 'LIGUILLA') {
-            respuestasRequeridas += (DATA.partidos.length / 2);
+            // En liguilla de partido único, el array contiene IDA y VUELTA por llave. Se vota LEV en ambos e ingresa 1 Avanza por serie.
+            respuestasRequeridas += (DATA.partidos.length / 2); 
         }
 
         if(Object.keys(SEL_USER).length < respuestasRequeridas) {
-            return alert("Error: Tienes que llenar todos los partidos y clasificados.");
+            return alert("Faltan pronósticos por completar en tu tarjeta.");
         }
 
-        db.ref('jugadas').push({ 
-            nombre: n, 
-            votos: SEL_USER, 
-            pagado: false, 
-            jornada: DATA.config.jornada, 
-            timestamp: firebase.database.ServerValue.TIMESTAMP 
-        });
-        
+        db.ref('jugadas').push({ nombre: n, votos: SEL_USER, pagado: false, jornada: DATA.config.jornada, timestamp: firebase.database.ServerValue.TIMESTAMP });
         document.getElementById('registro-area').style.display='none'; 
         document.getElementById('ticket-final').style.display='block';
         
         let t = `👤 COLLAB: ${n.toUpperCase()}\n🏆 QUINIELA MUNDIALISTA FIBRAINN\n⚽ ETAPA: ${DATA.config.jornada}\n--------------------\n`;
         DATA.partidos.forEach(p => {
-            t += `${p.tipo==='NORMAL'?'':p.tipo+': '}${p.l} vs ${p.v} [${SEL_USER[p.id]}]\n`;
-            if(p.tipo === 'VUELTA') t += `>> GANADOR SERIE: ${SEL_USER['avanza_'+p.serie]}\n`;
+            t += `${p.l} vs ${p.v} [${SEL_USER[p.id]}]\n`;
+            if(p.tipo === 'VUELTA') t += `>> AVANZA CLASIFICADO: ${SEL_USER['avanza_'+p.serie]}\n`;
         });
         document.getElementById('mensaje-texto').innerText = t;
     }
@@ -296,7 +435,7 @@
         
         let h = '<table><tr><th>Pos</th><th>Colaborador</th><th>Pts</th></tr>';
         if(tabla.length === 0) {
-            h += `<tr><td colspan="3" style="text-align:center; color:gray;">No hay registros validados en esta etapa.</td></tr>`;
+            h += `<tr><td colspan="3" style="text-align:center; color:gray;">Sin participantes validados con pago en esta etapa.</td></tr>`;
         } else {
             tabla.forEach((it, i) => { h += `<tr class="${i===0 && it.p>0?'ganador-row':''}"><td>${i+1}</td><td>${it.n} ${i===0 && it.p>0?'🏆':''}</td><td><strong>${it.p}</strong></td></tr>`; });
         }
@@ -304,17 +443,12 @@
     }
 
     function resetResultadosAdmin() {
-        if(confirm("🚨 ALERTA: Esta acción vaciará completamente las tarjetas de partidos actuales y los resultados oficiales del servidor de forma definitiva. ¿Proceder con la purga?")) {
+        if(confirm("🚨 ¡ATENCIÓN INGENIERO!: Esto borrará la base de partidos y resultados oficiales de la etapa actual. Las jugadas guardadas de los usuarios no se perderán. ¿Proceder?")) {
             SEL_ADMIN = {};
-            SEL_USER = {};
             const actualizaciones = {};
             actualizaciones['partidos'] = null;
             actualizaciones['oficial_historial/' + DATA.config.jornada] = null;
-            
-            db.ref().update(actualizaciones).then(() => {
-                alert("🧼 Purga total de la etapa ejecutada.");
-                location.reload();
-            });
+            db.ref().update(actualizaciones).then(() => location.reload());
         }
     }
 
@@ -322,16 +456,14 @@
         const div = document.getElementById('admin-participantes'); div.innerHTML = '';
         const actuales = Object.keys(DATA.jugadas || {}).filter(id => DATA.jugadas[id].jornada === DATA.config.jornada);
         
-        if(actuales.length === 0) {
-            return div.innerHTML = "<p style='font-size:0.85em; color:gray; text-align:center;'>Sin participantes registrados.</p>";
-        }
+        if(actuales.length === 0) return div.innerHTML = "<p style='font-size:0.85em; color:gray; text-align:center;'>Nadie registrado en esta etapa todavía.</p>";
 
         actuales.forEach(id => {
             const j = DATA.jugadas[id];
             div.innerHTML += `<div class="partido-card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding:10px;">
                 <span style="font-size:0.85em; font-weight:bold; color:var(--corporativo);">${j.nombre}</span>
                 <div style="display:flex; gap:5px;">
-                    <button style="background:${j.pagado?'var(--verde-cancha)':'#ccc'}; color:white; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="db.ref('jugadas/${id}').update({pagado:${!j.pagado}})">${j.pagado?'PAGADO $':'PENDIENTE X'}</button>
+                    <button style="background:${j.pagado?'var(--verde-cancha)':'#ccc'}; color:white; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="db.ref('jugadas/${id}').update({pagado:${!j.pagado}})">${j.pagado?'PAGADO $':'VALIDAR X'}</button>
                     <button style="background:#333; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;" onclick="verDetalle('${id}')">👁️</button>
                 </div>
             </div>`;
@@ -343,7 +475,7 @@
         document.getElementById('modal-nombre').innerText = j.nombre;
         let h = '<table style="width:100%">';
         DATA.partidos.forEach(p => { 
-            h += `<tr><td><small style="color:gray;">${p.tipo}</small><br>${p.l} vs ${p.v}</td><td style="text-align:right; font-weight:bold; color:var(--verde-cancha);">[${j.votos[p.id] || '-'}]</td></tr>`; 
+            h += `<tr><td><small style="color:gray;">${p.grupo}</small><br>${p.l} vs ${p.v}</td><td style="text-align:right; font-weight:bold; color:var(--verde-cancha);">[${j.votos[p.id] || '-'}]</td></tr>`; 
             if(p.tipo === 'VUELTA') h += `<tr style="background:#edf2f7;"><td colspan="2" style="font-size:0.8em; font-weight:bold; color:var(--corporativo);">AVANZA: ${j.votos['avanza_'+p.serie] || '-'}</td></tr>`;
         });
         document.getElementById('modal-detalle').innerHTML = h + '</table>';
@@ -354,9 +486,9 @@
     function setO(id, v) { SEL_ADMIN[id] = v; renderListaPartidos(); }
     function toggleCierre() { db.ref('config').update({ cerrada: !DATA.config.cerrada }); }
     function actualizarModo(v) { db.ref('config').update({ modo: v }).then(()=>location.reload()); }
-    function publicarResultados() { db.ref('oficial_historial/'+DATA.config.jornada).set(SEL_ADMIN).then(()=>alert("Resultados Oficiales Sincronizados")); }
+    function publicarResultados() { db.ref('oficial_historial/'+DATA.config.jornada).set(SEL_ADMIN).then(()=>alert("Resultados Oficiales Sincronizados con éxito")); }
     function showTab(t) { document.querySelectorAll('.content').forEach(c=>c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); event.currentTarget.classList.add('active'); }
-    function copiarAlPortapapeles() { navigator.clipboard.writeText(document.getElementById('mensaje-texto').innerText).then(()=>alert("Copiado al portapapeles ✅")); }
+    function copiarAlPortapapeles() { navigator.clipboard.writeText(document.getElementById('mensaje-texto').innerText).then(()=>alert("Ticket copiado ✅")); }
     
     function actualizarSelectJornadas() {
         const sel = document.getElementById('filtro-tabla');
@@ -374,14 +506,12 @@
                 if(btoa(pass) === "RmlicmEyMDI1LjA=") { 
                     document.getElementById('btn-admin').style.display='block'; 
                     alert("Acceso Autorizado. Bienvenido Ingeniero."); 
-                } else {
-                    alert("Denegado.");
                 }
             };
         }
     }
 
-    window.onload = () => { setTimeout(renderEditor, 500); activarAdmin(); };
+    window.onload = () => { mostrarInfoEtapaPrevia(); activarAdmin(); };
 </script>
 </body>
 </html>
