@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QUINIELA MUNDIALISTA FIBRAINN</title>
+    <title>QUINIELA MUNDIALISTA AE</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
@@ -11,7 +11,8 @@
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--gris-fondo); margin: 0; padding: 12px; -webkit-tap-highlight-color: transparent; }
         .container { max-width: 600px; margin: auto; background: white; border-radius: 16px; box-shadow: 0 12px 30px rgba(0,0,0,0.12); overflow: hidden; }
         .header-main { background: var(--corporativo); color: white; padding: 24px 15px; text-align: center; border-bottom: 6px solid var(--verde-cancha); position: relative; }
-        .header-main h1 { margin: 0; font-size: 1.4em; text-transform: uppercase; letter-spacing: 1px; font-weight: 800; }
+        .header-main h1 { margin: 0; font-size: 1.4em; text-transform: uppercase; letter-spacing: 1px; font-weight: 800; color: white; }
+        .admin-trigger { color: inherit; text-decoration: none; cursor: pointer; }
         .tabs { display: flex; background: #111; }
         .tab-btn { flex: 1; padding: 16px; color: #aaa; border: none; background: none; cursor: pointer; font-weight: bold; font-size: 0.85em; text-transform: uppercase; }
         .tab-btn.active { color: white; background: var(--verde-cancha); border-bottom: 4px solid var(--oro-premium); }
@@ -29,9 +30,6 @@
         .btn-lev { border: 1px solid #cbd5e0; background: #fff; padding: 12px 0; border-radius: 8px; font-weight: 900; flex: 1; color: #4a5568; cursor: pointer; font-size: 0.85em; transition: all 0.2s; }
         .btn-lev.selected { background: var(--verde-cancha); color: white; border-color: var(--verde-cancha); }
         .btn-lev.real { background: var(--rojo-alerta); color: white; border-color: var(--rojo-alerta); }
-        .avanza-box { background: #f7fafc; border-radius: 8px; padding: 8px; margin-top: 10px; border: 1px dashed var(--verde-cancha); display: flex; align-items: center; justify-content: space-around; }
-        .btn-avanza { padding: 8px 14px; border-radius: 20px; border: 1px solid #cbd5e0; font-size: 0.75em; cursor: pointer; font-weight: bold; background: white; color: #2d3748; }
-        .btn-avanza.selected { background: var(--corporativo); color: white; border-color: var(--corporativo); }
         .btn-main { width: 100%; padding: 18px; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; font-size: 0.95em; letter-spacing: 0.5px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.9em; margin-top: 10px; }
         th, td { padding: 14px 10px; border-bottom: 1px solid #e2e8f0; text-align: left; }
@@ -54,7 +52,7 @@
 
 <div class="container">
     <div class="header-main">
-        <h1 id="main-title">QU<span>I</span>NIELA MUNDIALISTA F<span>I</span>BRAINN</h1>
+        <h1 id="main-title">QUINIELA MUNDIALISTA <span class="admin-trigger" onclick="entrarAdminSecret()">A</span>E</h1>
         <p style="margin: 6px 0 0; font-weight: 700; color: var(--oro-premium); font-size: 0.9em; text-transform: uppercase; letter-spacing: 0.5px;">FASE DE GRUPOS SIMULTÁNEA</p>
     </div>
     
@@ -64,7 +62,6 @@
         <button class="tab-btn" id="btn-admin" style="display:none;" onclick="showTab('admin')">ADMIN</button>
     </div>
 
-    <!-- REGISTRO -->
     <div id="jugador" class="content active">
         <div class="selector-box">
             <label for="etapa-activa-usuario">📅 Selecciona la Etapa a llenar / consultar:</label>
@@ -87,7 +84,6 @@
         </div>
     </div>
 
-    <!-- POSICIONES -->
     <div id="posiciones" class="content">
         <div class="selector-box">
             <label for="filtro-tabla">📊 Ver Tabla de Posiciones de la:</label>
@@ -96,7 +92,6 @@
         <div id="render-puntos"></div>
     </div>
 
-    <!-- PANEL DE CONTROL (ADMIN) -->
     <div id="admin" class="content">
         <div class="admin-card" style="background: #ebf8ff; border-color: #bee3f8;">
             <h4>⚙️ Control de Cierre de Inscripción</h4>
@@ -112,12 +107,6 @@
         </div>
 
         <div class="admin-card">
-            <h4>🚀 Lanzamiento de Fases Finales (Liguilla Custom)</h4>
-            <input type="text" id="new-jornada-custom" placeholder="Ej: DIECISEISEAVOS">
-            <button class="btn-main" style="background: var(--corporativo); margin:0;" onclick="alert('Usa el selector nativo para las 6 etapas automáticas. Este campo es solo para fases finales manuales.')">INFO FASES FINALES</button>
-        </div>
-
-        <div class="admin-card">
             <h4>👥 Control y Validación de Pagos</h4>
             <select id="selector-etapa-pagos" onchange="renderAdminParticipantes()"></select>
             <div id="admin-participantes"></div>
@@ -126,7 +115,6 @@
 </div>
 
 <script>
-    // BASE DE DATOS INMUTABLE DE LOS 72 PARTIDOS OFICIALES DE LA FIFA
     const MUNDIAL_FASES_ESTRUCTURA = {
         "ETAPA 1": { info: "Vigencia: 11 al 14 de Junio. Incluye el debut de México, EE. UU. y Canadá.", partidos: [
             { id: 1, l: "México", v: "Sudáfrica", grupo: "Grupo A", meta: "11 Jun - 15:00h | Estadio Ciudad de México (Azteca)" },
@@ -137,7 +125,6 @@
             { id: 6, l: "Brasil", v: "Marruecos", grupo: "Grupo C", meta: "13 Jun - 18:00h | Estadio Nueva York/Nueva Jersey" },
             { id: 7, l: "Haití", v: "Escocia", grupo: "Grupo C", meta: "13 Jun - 21:00h | Estadio Boston" },
             { id: 8, l: "Australia", v: "Turquía", grupo: "Grupo D", meta: "13 Jun - 00:00h | Estadio BC Place Vancouver" },
-            { id: 9, l: "Alemania", v: "Curazao", grupo: "Grupo E", meta: "14 Jun - 13:00h | Estadio Houston" },
             { id: 10, l: "Países Bajos", v: "Japón", grupo: "Grupo F", meta: "14 Jun - 16:00h | Estadio Dallas" },
             { id: 11, l: "Costa de Marfil", v: "Ecuador", grupo: "Grupo E", meta: "14 Jun - 19:00h | Estadio Filadelfia" },
             { id: 12, l: "Suecia", v: "Túnez", grupo: "Grupo F", meta: "14 Jun - 22:00h | Estadio Monterrey (BBVA)" }
@@ -168,7 +155,7 @@
             { id: 33, l: "Países Bajos", v: "Suecia", grupo: "Grupo F", meta: "20 Jun - 13:00h | Estadio Houston" },
             { id: 34, l: "Alemania", v: "Costa de Marfil", grupo: "Grupo E", meta: "20 Jun - 16:00h | Estadio Toronto" },
             { id: 35, l: "Ecuador", v: "Curazao", grupo: "Grupo E", meta: "20 Jun - 22:00h | Estadio Kansas City" },
-            { id: 36, l: "Túnez", v: "Japón", grupo: "Grupo F", meta: "20 Jun - 00:00h | Estadio Monterrey (BBVA)" }
+            { id: 36, l: "Túnez", v: "Japón", group: "Grupo F", meta: "20 Jun - 00:00h | Estadio Monterrey (BBVA)" }
         ]},
         "ETAPA 4": { info: "Vigencia: 21 al 23 de Junio. Continuación de la segunda vuelta de grupos.", partidos: [
             { id: 37, l: "España", v: "Arabia Saudí", grupo: "Grupo H", meta: "21 Jun - 12:00h | Estadio Atlanta" },
@@ -218,12 +205,10 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // VARIABLES DE CONTROL LOCAL
     let SERVER_DATA = { cierres: {}, oficial_historial: {}, jugadas: {} };
     let ETAPA_SELECCIONADA_USER = "ETAPA 1";
     let ETAPA_SELECCIONADA_ADMIN_RESULTADOS = "ETAPA 1";
 
-    // CARGA DE SELECTORES ESTÁTICOS
     const listaEtapas = Object.keys(MUNDIAL_FASES_ESTRUCTURA);
     document.getElementById('etapa-activa-usuario').innerHTML = listaEtapas.map(e => `<option value="${e}">${e}</option>`).join('');
     document.getElementById('filtro-tabla').innerHTML = listaEtapas.map(e => `<option value="${e}">${e}</option>`).join('');
@@ -231,21 +216,16 @@
     document.getElementById('selector-etapa-resultados').innerHTML = listaEtapas.map(e => `<option value="${e}">${e}</option>`).join('');
     document.getElementById('selector-etapa-pagos').innerHTML = listaEtapas.map(e => `<option value="${e}">${e}</option>`).join('');
 
-    // LISTENER CENTRAL DE FIREBASE (SIN BORRAR NADA JAMÁS)
     db.ref().on('value', snap => {
         const val = snap.val() || {};
         SERVER_DATA.cierres = val.cierres || {};
         SERVER_DATA.oficial_historial = val.oficial_historial || {};
         SERVER_DATA.jugadas = val.jugadas || {};
-        
-        // Inicializar cierres en falso si no existen en la nube
         listaEtapas.forEach(e => { if(SERVER_DATA.cierres[e] === undefined) SERVER_DATA.cierres[e] = false; });
-
         actualizarUI();
     });
 
     function actualizarUI() {
-        // Renderizar Fron-End de Usuario para la etapa que tiene seleccionada
         const isCerrada = SERVER_DATA.cierres[ETAPA_SELECCIONADA_USER];
         document.getElementById('info-etapa-usuario').innerText = MUNDIAL_FASES_ESTRUCTURA[ETAPA_SELECCIONADA_USER].info;
         document.getElementById('area-cerrada').style.display = isCerrada ? 'block' : 'none';
@@ -260,19 +240,16 @@
 
     function cambiarEtapaVisualUsuario(etapa) {
         ETAPA_SELECCIONADA_USER = etapa;
-        SEL_USER = {}; // Limpia la selección temporal en memoria del Front-End
+        SEL_USER = {};
         actualizarUI();
     }
 
     function cambiarEtapaAdminResultados(etapa) {
         ETAPA_SELECCIONADA_ADMIN_RESULTADOS = etapa;
-        SEL_ADMIN = JSON.parse(JSON.stringify(SERVER_DATA.oficial_historial[etapa] || {}));
         renderListaPartidosAdmin();
     }
 
-    // ARREGLOS EN MEMORIA PARA COMPORTAMIENTO INTERACTIVO
     let SEL_USER = {};
-    let SEL_ADMIN = {};
 
     function renderListaPartidosUsuario() {
         const div = document.getElementById('lista-jugador');
@@ -317,7 +294,7 @@
     }
 
     function setVotoUser(id, valor) { SEL_USER[id] = valor; renderListaPartidosUsuario(); }
-     Aurora: function setVotoAdmin(id, valor) { 
+    function setVotoAdmin(id, valor) { 
         if(!SERVER_DATA.oficial_historial[ETAPA_SELECCIONADA_ADMIN_RESULTADOS]) SERVER_DATA.oficial_historial[ETAPA_SELECCIONADA_ADMIN_RESULTADOS] = {};
         SERVER_DATA.oficial_historial[ETAPA_SELECCIONADA_ADMIN_RESULTADOS][id] = valor;
         renderListaPartidosAdmin(); 
@@ -335,7 +312,6 @@
             return alert("Faltan partidos por pronosticar en esta etapa.");
         }
 
-        // Guardado estructurado por Etapa sin pisar datos anteriores
         db.ref('jugadas').push({
             nombre: nombre,
             votos: SEL_USER,
@@ -347,7 +323,7 @@
         document.getElementById('registro-area').style.display = 'none';
         document.getElementById('ticket-final').style.display = 'block';
 
-        let t = `👤 COLLAB: ${nombre.toUpperCase()}\n🏆 QUINIELA MUNDIALISTA FIBRAINN\n📅 ETAPA: ${ETAPA_SELECCIONADA_USER}\n--------------------\n`;
+        let t = `👤 COLLAB: ${nombre.toUpperCase()}\n🏆 QUINIELA MUNDIALISTA AE\n📅 ETAPA: ${ETAPA_SELECCIONADA_USER}\n--------------------\n`;
         partidos.forEach(p => { t += `${p.l} vs ${p.v} [${SEL_USER[p.id]}]\n`; });
         document.getElementById('mensaje-texto').innerText = t;
     }
@@ -375,7 +351,6 @@
         document.getElementById('render-puntos').innerHTML = h + '</table>';
     }
 
-    // SECCIÓN CONTROL ADMIN DE CIERRES SEPARADOS
     function toggleCierreAdmin() {
         const e = document.getElementById('selector-etapa-cierre').value;
         const estadoActual = SERVER_DATA.cierres[e] || false;
@@ -436,17 +411,16 @@
     function showTab(t) { document.querySelectorAll('.content').forEach(c=>c.classList.remove('active')); document.getElementById(t).classList.add('active'); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); event.currentTarget.classList.add('active'); }
     function copiarAlPortapapeles() { navigator.clipboard.writeText(document.getElementById('mensaje-texto').innerText).then(()=>alert("Ticket copiado ✅")); }
     
-    function activarAdmin() {
-        const spans = document.querySelectorAll('#main-title span');
-        if (spans.length >= 2) {
-            spans[1].style.cursor = "pointer";
-            spans[1].onclick = () => {
-                const pass = prompt("Clave de Seguridad Corporativa TI:");
-                if(btoa(pass) === "RmlicmEyMDI1LjA=") { document.getElementById('btn-admin').style.display='block'; alert("Acceso Concedido."); }
-            };
+    function entrarAdminSecret() {
+        const pass = prompt("Clave de Seguridad Corporativa TI:");
+        if(btoa(pass) === "RmlicmEyMDI1LjA=") { 
+            document.getElementById('btn-admin').style.display='block'; 
+            alert("Acceso Concedido. La pestaña ADMIN ya está visible en el menú principal."); 
+            showTab('admin');
+        } else {
+            alert("Clave incorrecta.");
         }
     }
-    window.onload = activarAdmin;
 </script>
 </body>
 </html>
