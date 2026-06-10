@@ -72,7 +72,7 @@
         <div id="area-cerrada" class="status-box" style="display:none;">🚫 REGISTROS CERRADOS PARA ESTA ETAPA</div>
         
         <div id="registro-area">
-            <input type="text" id="nombreInput" placeholder="Tu Nombre Completo">
+            <input type="text" id="nombreInput" placeholder="Tu Nombre">
             <div id="lista-jugador"></div>
             <button class="btn-main" style="background: var(--mex-verde)" onclick="guardajugada()">✅ GENERAR TICKET DIGITAL</button>
         </div>
@@ -305,7 +305,7 @@
 
     function guardajugada() {
         const nombre = document.getElementById('nombreInput').value.trim();
-        if(!nombre) return alert("Por favor escribe tu nombre completo");
+        if(!nombre) return alert("Por favor escribe tu nombre");
 
         const partidos = MUNDIAL_FASES_ESTRUCTURA[ETAPA_SELECCIONADA_USER].partidos;
         let respondidos = 0;
