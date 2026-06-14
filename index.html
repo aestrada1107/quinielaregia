@@ -37,7 +37,7 @@
         .ganador-row { background: var(--oro-premium) !important; color: #2d3748 !important; font-weight: bold; }
         .admin-card { background: #fdfdfd; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 16px; }
         input[type="text"], input[type="number"], select { width: 100%; padding: 12px; border: 1px solid #cbd5e0; border-radius: 8px; box-sizing: border-box; margin-bottom: 12px; background: white; font-size: 0.9em; color: var(--texto-oscuro); }
-        .status-box { background: #fdf3f3; color: var(--mex-rojo); padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 12px; border: 1px solid #fbdad9; }
+        .status-box { background: #fdf3f3; color: var(--mex-rojo); padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 12px; border: 1px solid #fbdad9; font-size: 0.85em; }
     </style>
 </head>
 <body>
@@ -65,15 +65,16 @@
     <!-- REGISTRO -->
     <div id="jugador" class="content active">
         <div class="selector-box">
-            <label for="etapa-activa-usuario">📅 Selecciona la Etapa a llenar / consultar:</label>
+            <label for="etapa-activa-usuario">📅 Selecciona la Etapa:</label>
             <select id="etapa-activa-usuario" onchange="cambiarEtapaVisualUsuario(this.value)"></select>
         </div>
         <div id="info-etapa-usuario" class="info-etapa-box"></div>
-        <div id="area-cerrada" class="status-box" style="display:none;">🚫 REGISTROS CERRADOS PARA ESTA ETAPA</div>
+        <div id="area-cerrada" class="status-box" style="display:none;">🚫 REGISTROS CERRADOS. EVALUANDO MARCADORES EN VIVO 👇</div>
+        
+        <div id="lista-jugador"></div>
         
         <div id="registro-area">
             <input type="text" id="nombreInput" placeholder="Tu Nombre Completo">
-            <div id="lista-jugador"></div>
             <button class="btn-main" style="background: var(--mex-verde)" onclick="guardajugada()">✅ GENERAR TICKET DIGITAL</button>
         </div>
         
@@ -262,19 +263,38 @@
         const div = document.getElementById('lista-jugador');
         div.innerHTML = '';
         const partidos = MUNDIAL_FASES_ESTRUCTURA[ETAPA_SELECCIONADA_USER].partidos;
+        const isCerrada = SERVER_DATA.cierres[ETAPA_SELECCIONADA_USER];
+        const resOfi = SERVER_DATA.oficial_historial[ETAPA_SELECCIONADA_USER] || {};
 
         partidos.forEach(p => {
+            const marcadorOficial = resOfi[p.id] || "";
+            
+            let levButtonsHtml = "";
+            if (isCerrada) {
+                // Modo Tablero en Vivo: Muestra los botones bloqueados y resalta el marcador real capturado en rojo
+                levButtonsHtml = ['L','E','V'].map(v => {
+                    const classReal = (marcadorOficial === v) ? 'real' : '';
+                    return `<button class="btn-lev ${classReal}" style="cursor:default;" disabled>${v}</button>`;
+                }).join('');
+            } else {
+                // Modo Registro Normal
+                levButtonsHtml = ['L','E','V'].map(v => {
+                    const classSelected = (SEL_USER[p.id] === v) ? 'selected' : '';
+                    return `<button class="btn-lev ${classSelected}" onclick="setVotoUser(${p.id},'${v}')">${v}</button>`;
+                }).join('');
+            }
+
             div.innerHTML += `
                 <div class="partido-card">
                     <div class="meta-header"><span>${p.grupo}</span> <span>ID: ${p.id}</span></div>
                     <div class="partido-row">
                         <div class="equipo">${p.l}</div>
                         <div class="lev-container">
-                            ${['L','E','V'].map(v => `<button class="btn-lev ${SEL_USER[p.id]===v ? 'selected':''}" onclick="setVotoUser(${p.id},'${v}')">${v}</button>`).join('')}
+                            ${levButtonsHtml}
                         </div>
                         <div class="equipo">${p.v}</div>
                     </div>
-                    <div class="meta-footer">${p.meta}</div>
+                    <div class="meta-footer">${p.meta} ${isCerrada && marcadorOficial ? `| ➔ EN VIVO: [${marcadorOficial}]` : ''}</div>
                 </div>`;
         });
     }
