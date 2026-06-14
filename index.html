@@ -72,7 +72,7 @@
         <div id="area-cerrada" class="status-box" style="display:none;">🚫 REGISTROS CERRADOS PARA ESTA ETAPA</div>
         
         <div id="registro-area">
-            <input type="text" id="nombreInput" placeholder="Tu Nombre">
+            <input type="text" id="nombreInput" placeholder="Tu Nombre Completo">
             <div id="lista-jugador"></div>
             <button class="btn-main" style="background: var(--mex-verde)" onclick="guardajugada()">✅ GENERAR TICKET DIGITAL</button>
         </div>
@@ -119,22 +119,19 @@
 
 <script>
     const MUNDIAL_FASES_ESTRUCTURA = {
-        "ETAPA 1": {
-            info: "Vigencia: 11 al 14 de Junio. Incluye el debut de México, EE. UU. y Canadá.",
-            partidos: [
-                { id: 1, l: "México", v: "Sudáfrica", grupo: "Grupo A", meta: "11 Jun - 15:00h | Estadio Ciudad de México (Azteca)" },
-                { id: 2, l: "República de Corea", v: "República Checa", grupo: "Grupo A", meta: "11 Jun - 22:00h | Estadio Guadalajara" },
-                { id: 3, l: "Canadá", v: "Bosnia y Herzegovina", grupo: "Grupo B", meta: "12 Jun - 15:00h | Estadio Toronto" },
-                { id: 4, l: "Estados Unidos", v: "Paraguay", grupo: "Grupo D", meta: "12 Jun - 21:00h | Estadio Los Ángeles" },
-                { id: 5, l: "Catar", v: "Suiza", grupo: "Grupo B", meta: "13 Jun - 15:00h | Estadio Bahía de San Francisco" },
-                { id: 6, l: "Brasil", v: "Marruecos", grupo: "Grupo C", meta: "13 Jun - 18:00h | Estadio Nueva York/Nueva Jersey" },
-                { id: 7, l: "Haití", v: "Escocia", grupo: "Grupo C", meta: "13 Jun - 21:00h | Estadio Boston" },
-                { id: 8, l: "Australia", v: "Turquía", grupo: "Grupo D", meta: "13 Jun - 00:00h | Estadio BC Place Vancouver" },
-                { id: 9, l: "Alemania", v: "Curazao", grupo: "Grupo E", meta: "14 Jun - 13:00h | Estadio Houston" },
-                { id: 10, l: "Países Bajos", v: "Japón", grupo: "Grupo F", meta: "14 Jun - 16:00h | Estadio Dallas" },
-                { id: 11, l: "Costa de Marfil", v: "Ecuador", grupo: "Grupo E", meta: "14 Jun - 19:00h | Estadio Filadelfia" },
-                { id: 12, l: "Suecia", v: "Túnez", grupo: "Grupo F", meta: "14 Jun - 22:00h | Estadio Monterrey (BBVA)" }
-            ]
+        "ETAPA 1": { info: "Vigencia: 11 al 14 de Junio. Incluye el debut de México, EE. UU. y Canadá.", partidos: [
+            { id: 1, l: "México", v: "Sudáfrica", grupo: "Grupo A", meta: "11 Jun - 15:00h | Estadio Ciudad de México (Azteca)" },
+            { id: 2, l: "República de Corea", v: "República Checa", grupo: "Grupo A", meta: "11 Jun - 22:00h | Estadio Guadalajara" },
+            { id: 3, l: "Canadá", v: "Bosnia y Herzegovina", grupo: "Grupo B", meta: "12 Jun - 15:00h | Estadio Toronto" },
+            { id: 4, l: "Estados Unidos", v: "Paraguay", grupo: "Grupo D", meta: "12 Jun - 21:00h | Estadio Los Ángeles" },
+            { id: 5, l: "Catar", v: "Suiza", grupo: "Grupo B", meta: "13 Jun - 15:00h | Estadio Bahía de San Francisco" },
+            { id: 6, l: "Brasil", v: "Marruecos", grupo: "Grupo C", meta: "13 Jun - 18:00h | Estadio Nueva York/Nueva Jersey" },
+            { id: 7, l: "Haití", v: "Escocia", grupo: "Grupo C", meta: "13 Jun - 21:00h | Estadio Boston" },
+            { id: 8, l: "Australia", v: "Turquía", grupo: "Grupo D", meta: "13 Jun - 00:00h | Estadio BC Place Vancouver" },
+            { id: 9, l: "Alemania", v: "Curazao", grupo: "Grupo E", meta: "14 Jun - 13:00h | Estadio Houston" },
+            { id: 10, l: "Países Bajos", v: "Japón", grupo: "Grupo F", meta: "14 Jun - 16:00h | Estadio Dallas" },
+            { id: 11, l: "Costa de Marfil", v: "Ecuador", grupo: "Grupo E", meta: "14 Jun - 19:00h | Estadio Filadelfia" },
+            { id: 12, l: "Suecia", v: "Túnez", grupo: "Grupo F", meta: "14 Jun - 22:00h | Estadio Monterrey (BBVA)" }
         ]},
         "ETAPA 2": { info: "Vigencia: 15 al 17 de Junio. Actividad de Grupos G hasta L.", partidos: [
             { id: 13, l: "España", v: "Cabo Verde", grupo: "Grupo H", meta: "15 Jun - 12:00h | Estadio Atlanta" },
@@ -217,20 +214,23 @@
     let ETAPA_SELECCIONADA_ADMIN_RESULTADOS = "ETAPA 1";
 
     const listaEtapas = Object.keys(MUNDIAL_FASES_ESTRUCTURA);
-    document.getElementById('etapa-activa-usuario').innerHTML = listaEtapas.map(e => `<option value="${e}">${e}</option>`).join('');
-    document.getElementById('filtro-tabla').innerHTML = listaEtapas.map(e => `<option value="${e}">${e}</option>`).join('');
-    document.getElementById('selector-etapa-cierre').innerHTML = listaEtapas.map(e => `<option value="${e}">${e}</option>`).join('');
-    document.getElementById('selector-etapa-resultados').innerHTML = listaEtapas.map(e => `<option value="${e}">${e}</option>`).join('');
-    document.getElementById('selector-etapa-pagos').innerHTML = listaEtapas.map(e => `<option value="${e}">${e}</option>`).join('');
 
-    db.ref().on('value', snap => {
-        const val = snap.val() || {};
-        SERVER_DATA.cierres = val.cierres || {};
-        SERVER_DATA.oficial_historial = val.oficial_historial || {};
-        SERVER_DATA.jugadas = val.jugadas || {};
-        listaEtapas.forEach(e => { if(SERVER_DATA.cierres[e] === undefined) SERVER_DATA.cierres[e] = false; });
-        actualizarUI();
-    });
+    window.onload = function() {
+        document.getElementById('etapa-activa-usuario').innerHTML = listaEtapas.map(e => `<option value="${e}">${e}</option>`).join('');
+        document.getElementById('filtro-tabla').innerHTML = listaEtapas.map(e => `<option value="${e}">${e}</option>`).join('');
+        document.getElementById('selector-etapa-cierre').innerHTML = listaEtapas.map(e => `<option value="${e}">${e}</option>`).join('');
+        document.getElementById('selector-etapa-resultados').innerHTML = listaEtapas.map(e => `<option value="${e}">${e}</option>`).join('');
+        document.getElementById('selector-etapa-pagos').innerHTML = listaEtapas.map(e => `<option value="${e}">${e}</option>`).join('');
+        
+        db.ref().on('value', snap => {
+            const val = snap.val() || {};
+            SERVER_DATA.cierres = val.cierres || {};
+            SERVER_DATA.oficial_historial = val.oficial_historial || {};
+            SERVER_DATA.jugadas = val.jugadas || {};
+            listaEtapas.forEach(e => { if(SERVER_DATA.cierres[e] === undefined) SERVER_DATA.cierres[e] = false; });
+            actualizarUI();
+        });
+    };
 
     function actualizarUI() {
         const isCerrada = SERVER_DATA.cierres[ETAPA_SELECCIONADA_USER];
@@ -309,7 +309,7 @@
 
     function guardajugada() {
         const nombre = document.getElementById('nombreInput').value.trim();
-        if(!nombre) return alert("Por favor escribe tu nombre");
+        if(!nombre) return alert("Por favor escribe tu nombre completo");
 
         const partidos = MUNDIAL_FASES_ESTRUCTURA[ETAPA_SELECCIONADA_USER].partidos;
         let respondidos = 0;
@@ -368,10 +368,11 @@
         const e = document.getElementById('selector-etapa-cierre').value;
         const status = SERVER_DATA.cierres[e] || false;
         const btn = document.getElementById('btn-toggle-cierre');
-        btn.innerText = status ? `🔓 ABRIR REGISTROS DE LA ${e}` : `🔒 CERRAR REGISTROS DE LA ${e}`;
-        btn.style.background = status ? "#28a745" : "var(--mex-rojo)";
+        if(btn) {
+            btn.innerText = status ? `🔓 ABRIR REGISTROS DE LA ${e}` : `🔒 CERRAR REGISTROS DE LA ${e}`;
+            btn.style.background = status ? "#28a745" : "var(--mex-rojo)";
+        }
     }
-    document.getElementById('selector-etapa-cierre').onchange = actualizarBotonCierreAdminUI;
 
     function publicarResultados() {
         const res = SERVER_DATA.oficial_historial[ETAPA_SELECCIONADA_ADMIN_RESULTADOS] || {};
