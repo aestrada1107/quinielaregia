@@ -99,8 +99,8 @@
     <div id="admin" class="content">
         <div class="admin-card" style="background: #eef5f1; border-color: #cbd5e0;">
             <h4>⚙️ Control de Cierre de Inscripción</h4>
-            <select id="selector-etapa-cierre"></select>
-            <button id="btn-toggle-cierre" onclick="toggleCierreAdmin()" style="width:100%; padding:12px; font-weight:bold; border:none; border-radius:8px; cursor:pointer; color:white;"></button>
+            <select id="selector-etapa-cierre" onchange="actualizarBotonCierreAdminUI()"></select>
+            <button id="btn-toggle-cierre" onclick="toggleCierreAdmin()" style="width:100%; padding:12px; font-weight:bold; border:none; border-radius:8px; cursor:pointer; color:white; margin-top: 10px;"></button>
         </div>
 
         <div class="admin-card">
@@ -271,13 +271,11 @@
             
             let levButtonsHtml = "";
             if (isCerrada) {
-                // Modo Tablero en Vivo: Muestra los botones bloqueados y resalta el marcador real capturado en rojo
                 levButtonsHtml = ['L','E','V'].map(v => {
                     const classReal = (marcadorOficial === v) ? 'real' : '';
                     return `<button class="btn-lev ${classReal}" style="cursor:default;" disabled>${v}</button>`;
                 }).join('');
             } else {
-                // Modo Registro Normal
                 levButtonsHtml = ['L','E','V'].map(v => {
                     const classSelected = (SEL_USER[p.id] === v) ? 'selected' : '';
                     return `<button class="btn-lev ${classSelected}" onclick="setVotoUser(${p.id},'${v}')">${v}</button>`;
@@ -301,6 +299,7 @@
 
     function renderListaPartidosAdmin() {
         const div = document.getElementById('lista-admin');
+        if(!div) return;
         div.innerHTML = '';
         const partidos = MUNDIAL_FASES_ESTRUCTURA[ETAPA_SELECCIONADA_ADMIN_RESULTADOS].partidos;
         const resOfi = SERVER_DATA.oficial_historial[ETAPA_SELECCIONADA_ADMIN_RESULTADOS] || {};
@@ -336,7 +335,7 @@
         partidos.forEach(p => { if(SEL_USER[p.id]) respondidos++; });
 
         if(respondidos < partidos.length) {
-            return alert("Faltan partidos por pronosticar en esta etapa.");
+            return alert("Faltan partidos por pronosticar in esta etapa.");
         }
 
         db.ref('jugadas').push({
@@ -357,6 +356,7 @@
 
     function calcularLeaderboard() {
         const etapaFiltro = document.getElementById('filtro-tabla').value;
+        if(!etapaFiltro) return;
         const resOfi = SERVER_DATA.oficial_historial[etapaFiltro] || {};
         const jugadas = Object.values(SERVER_DATA.jugadas).filter(j => j.jornada === etapaFiltro && j.pagado);
         const partidos = MUNDIAL_FASES_ESTRUCTURA[etapaFiltro].partidos;
@@ -375,7 +375,8 @@
         } else {
             tabla.forEach((it, i) => { h += `<tr class="${i===0 && it.p>0?'ganador-row':''}"><td>${i+1}</td><td>${it.n} ${i===0 && it.p>0?'🏆':''}</td><td><strong>${it.p}</strong></td></tr>`; });
         }
-        document.getElementById('render-puntos').innerHTML = h + '</table>';
+        const containerPuntos = document.getElementById('render-puntos');
+        if(containerPuntos) containerPuntos.innerHTML = h + '</table>';
     }
 
     function toggleCierreAdmin() {
@@ -385,7 +386,10 @@
     }
 
     function actualizarBotonCierreAdminUI() {
-        const e = document.getElementById('selector-etapa-cierre').value;
+        const selector = document.getElementById('selector-etapa-cierre');
+        if(!selector || !selector.value) return; // Blindaje si no se ha cargado en el DOM
+        
+        const e = selector.value;
         const status = SERVER_DATA.cierres[e] || false;
         const btn = document.getElementById('btn-toggle-cierre');
         if(btn) {
@@ -403,8 +407,10 @@
 
     function renderAdminParticipantes() {
         const div = document.getElementById('admin-participantes');
+        if(!div) return;
         div.innerHTML = '';
         const e = document.getElementById('selector-etapa-pagos').value;
+        if(!e) return;
         
         const llaves = Object.keys(SERVER_DATA.jugadas);
         let contador = 0;
