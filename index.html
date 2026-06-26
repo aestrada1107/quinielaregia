@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QUINIELA MUNDIALISTA - PREMIUM</title>
+    <title>QUINIELA MUNDIALISTA - PREMIUM v2</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
@@ -57,7 +57,7 @@
             text-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
 
-        .admin-trigger { color: var(--gold); text-decoration: none; cursor: pointer; font-size: 1.1em; }
+        .admin-trigger { color: var(--gold); text-decoration: none; cursor: pointer; font-size: 1.1em; padding: 0 4px; }
 
         .tabs { display: flex; background: #001f16; padding: 4px; gap: 4px; }
         .tab-btn {
@@ -239,9 +239,9 @@
     </div>
     
     <div class="tabs">
-        <button class="tab-btn active" onclick="showTab('jugador')">REGISTRO</button>
-        <button class="tab-btn" onclick="showTab('posiciones')">POSICIONES</button>
-        <button class="tab-btn" id="btn-admin" style="display:none;" onclick="showTab('admin')">ADMIN</button>
+        <button class="tab-btn active" id="tab-jugador-btn" onclick="showTab('jugador', 'tab-jugador-btn')">REGISTRO</button>
+        <button class="tab-btn" id="tab-posiciones-btn" onclick="showTab('posiciones', 'tab-posiciones-btn')">POSICIONES</button>
+        <button class="tab-btn" id="btn-admin" style="display:none;" onclick="showTab('admin', 'btn-admin')">ADMIN</button>
     </div>
 
     <div id="jugador" class="content active">
@@ -338,7 +338,7 @@
         ]}
     };
 
-    // Tu conexión idéntica a Firebase
+    // Firebase Config
     const firebaseConfig = { apiKey: "AIzaSyBgmqQLnUIPuaDgXOEvuBAoY_mcd69Qw7E", authDomain: "quinielaligamx-68b52.firebaseapp.com", databaseURL: "https://quinielaligamx-68b52-default-rtdb.firebaseio.com", projectId: "quinielaligamx-68b52", storageBucket: "quinielaligamx-68b52.firebasestorage.app", messagingSenderId: "745257098090", appId: "1:745257098090:web:3c13bf19a1a0c1718ca313" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -402,4 +402,300 @@
     }
 
     function renderListaPartidosUsuario() {
-        const div = document.getElementById('lista
+        const div = document.getElementById('lista-jugador');
+        div.innerHTML = '';
+        const etapaObj = MUNDIAL_FASES_ESTRUCTURA[ETAPA_SELECCIONADA_USER];
+        const isCerrada = SERVER_DATA.cierres[ETAPA_SELECCIONADA_USER] || false;
+        const resOfi = SERVER_DATA.oficial_historial[ETAPA_SELECCIONADA_USER] || {};
+
+        etapaObj.partidos.forEach(p => {
+            const nombreL = obtenerNombreEquipo(ETAPA_SELECCIONADA_USER, p.id, "l", p.l);
+            const nombreV = obtenerNombreEquipo(ETAPA_SELECCIONADA_USER, p.id, "v", p.v);
+            const marcadorOficial = resOfi[p.id + "_voto"] || "";
+            const avanzaOficial = resOfi[p.id + "_avanza"] || "";
+            
+            let buttonsHtml = "";
+            let avanzaHtml = "";
+
+            if (isCerrada) {
+                buttonsHtml = ['L','E','V'].map(v => `<button class="btn-lev ${marcadorOficial === v ? 'real' : ''}" disabled>${v}</button>`).join('');
+                if (etapaObj.liguilla) {
+                    avanzaHtml = `
+                        <div class="avanza-box">
+                            <div class="avanza-title">Clasificó Oficial:</div>
+                            <div class="avanza-btns">
+                                <button class="btn-avanza ${avanzaOficial==='L'?'real':''}" disabled>${nombreL}</button>
+                                <button class="btn-avanza ${avanzaOficial==='V'?'real':''}" disabled>${nombreV}</button>
+                            </div>
+                        </div>`;
+                }
+            } else {
+                buttonsHtml = ['L','E','V'].map(v => `<button class="btn-lev ${SEL_USER[p.id] === v ? 'selected' : ''}" onclick="setVotoUser(${p.id},'${v}')">${v}</button>`).join('');
+                if (etapaObj.liguilla) {
+                    avanzaHtml = `
+                        <div class="avanza-box">
+                            <div class="avanza-title">⭐ Punto Extra: ¿Quién Avanza de Ronda?</div>
+                            <div class="avanza-btns">
+                                <button class="btn-avanza ${SEL_AVANZA[p.id]==='L'?'selected':''}" onclick="setAvanzaUser(${p.id},'L')">${nombreL}</button>
+                                <button class="btn-avanza ${SEL_AVANZA[p.id]==='V'?'selected':''}" onclick="setAvanzaUser(${p.id},'V')">${nombreV}</button>
+                            </div>
+                        </div>`;
+                }
+            }
+
+            div.innerHTML += `
+                <div class="partido-card">
+                    <div class="meta-header"><span>${p.grupo}</span> <span>ID: ${p.id}</span></div>
+                    <div class="partido-row">
+                        <div class="equipo">${nombreL}</div>
+                        <div class="lev-container">${buttonsHtml}</div>
+                        <div class="equipo">${nombreV}</div>
+                    </div>
+                    ${avanzaHtml}
+                </div>`;
+        });
+    }
+
+    function renderListaPartidosAdmin() {
+        const div = document.getElementById('lista-admin');
+        if(!div) return; div.innerHTML = '';
+        const etapaObj = MUNDIAL_FASES_ESTRUCTURA[ETAPA_SELECCIONADA_ADMIN_RESULTADOS];
+        const resOfi = SERVER_DATA.oficial_historial[ETAPA_SELECCIONADA_ADMIN_RESULTADOS] || {};
+
+        etapaObj.partidos.forEach(p => {
+            const nombreL = obtenerNombreEquipo(ETAPA_SELECCIONADA_ADMIN_RESULTADOS, p.id, "l", p.l);
+            const nombreV = obtenerNombreEquipo(ETAPA_SELECCIONADA_ADMIN_RESULTADOS, p.id, "v", p.v);
+            const votoM = resOfi[p.id + "_voto"] || "";
+            const avanzaM = resOfi[p.id + "_avanza"] || "";
+
+            let avanzaAdminHtml = "";
+            if (etapaObj.liguilla) {
+                avanzaAdminHtml = `
+                    <div class="avanza-box" style="background:#fff3f3; border-color:var(--accent);">
+                        <div class="avanza-title" style="color:var(--accent);">👑 Marcar Ganador Oficial (Punto Extra):</div>
+                        <div class="avanza-btns">
+                            <button class="btn-avanza ${avanzaM==='L'?'real':''}" onclick="setAvanzaAdmin(${p.id},'L')">${nombreL}</button>
+                            <button class="btn-avanza ${avanzaM==='V'?'real':''}" onclick="setAvanzaAdmin(${p.id},'V')">${nombreV}</button>
+                        </div>
+                    </div>`;
+            }
+
+            div.innerHTML += `
+                <div class="partido-card">
+                    <div class="meta-header"><span>${p.grupo}</span> <span>ID: ${p.id}</span></div>
+                    <div class="partido-row">
+                        <div class="equipo">${nombreL}</div>
+                        <div class="lev-container">
+                            ${['L','E','V'].map(v => `<button class="btn-lev ${votoM===v ? 'real':''}" onclick="setVotoAdmin(${p.id},'${v}')">${v}</button>`).join('')}
+                        </div>
+                        <div class="equipo">${nombreV}</div>
+                    </div>
+                    ${avanzaAdminHtml}
+                </div>`;
+        });
+    }
+
+    function renderGestionEquiposAdmin(etapa) {
+        const div = document.getElementById('lista-gestion-equipos');
+        if(!div) return; div.innerHTML = '';
+        const partidos = MUNDIAL_FASES_ESTRUCTURA[etapa].partidos;
+
+        partidos.forEach(p => {
+            const nombreL = obtenerNombreEquipo(etapa, p.id, "l", p.l);
+            const nombreV = obtenerNombreEquipo(etapa, p.id, "v", p.v);
+            
+            div.innerHTML += `
+                <div style="border-bottom:1px solid #f0f0f0; padding:10px 0;">
+                    <div style="font-size:0.75em; font-weight:800; color:var(--primary-light); margin-bottom:6px;">ID ${p.id} - ${p.grupo}</div>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <input type="text" id="custom_l_${p.id}" value="${nombreL}" style="margin:0;">
+                        <span style="font-weight:bold; color:gray;">VS</span>
+                        <input type="text" id="custom_v_${p.id}" value="${nombreV}" style="margin:0;">
+                    </div>
+                </div>`;
+        });
+    }
+
+    function guardarNombresEquiposCloud() {
+        const e = document.getElementById('selector-etapa-equipos').value;
+        const partidos = MUNDIAL_FASES_ESTRUCTURA[e].partidos;
+        let payload = {};
+
+        partidos.forEach(p => {
+            payload[p.id + "_l"] = document.getElementById(`custom_l_${p.id}`).value.trim();
+            payload[p.id + "_v"] = document.getElementById(`custom_v_${p.id}`).value.trim();
+        });
+
+        db.ref('nombres_custom/' + e).set(payload).then(() => {
+            alert(`Llaves inyectadas correctamente para la etapa: ${e}`);
+            actualizarUI();
+        });
+    }
+
+    function setVotoUser(id, valor) { SEL_USER[id] = valor; renderListaPartidosUsuario(); }
+    function setAvanzaUser(id, valor) { SEL_AVANZA[id] = valor; renderListaPartidosUsuario(); }
+    
+    function setVotoAdmin(id, valor) { 
+        if(!SERVER_DATA.oficial_historial[ETAPA_SELECCIONADA_ADMIN_RESULTADOS]) SERVER_DATA.oficial_historial[ETAPA_SELECCIONADA_ADMIN_RESULTADOS] = {};
+        SERVER_DATA.oficial_historial[ETAPA_SELECCIONADA_ADMIN_RESULTADOS][id + "_voto"] = valor;
+        renderListaPartidosAdmin(); 
+    }
+    function setAvanzaAdmin(id, valor) {
+        if(!SERVER_DATA.oficial_historial[ETAPA_SELECCIONADA_ADMIN_RESULTADOS]) SERVER_DATA.oficial_historial[ETAPA_SELECCIONADA_ADMIN_RESULTADOS] = {};
+        SERVER_DATA.oficial_historial[ETAPA_SELECCIONADA_ADMIN_RESULTADOS][id + "_avanza"] = valor;
+        renderListaPartidosAdmin();
+    }
+
+    function guardajugada() {
+        const nombre = document.getElementById('nombreInput').value.trim();
+        if(!nombre) return alert("Por favor escribe tu nombre completo");
+
+        const etapaObj = MUNDIAL_FASES_ESTRUCTURA[ETAPA_SELECCIONADA_USER];
+        let respondidos = 0;
+
+        etapaObj.partidos.forEach(p => { 
+            if(SEL_USER[p.id]) {
+                if (etapaObj.liguilla && !SEL_AVANZA[p.id]) {
+                    // Espera que marque el desempate
+                } else { respondidos++; }
+            }
+        });
+
+        if(respondidos < etapaObj.partidos.length) {
+            return alert("Falta completar pronósticos o seleccionar quién avanza en la ronda eliminatoria.");
+        }
+
+        db.ref('jugadas').push({
+            nombre: nombre,
+            votos: SEL_USER,
+            avanza: SEL_AVANZA || {},
+            pagado: false,
+            jornada: ETAPA_SELECCIONADA_USER,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+
+        document.getElementById('registro-area').style.display = 'none';
+        document.getElementById('ticket-final').style.display = 'block';
+
+        let t = `👤 COLABORADOR: ${nombre.toUpperCase()}\n🏆 QUINIELA MUNDIALISTA\n📅 FASE: ${ETAPA_SELECCIONADA_USER}\n--------------------\n`;
+        etapaObj.partidos.forEach(p => { 
+            const nL = obtenerNombreEquipo(ETAPA_SELECCIONADA_USER, p.id, "l", p.l);
+            const nV = obtenerNombreEquipo(ETAPA_SELECCIONADA_USER, p.id, "v", p.v);
+            t += `${nL} vs ${nV} [${SEL_USER[p.id]}] ${etapaObj.liguilla ? `(Pasa: ${SEL_AVANZA[p.id]})`:''}\n`; 
+        });
+        document.getElementById('mensaje-texto').innerText = t;
+    }
+
+    function calcularLeaderboard() {
+        const etapaFiltro = document.getElementById('filtro-tabla').value;
+        if(!etapaFiltro) return;
+        const resOfi = SERVER_DATA.oficial_historial[etapaFiltro] || {};
+        const jugadas = Object.values(SERVER_DATA.jugadas).filter(j => j.jornada === etapaFiltro && j.pagado);
+        const etapaObj = MUNDIAL_FASES_ESTRUCTURA[etapaFiltro];
+
+        let tabla = jugadas.map(j => {
+            let pts = 0;
+            etapaObj.partidos.forEach(p => {
+                const votoReal = resOfi[p.id + "_voto"];
+                const avanzaReal = resOfi[p.id + "_avanza"];
+                const votoUser = j.votos ? j.votos[p.id] : null;
+                const avanzaUser = j.avanza ? j.avanza[p.id] : null;
+
+                if(votoReal && String(votoUser) === String(votoReal)) pts++;
+                if(etapaObj.liguilla && avanzaReal && String(avanzaUser) === String(avanzaReal)) pts++;
+            });
+            return { n: j.nombre, p: pts, t: j.timestamp };
+        }).sort((a,b) => b.p - a.p || a.t - b.t);
+
+        let h = '<table><tr><th>Pos</th><th>Colaborador</th><th>Pts</th></tr>';
+        if(tabla.length === 0) {
+            h += `<tr><td colspan="3" style="text-align:center; color:gray; font-size:0.85em;">Sin quinielas pagadas en esta fase.</td></tr>`;
+        } else {
+            tabla.forEach((it, i) => { h += `<tr class="${i===0 && it.p > 0?'ganador-row':''}"><td>${i+1}</td><td>${it.n} ${i===0 && it.p>0?'🏆':''}</td><td><strong>${it.p}</strong></td></tr>`; });
+        }
+        document.getElementById('render-puntos').innerHTML = h + '</table>';
+    }
+
+    function toggleCierreAdmin() {
+        const e = document.getElementById('selector-etapa-cierre').value;
+        const estadoActual = SERVER_DATA.cierres[e] || false;
+        db.ref('cierres/' + e).set(!estadoActual);
+    }
+
+    function actualizarBierreAdminUI() {
+        const e = document.getElementById('selector-etapa-cierre').value;
+        const status = SERVER_DATA.cierres[e] || false;
+        const btn = document.getElementById('btn-toggle-cierre');
+        if(btn) {
+            btn.innerText = status ? `🔓 ABRIR PRONÓSTICOS DE: ${e}` : `🔒 CERRAR PRONÓSTICOS DE: ${e}`;
+            btn.style.background = status ? "#43a047" : "var(--accent)";
+        }
+        const selEquipos = document.getElementById('selector-etapa-equipos');
+        if(selEquipos && !document.getElementById('lista-gestion-equipos').innerHTML) {
+            renderGestionEquiposAdmin(selEquipos.value);
+        }
+    }
+
+    function publicarResultados() {
+        db.ref('oficial_historial/' + ETAPA_SELECCIONADA_ADMIN_RESULTADOS).set(SERVER_DATA.oficial_historial[ETAPA_SELECCIONADA_ADMIN_RESULTADOS]).then(() => {
+            alert(`Resultados publicados con éxito para: ${ETAPA_SELECCIONADA_ADMIN_RESULTADOS}`);
+        });
+    }
+
+    function renderAdminParticipantes() {
+        const div = document.getElementById('admin-participantes');
+        if(!div) return; div.innerHTML = '';
+        const e = document.getElementById('selector-etapa-pagos').value;
+        
+        let contador = 0;
+        Object.keys(SERVER_DATA.jugadas).forEach(id => {
+            const j = SERVER_DATA.jugadas[id];
+            if(j.jornada === e) {
+                contador++;
+                div.innerHTML += `
+                    <div class="partido-card" style="display:flex; justify-content:space-between; align-items:center; padding:12px; margin-bottom:8px;">
+                        <span style="font-size:0.85em; font-weight:bold; color:var(--primary);">${j.nombre}</span>
+                        <div style="display:flex; gap:6px;">
+                            <button style="background:${j.pagado?'#43a047':'#b0bec5'}; color:white; border:none; padding:6px 12px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="db.ref('jugadas/${id}').update({pagado:${!j.pagado}})">${j.pagado?'PAGADO':'VALIDAR'}</button>
+                            <button style="background:#37474f; color:white; border:none; padding:6px 10px; border-radius:8px; cursor:pointer;" onclick="verDetalle('${id}')">👁️</button>
+                        </div>
+                    </div>`;
+            }
+        });
+        if(contador === 0) div.innerHTML = "<p style='font-size:0.85em; color:gray; text-align:center;'>Ningún registro en esta fase.</p>";
+    }
+
+    function verDetalle(id) {
+        const j = SERVER_DATA.jugadas[id];
+        document.getElementById('modal-nombre').innerText = j.nombre;
+        let h = '<table style="width:100%">';
+        MUNDIAL_FASES_ESTRUCTURA[j.jornada].partidos.forEach(p => { 
+            const nL = obtenerNombreEquipo(j.jornada, p.id, "l", p.l);
+            const nV = obtenerNombreEquipo(j.jornada, p.id, "v", p.v);
+            h += `<tr><td style="font-size:0.8em;">${nL} vs ${nV}</td><td style="text-align:right; font-weight:bold; color:var(--primary-light);">[${j.votos[p.id] || '-'}] ${j.avanza&&j.avanza[p.id]?`<br><span style="font-size:0.8em; color:var(--gold);">➔ ${j.avanza[p.id]}</span>`:''}</td></tr>`; 
+        });
+        document.getElementById('modal-detalle').innerHTML = h + '</table>';
+        document.getElementById('modal-ver').style.display = 'block';
+    }
+
+    function showTab(tabId, btnId) { 
+        document.querySelectorAll('.content').forEach(c => c.classList.remove('active')); 
+        document.getElementById(tabId).classList.add('active'); 
+        
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); 
+        document.getElementById(btnId).classList.add('active'); 
+    }
+    
+    function copiarAlPortapapeles() { navigator.clipboard.writeText(document.getElementById('mensaje-texto').innerText).then(()=>alert("Copiado al portapapeles ✅")); }
+    
+    function entrarAdminSecret() {
+        const pass = prompt("Clave de Administrador:");
+        if(btoa(pass) === "RmlicmEyMDI1LjA=") { 
+            document.getElementById('btn-admin').style.display='block'; 
+            alert("Acceso Concedido, Papu."); 
+            showTab('admin', 'btn-admin');
+        } else { alert("Clave denegada."); }
+    }
+</script>
+</body>
+</html>
