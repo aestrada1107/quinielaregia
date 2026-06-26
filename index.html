@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QUINIELA MUNDIALISTA - PREMIUM v2</title>
+    <title>QUINIELA MUNDIALISTA - LIGUILLA TOTAL</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
         :root {
-            --primary: #004d40;
+            --mex-verde: #004d40;
             --primary-light: #00796b;
             --accent: #d32f2f;
             --gold: #ffb300;
             --bg-gradient: linear-gradient(135deg, #f4f7f6 0%, #e8efe2 100%);
             --card-shadow: 0 8px 24px rgba(0, 4d, 64, 0.08);
-            --text-main: #263238;
+            --texto-oscuro: #263238;
         }
 
         *, *::before, *::after { box-sizing: border-box; }
@@ -25,7 +25,7 @@
             background-attachment: fixed;
             margin: 0;
             padding: 15px;
-            color: var(--text-main);
+            color: var(--texto-oscuro);
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -40,7 +40,7 @@
         }
 
         .header-main {
-            background: linear-gradient(135deg, var(--primary) 0%, #00251a 100%);
+            background: linear-gradient(135deg, var(--mex-verde) 0%, #00251a 100%);
             color: white;
             padding: 30px 20px;
             text-align: center;
@@ -50,9 +50,9 @@
 
         .header-main h1 {
             margin: 0;
-            font-size: 1.6em;
+            font-size: 1.5em;
             font-weight: 900;
-            letter-spacing: 1.5px;
+            letter-spacing: 1px;
             text-transform: uppercase;
             text-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
@@ -117,9 +117,7 @@
             padding: 16px;
             box-shadow: var(--card-shadow);
             border: 1px solid #eef2f5;
-            transition: transform 0.2s;
         }
-        .partido-card:hover { transform: translateY(-2px); }
 
         .meta-header {
             font-size: 0.72em;
@@ -134,7 +132,7 @@
         }
 
         .partido-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-        .equipo { font-weight: 800; width: 33%; font-size: 0.9em; text-align: center; color: #37474f; }
+        .equipo { font-weight: 800; width: 33%; font-size: 0.88em; text-align: center; color: #37474f; word-wrap: break-word; }
         
         .lev-container { display: flex; gap: 6px; width: 34%; }
         .btn-lev {
@@ -147,9 +145,8 @@
             color: #546e7a;
             cursor: pointer;
             font-size: 0.85em;
-            transition: all 0.2s ease;
         }
-        .btn-lev.selected { background: var(--primary); color: white; border-color: var(--primary); }
+        .btn-lev.selected { background: var(--mex-verde); color: white; border-color: var(--mex-verde); }
         .btn-lev.real { background: var(--accent); color: white; border-color: var(--accent); }
 
         .avanza-box {
@@ -163,15 +160,14 @@
             gap: 6px;
             align-items: center;
         }
-        .avanza-title { font-size: 0.72em; font-weight: 800; color: #b78103; text-transform: uppercase; }
+        .avanza-title { font-size: 0.72em; font-weight: 800; color: #b78103; text-transform: uppercase; letter-spacing: 0.5px; }
         .avanza-btns { display: flex; gap: 8px; width: 100%; justify-content: center; }
         .btn-avanza {
             flex: 1;
-            max-width: 150px;
-            padding: 6px 12px;
+            padding: 8px 6px;
             border-radius: 8px;
             border: 1px solid #ffe082;
-            font-size: 0.75em;
+            font-size: 0.78em;
             cursor: pointer;
             font-weight: bold;
             background: white;
@@ -193,9 +189,7 @@
             text-transform: uppercase;
             font-size: 0.9em;
             letter-spacing: 1px;
-            transition: all 0.2s;
         }
-        .btn-main:active { transform: scale(0.98); }
 
         input[type="text"], select {
             width: 100%;
@@ -204,20 +198,17 @@
             border-radius: 12px;
             background: #fafafa;
             font-size: 0.9em;
-            color: var(--text-main);
+            color: var(--texto-oscuro);
             margin-bottom: 12px;
-            transition: border 0.2s;
         }
-        input[type="text"]:focus { border-color: var(--primary-light); outline: none; background: white; }
 
         table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; border-radius: 12px; overflow: hidden; box-shadow: var(--card-shadow); }
         th, td { padding: 14px; text-align: left; border-bottom: 1px solid #eceff1; }
-        th { background: var(--primary); color: white; font-weight: bold; font-size: 0.85em; text-transform: uppercase; }
-        tr:last-child td { border-bottom: none; }
+        th { background: var(--mex-verde); color: white; font-weight: bold; font-size: 0.85em; text-transform: uppercase; }
         .ganador-row { background: #fffde7 !important; font-weight: bold; color: #004d40; border-left: 5px solid var(--gold); }
 
         .admin-card { background: white; padding: 20px; border-radius: 18px; border: 1px solid #e0e0e0; margin-bottom: 20px; box-shadow: var(--card-shadow); }
-        .admin-card h4 { margin-top: 0; margin-bottom: 14px; color: var(--primary); font-size: 0.95em; text-transform: uppercase; border-bottom: 2px solid #f5f5f5; padding-bottom: 6px; }
+        .admin-card h4 { margin-top: 0; margin-bottom: 14px; color: var(--mex-verde); font-size: 0.95em; text-transform: uppercase; border-bottom: 2px solid #f5f5f5; padding-bottom: 6px; }
 
         .status-box { background: #ffebee; color: var(--accent); padding: 14px; border-radius: 12px; text-align: center; font-weight: bold; margin-bottom: 16px; border: 1px solid #ffcdd2; font-size: 0.85em; }
     </style>
@@ -225,8 +216,8 @@
 <body>
 
 <div id="modal-ver" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px);">
-    <div style="background:white; margin:15% auto; padding:24px; width:100%; max-width:400px; border-radius:20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-        <h3 id="modal-nombre" style="text-align:center; color:var(--primary); margin-top:0;"></h3>
+    <div style="background:white; margin:15% auto; padding:24px; width:100%; max-width:400px; border-radius:20px;">
+        <h3 id="modal-nombre" style="text-align:center; color:var(--mex-verde); margin-top:0;"></h3>
         <div id="modal-detalle" style="max-height: 250px; overflow-y: auto;"></div>
         <button onclick="document.getElementById('modal-ver').style.display='none'" class="btn-main" style="background:#455a64; margin-top: 15px;">CERRAR</button>
     </div>
@@ -235,7 +226,7 @@
 <div class="container">
     <div class="header-main">
         <h1>QUINIELA MUNDIALISTA <span class="admin-trigger" onclick="entrarAdminSecret()">AE</span></h1>
-        <p style="margin: 6px 0 0; font-weight: bold; color: var(--gold); font-size: 0.8em; text-transform: uppercase; letter-spacing: 2px;">Edición Fases Finales</p>
+        <p style="margin: 6px 0 0; font-weight: bold; color: var(--gold); font-size: 0.8em; text-transform: uppercase; letter-spacing: 2px;">Fases Finales Ofiales</p>
     </div>
     
     <div class="tabs">
@@ -244,6 +235,7 @@
         <button class="tab-btn" id="btn-admin" style="display:none;" onclick="showTab('admin', 'btn-admin')">ADMIN</button>
     </div>
 
+    <!-- PANELES DE USUARIO -->
     <div id="jugador" class="content active">
         <div class="selector-box">
             <label for="etapa-activa-usuario">🏆 Fase del Campeonato:</label>
@@ -256,17 +248,18 @@
         
         <div id="registro-area">
             <input type="text" id="nombreInput" placeholder="Escribe tu Nombre Completo">
-            <button class="btn-main" style="background: var(--primary)" onclick="guardajugada()">✅ GUARDAR Y GENERAR TICKET</button>
+            <button class="btn-main" style="background: var(--mex-verde)" onclick="guardajugada()">✅ GUARDAR Y GENERAR TICKET</button>
         </div>
         
         <div id="ticket-final" style="display:none; border:2px solid var(--primary-light); padding:16px; border-radius:16px; margin-top:12px; background: #f0fdf4;">
-            <p style="margin-top:0; font-weight:bold; color: var(--primary);">¡Listo! Envía este respaldo a WhatsApp:</p>
-            <div id="mensaje-texto" style="white-space:pre-wrap; font-family:monospace; background:white; padding:12px; font-size:0.8em; border:1px solid #cfd8dc; border-radius:8px; max-height:150px; overflow-y:auto; color:#37474f;"></div>
+            <p style="margin-top:0; font-weight:bold; color: var(--mex-verde);">¡Listo! Envía este respaldo a WhatsApp:</p>
+            <div id="mensaje-texto" style="white-space:pre-wrap; font-family:monospace; background:white; padding:12px; font-size:0.8em; border:1px solid #cfd8dc; border-radius:8px; max-height:150px; overflow-y:auto;"></div>
             <button onclick="copiarAlPortapapeles()" class="btn-main" style="background: var(--accent); margin-top: 10px;">📋 COPIAR TEXTO</button>
-            <button onclick="location.reload()" style="width:100%; border:none; background:none; color:#78909c; margin-top:15px; cursor:pointer; font-weight:bold; font-size:0.85em;">Cargar nueva plantilla</button>
+            <button onclick="location.reload()" style="width:100%; border:none; background:none; color:#78909c; margin-top:15px; cursor:pointer; font-weight:bold;">Nueva plantilla</button>
         </div>
     </div>
 
+    <!-- LIDERBOARD -->
     <div id="posiciones" class="content">
         <div class="selector-box">
             <label for="filtro-tabla">📊 Posiciones por Fase:</label>
@@ -275,6 +268,7 @@
         <div id="render-puntos"></div>
     </div>
 
+    <!-- PANEL ADMIN -->
     <div id="admin" class="content">
         <div class="admin-card" style="background: #f1f8e9;">
             <h4>🔒 Apertura / Cierre de Fase</h4>
@@ -283,21 +277,21 @@
         </div>
 
         <div class="admin-card" style="background: #fffde7; border: 1px solid var(--gold);">
-            <h4>✏️ Configurar Equipos Clasificados (Liguilla)</h4>
+            <h4>✏️ Configurar Equipos Clasificados</h4>
             <select id="selector-etapa-equipos" onchange="renderGestionEquiposAdmin(this.value)"></select>
             <div id="lista-gestion-equipos"></div>
             <button class="btn-main" style="background: var(--primary-light); margin-top:10px;" onclick="guardarNombresEquiposCloud()">ACTUALIZAR LLAVES EN LA WEB</button>
         </div>
 
         <div class="admin-card">
-            <h4>⚽ Capturar Marcador y Punto Extra (Avanza)</h4>
+            <h4>⚽ Capturar Marcador y Ganador (Punto Extra)</h4>
             <select id="selector-etapa-resultados" onchange="cambiarEtapaAdminResultados(this.value)"></select>
             <div id="lista-admin"></div>
-            <button class="btn-main" style="background: var(--primary);" onclick="publicarResultados()">PUBLICAR RESULTADOS OFICIALES</button>
+            <button class="btn-main" style="background: var(--mex-verde);" onclick="publicarResultados()">PUBLICAR RESULTADOS OFICIALES</button>
         </div>
 
         <div class="admin-card">
-            <h4>👥 Validar Pagos de Participantes</h4>
+            <h4>👥 Validar Pagos</h4>
             <select id="selector-etapa-pagos" onchange="renderAdminParticipantes()"></select>
             <div id="admin-participantes"></div>
         </div>
@@ -305,40 +299,58 @@
 </div>
 
 <script>
+    // ARQUITECTURA MATEMÁTICA EXACTA: 16 JUEGOS EN 16VOS, 8 EN 8VOS, 4 EN 4TOS, 2 EN SEMI Y 2 EN FINALES
     const MUNDIAL_FASES_ESTRUCTURA = {
-        "ETAPA 1": { info: "Jornada 1 de Fase de Grupos", partidos: [
+        "ETAPA 1": { info: "Fase de Grupos - Etapa 1", partidos: [
             { id: 1, l: "México", v: "Sudáfrica", grupo: "Grupo A", meta: "Estadio Azteca" },
             { id: 2, l: "República de Corea", v: "República Checa", grupo: "Grupo A", meta: "Estadio Guadalajara" },
-            { id: 3, l: "Canadá", v: "Bosnia", grupo: "Grupo B", meta: "Estadio Toronto" },
-            { id: 4, l: "Estados Unidos", v: "Paraguay", grupo: "Grupo D", meta: "Estadio Los Ángeles" },
-            { id: 5, l: "Catar", v: "Suiza", grupo: "Grupo B", meta: "Estadio San Francisco" },
-            { id: 6, l: "Brasil", v: "Marruecos", grupo: "Grupo C", meta: "Estadio Nueva York" }
+            { id: 9, l: "Alemania", v: "Curazao", grupo: "Grupo E", meta: "Estadio Houston" },
+            { id: 12, l: "Suecia", v: "Túnez", grupo: "Grupo F", meta: "Estadio Monterrey" }
         ]},
-        "ETAPA 2": { info: "Jornada 2 de Fase de Grupos", partidos: [
-            { id: 13, l: "España", v: "Cabo Verde", grupo: "Grupo H", meta: "Estadio Atlanta" },
-            { id: 14, l: "Bélgica", v: "Egipto", grupo: "Grupo G", meta: "Estadio Seattle" },
-            { id: 15, l: "Arabia Saudí", v: "Uruguay", grupo: "Grupo H", meta: "Estadio Miami" }
+        "16VOS DE FINAL": { info: "32 Clasificados (16 Partidos). 1pt Regular + 1pt Extra al que AVANZA.", liguilla: true, partidos: [
+            { id: 101, l: "Por definir (Llave 1 L)", v: "Por definir (Llave 1 V)", grupo: "16VOS J1", meta: "Eliminatoria" },
+            { id: 102, l: "Por definir (Llave 2 L)", v: "Por definir (Llave 2 V)", grupo: "16VOS J2", meta: "Eliminatoria" },
+            { id: 103, l: "Por definir (Llave 3 L)", v: "Por definir (Llave 3 V)", grupo: "16VOS J3", meta: "Eliminatoria" },
+            { id: 104, l: "Por definir (Llave 4 L)", v: "Por definir (Llave 4 V)", grupo: "16VOS J4", meta: "Eliminatoria" },
+            { id: 105, l: "Por definir (Llave 5 L)", v: "Por definir (Llave 5 V)", grupo: "16VOS J5", meta: "Eliminatoria" },
+            { id: 106, l: "Por definir (Llave 6 L)", v: "Por definir (Llave 6 V)", grupo: "16VOS J6", meta: "Eliminatoria" },
+            { id: 107, l: "Por definir (Llave 7 L)", v: "Por definir (Llave 7 V)", grupo: "16VOS J7", meta: "Eliminatoria" },
+            { id: 108, l: "Por definir (Llave 8 L)", v: "Por definir (Llave 8 V)", grupo: "16VOS J8", meta: "Eliminatoria" },
+            { id: 109, l: "Por definir (Llave 9 L)", v: "Por definir (Llave 9 V)", grupo: "16VOS J9", meta: "Eliminatoria" },
+            { id: 110, l: "Por definir (Llave 10 L)", v: "Por definir (Llave 10 V)", grupo: "16VOS J10", meta: "Eliminatoria" },
+            { id: 111, l: "Por definir (Llave 11 L)", v: "Por definir (Llave 11 V)", grupo: "16VOS J11", meta: "Eliminatoria" },
+            { id: 112, l: "Por definir (Llave 12 L)", v: "Por definir (Llave 12 V)", grupo: "16VOS J12", meta: "Eliminatoria" },
+            { id: 113, l: "Por definir (Llave 13 L)", v: "Por definir (Llave 13 V)", grupo: "16VOS J13", meta: "Eliminatoria" },
+            { id: 114, l: "Por definir (Llave 14 L)", v: "Por definir (Llave 14 V)", grupo: "16VOS J14", meta: "Eliminatoria" },
+            { id: 115, l: "Por definir (Llave 15 L)", v: "Por definir (Llave 15 V)", grupo: "16VOS J15", meta: "Eliminatoria" },
+            { id: 116, l: "Por definir (Llave 16 L)", v: "Por definir (Llave 16 V)", grupo: "16VOS J16", meta: "Eliminatoria" }
         ]},
-        "16VOS DE FINAL": { info: "Fase de 16vos. Gana 1pt Tiempo Regular + 1pt Extra por acertar quién avanza.", liguilla: true, partidos: [
-            { id: 101, l: "Por definir (1A)", v: "Por definir (2B)", grupo: "Llave 1", meta: "Sede por definir" },
-            { id: 102, l: "Por definir (1C)", v: "Por definir (2D)", grupo: "Llave 2", meta: "Sede por definir" },
-            { id: 103, l: "Por definir (1E)", v: "Por definir (2F)", grupo: "Llave 3", meta: "Sede por definir" },
-            { id: 104, l: "Por definir (1G)", v: "Por definir (2H)", grupo: "Llave 4", meta: "Sede por definir" }
+        "8VOS DE FINAL": { info: "16 Clasificados (8 Partidos). 1pt Regular + 1pt Extra al que AVANZA.", liguilla: true, partidos: [
+            { id: 201, l: "Por definir (O1 L)", v: "Por definir (O1 V)", grupo: "OCTAVOS J1", meta: "Eliminatoria" },
+            { id: 202, l: "Por definir (O2 L)", v: "Por definir (O2 V)", grupo: "OCTAVOS J2", meta: "Eliminatoria" },
+            { id: 203, l: "Por definir (O3 L)", v: "Por definir (O3 V)", grupo: "OCTAVOS J3", meta: "Eliminatoria" },
+            { id: 204, l: "Por definir (O4 L)", v: "Por definir (O4 V)", grupo: "OCTAVOS J4", meta: "Eliminatoria" },
+            { id: 205, l: "Por definir (O5 L)", v: "Por definir (O5 V)", grupo: "OCTAVOS J5", meta: "Eliminatoria" },
+            { id: 206, l: "Por definir (O6 L)", v: "Por definir (O6 V)", grupo: "OCTAVOS J6", meta: "Eliminatoria" },
+            { id: 207, l: "Por definir (O7 L)", v: "Por definir (O7 V)", grupo: "OCTAVOS J7", meta: "Eliminatoria" },
+            { id: 208, l: "Por definir (O8 L)", v: "Por definir (O8 V)", grupo: "OCTAVOS J8", meta: "Eliminatoria" }
         ]},
-        "8VOS DE FINAL": { info: "Fase de Octavos de Final. 1pt Regular + 1pt Extra al que clasifica.", liguilla: true, partidos: [
-            { id: 201, l: "Por definir (O1)", v: "Por definir (O2)", grupo: "Octavos H1", meta: "Sede por definir" },
-            { id: 202, l: "Por definir (O3)", v: "Por definir (O4)", grupo: "Octavos H2", meta: "Sede por definir" }
+        "4TOS DE FINAL": { info: "8 Clasificados (4 Partidos). 1pt Regular + 1pt Extra al que AVANZA.", liguilla: true, partidos: [
+            { id: 301, l: "Por definir (Q1 L)", v: "Por definir (Q1 V)", grupo: "CUARTOS J1", meta: "Eliminatoria" },
+            { id: 302, l: "Por definir (Q2 L)", v: "Por definir (Q2 V)", grupo: "CUARTOS J2", meta: "Eliminatoria" },
+            { id: 303, l: "Por definir (Q3 L)", v: "Por definir (Q3 V)", grupo: "CUARTOS J3", meta: "Eliminatoria" },
+            { id: 304, l: "Por definir (Q4 L)", v: "Por definir (Q4 V)", grupo: "CUARTOS J4", meta: "Eliminatoria" }
         ]},
-        "SEMIFINAL": { info: "Semifinales de la Copa del Mundo.", liguilla: true, partidos: [
-            { id: 301, l: "Por definir (S1)", v: "Por definir (S2)", grupo: "Semi 1", meta: "Sede por definir" },
-            { id: 302, l: "Por definir (S3)", v: "Por definir (S4)", grupo: "Semi 2", meta: "Sede por definir" }
+        "SEMIFINAL": { info: "4 Clasificados (2 Partidos). 1pt Regular + 1pt Extra al que AVANZA.", liguilla: true, partidos: [
+            { id: 401, l: "Por definir (S1 L)", v: "Por definir (S1 V)", grupo: "SEMI J1", meta: "Eliminatoria" },
+            { id: 402, l: "Por definir (S2 L)", v: "Por definir (S2 V)", grupo: "SEMI J2", meta: "Eliminatoria" }
         ]},
-        "FINAL": { info: "Gran Final Mundialista y definición de Campeón.", liguilla: true, partidos: [
-            { id: 401, l: "Finalista 1", v: "Finalista 2", grupo: "Gran Final", meta: "Estadio Nueva York" }
+        "FINAL": { info: "Definición del Podio. 1pt Regular + 1pt Extra al que se CORONA o gana 3er puesto.", liguilla: true, partidos: [
+            { id: 501, l: "Perdedor Semi 1", v: "Perdedor Semi 2", grupo: "TERCER LUGAR", meta: "Final de Consolación" },
+            { id: 502, l: "Finalista 1", v: "Finalista 2", grupo: "GRAN FINAL", meta: "Estadio Nueva York - ¡Día de Copa!" }
         ]}
     };
 
-    // Firebase Config
     const firebaseConfig = { apiKey: "AIzaSyBgmqQLnUIPuaDgXOEvuBAoY_mcd69Qw7E", authDomain: "quinielaligamx-68b52.firebaseapp.com", databaseURL: "https://quinielaligamx-68b52-default-rtdb.firebaseio.com", projectId: "quinielaligamx-68b52", storageBucket: "quinielaligamx-68b52.firebasestorage.app", messagingSenderId: "745257098090", appId: "1:745257098090:web:3c13bf19a1a0c1718ca313" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -422,7 +434,7 @@
                 if (etapaObj.liguilla) {
                     avanzaHtml = `
                         <div class="avanza-box">
-                            <div class="avanza-title">Clasificó Oficial:</div>
+                            <div class="avanza-title">Clasificó / Campeón Oficial:</div>
                             <div class="avanza-btns">
                                 <button class="btn-avanza ${avanzaOficial==='L'?'real':''}" disabled>${nombreL}</button>
                                 <button class="btn-avanza ${avanzaOficial==='V'?'real':''}" disabled>${nombreV}</button>
@@ -434,7 +446,7 @@
                 if (etapaObj.liguilla) {
                     avanzaHtml = `
                         <div class="avanza-box">
-                            <div class="avanza-title">⭐ Punto Extra: ¿Quién Avanza de Ronda?</div>
+                            <div class="avanza-title">⭐ Punto Extra: ¿Quién clasifica o queda campeón?</div>
                             <div class="avanza-btns">
                                 <button class="btn-avanza ${SEL_AVANZA[p.id]==='L'?'selected':''}" onclick="setAvanzaUser(${p.id},'L')">${nombreL}</button>
                                 <button class="btn-avanza ${SEL_AVANZA[p.id]==='V'?'selected':''}" onclick="setAvanzaUser(${p.id},'V')">${nombreV}</button>
@@ -472,7 +484,7 @@
             if (etapaObj.liguilla) {
                 avanzaAdminHtml = `
                     <div class="avanza-box" style="background:#fff3f3; border-color:var(--accent);">
-                        <div class="avanza-title" style="color:var(--accent);">👑 Marcar Ganador Oficial (Punto Extra):</div>
+                        <div class="avanza-title" style="color:var(--accent);">👑 Marcar Clasificado/Campeón Oficial:</div>
                         <div class="avanza-btns">
                             <button class="btn-avanza ${avanzaM==='L'?'real':''}" onclick="setAvanzaAdmin(${p.id},'L')">${nombreL}</button>
                             <button class="btn-avanza ${avanzaM==='V'?'real':''}" onclick="setAvanzaAdmin(${p.id},'V')">${nombreV}</button>
@@ -527,7 +539,7 @@
         });
 
         db.ref('nombres_custom/' + e).set(payload).then(() => {
-            alert(`Llaves inyectadas correctamente para la etapa: ${e}`);
+            alert(`Llaves actualizadas de forma reactiva para: ${e}`);
             actualizarUI();
         });
     }
@@ -556,13 +568,13 @@
         etapaObj.partidos.forEach(p => { 
             if(SEL_USER[p.id]) {
                 if (etapaObj.liguilla && !SEL_AVANZA[p.id]) {
-                    // Espera que marque el desempate
+                    // Espera el desempate
                 } else { respondidos++; }
             }
         });
 
         if(respondidos < etapaObj.partidos.length) {
-            return alert("Falta completar pronósticos o seleccionar quién avanza en la ronda eliminatoria.");
+            return alert("Por favor pronostica todos los partidos y elige quién avanza en cada casillero.");
         }
 
         db.ref('jugadas').push({
@@ -581,7 +593,7 @@
         etapaObj.partidos.forEach(p => { 
             const nL = obtenerNombreEquipo(ETAPA_SELECCIONADA_USER, p.id, "l", p.l);
             const nV = obtenerNombreEquipo(ETAPA_SELECCIONADA_USER, p.id, "v", p.v);
-            t += `${nL} vs ${nV} [${SEL_USER[p.id]}] ${etapaObj.liguilla ? `(Pasa: ${SEL_AVANZA[p.id]})`:''}\n`; 
+            t += `${nL} vs ${nV} [${SEL_USER[p.id]}] ${etapaObj.liguilla ? `(Gana: ${SEL_AVANZA[p.id]})`:''}\n`; 
         });
         document.getElementById('mensaje-texto').innerText = t;
     }
@@ -638,7 +650,7 @@
 
     function publicarResultados() {
         db.ref('oficial_historial/' + ETAPA_SELECCIONADA_ADMIN_RESULTADOS).set(SERVER_DATA.oficial_historial[ETAPA_SELECCIONADA_ADMIN_RESULTADOS]).then(() => {
-            alert(`Resultados publicados con éxito para: ${ETAPA_SELECCIONADA_ADMIN_RESULTADOS}`);
+            alert(`Marcadores y Puntos Extra publicados para: ${ETAPA_SELECCIONADA_ADMIN_RESULTADOS}`);
         });
     }
 
@@ -654,7 +666,7 @@
                 contador++;
                 div.innerHTML += `
                     <div class="partido-card" style="display:flex; justify-content:space-between; align-items:center; padding:12px; margin-bottom:8px;">
-                        <span style="font-size:0.85em; font-weight:bold; color:var(--primary);">${j.nombre}</span>
+                        <span style="font-size:0.85em; font-weight:bold; color:var(--mex-verde);">${j.nombre}</span>
                         <div style="display:flex; gap:6px;">
                             <button style="background:${j.pagado?'#43a047':'#b0bec5'}; color:white; border:none; padding:6px 12px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="db.ref('jugadas/${id}').update({pagado:${!j.pagado}})">${j.pagado?'PAGADO':'VALIDAR'}</button>
                             <button style="background:#37474f; color:white; border:none; padding:6px 10px; border-radius:8px; cursor:pointer;" onclick="verDetalle('${id}')">👁️</button>
@@ -672,7 +684,7 @@
         MUNDIAL_FASES_ESTRUCTURA[j.jornada].partidos.forEach(p => { 
             const nL = obtenerNombreEquipo(j.jornada, p.id, "l", p.l);
             const nV = obtenerNombreEquipo(j.jornada, p.id, "v", p.v);
-            h += `<tr><td style="font-size:0.8em;">${nL} vs ${nV}</td><td style="text-align:right; font-weight:bold; color:var(--primary-light);">[${j.votos[p.id] || '-'}] ${j.avanza&&j.avanza[p.id]?`<br><span style="font-size:0.8em; color:var(--gold);">➔ ${j.avanza[p.id]}</span>`:''}</td></tr>`; 
+            h += `<tr><td style="font-size:0.8em;">${nL} vs ${nV}</td><td style="text-align:right; font-weight:bold; color:var(--primary-light);">[${j.votos[p.id] || '-'}] ${j.avanza&&j.avanza[p.id]?`<br><span style="font-size:0.8em; color:var(--gold);">➔ Ganador: ${j.avanza[p.id]}</span>`:''}</td></tr>`; 
         });
         document.getElementById('modal-detalle').innerHTML = h + '</table>';
         document.getElementById('modal-ver').style.display = 'block';
@@ -681,7 +693,6 @@
     function showTab(tabId, btnId) { 
         document.querySelectorAll('.content').forEach(c => c.classList.remove('active')); 
         document.getElementById(tabId).classList.add('active'); 
-        
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); 
         document.getElementById(btnId).classList.add('active'); 
     }
