@@ -42,6 +42,7 @@
         .admin-card { background: #fdfdfd; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 16px; }
         input[type="text"], input[type="number"], select { width: 100%; padding: 12px; border: 1px solid #cbd5e0; border-radius: 8px; box-sizing: border-box; margin-bottom: 12px; background: white; font-size: 0.9em; color: var(--texto-oscuro); }
         .status-box { background: #fdf3f3; color: var(--mex-rojo); padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 12px; border: 1px solid #fbdad9; font-size: 0.85em; }
+        .admin-row-input { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -103,8 +104,15 @@
     <div id="admin" class="content">
         <div class="admin-card" style="background: #eef5f1; border-color: #cbd5e0;">
             <h4>⚙️ Control de Cierre de Inscripción</h4>
-            <select id="selector-etapa-cierre" onchange="actualizarBotonCierreAdminUI()"></select>
+            <select id="selector-etapa-cierre" onchange="actualizarBierreAdminUI()"></select>
             <button id="btn-toggle-cierre" onclick="toggleCierreAdmin()" style="width:100%; padding:12px; font-weight:bold; border:none; border-radius:8px; cursor:pointer; color:white; margin-top: 10px;"></button>
+        </div>
+
+        <div class="admin-card" style="background: #fffdf5; border: 1px solid var(--oro-premium);">
+            <h4>📝 Gestión de Nombres de Equipos (Fases Finales)</h4>
+            <select id="selector-etapa-equipos" onchange="renderGestionEquiposAdmin(this.value)"></select>
+            <div id="lista-gestion-equipos"></div>
+            <button class="btn-main" style="background: var(--mex-verde); margin:0;" onclick="guardarNombresEquiposCloud()">GUARDAR LLAVES EN TIEMPO REAL</button>
         </div>
 
         <div class="admin-card">
@@ -123,7 +131,6 @@
 </div>
 
 <script>
-    // ARQUITECTURA EXTENDIDA CON FASES DE ELIMINACIÓN DIRECTA (LISTAS PARA QUE REEMPLACES LOS TEXTOS)
     const MUNDIAL_FASES_ESTRUCTURA = {
         "ETAPA 1": { info: "Vigencia: 11 al 14 de Junio. Incluye el debut de México, EE. UU. y Canadá.", partidos: [
             { id: 1, l: "México", v: "Sudáfrica", grupo: "Grupo A", meta: "11 Jun - 15:00h | Estadio Azteca" },
@@ -209,29 +216,29 @@
             { id: 71, l: "Panamá", v: "Inglaterra", grupo: "Grupo L", meta: "27 Jun - 19:00h | Estadio Filadelfia" },
             { id: 72, l: "Croacia", v: "Ghana", grupo: "Grupo L", meta: "27 Jun - 19:00h | Estadio Toronto" }
         ]},
-        "16AVOS DE FINAL": { info: "Puntaje: 1 pt tiempo regular (LEV) + 1 pt extra al que AVANZA por partido.", eliminatoria: true, partidos: [
-            { id: 101, l: "Por definir (1A)", v: "Por definir (2B)", grupo: "Llave 1", meta: "Por definir fecha y sede" },
-            { id: 102, l: "Por definir (1C)", v: "Por definir (2D)", grupo: "Llave 2", meta: "Por definir fecha y sede" },
-            { id: 103, l: "Por definir (1E)", v: "Por definir (2F)", grupo: "Llave 3", meta: "Por definir fecha y sede" },
-            { id: 104, l: "Por definir (1G)", v: "Por definir (2H)", grupo: "Llave 4", meta: "Por definir fecha y sede" },
-            { id: 105, l: "Por definir (1I)", v: "Por definir (2J)", grupo: "Llave 5", meta: "Por definir fecha y sede" },
-            { id: 106, l: "Por definir (1K)", v: "Por definir (2L)", grupo: "Llave 6", meta: "Por definir fecha y sede" },
-            { id: 107, l: "Por definir (1B)", v: "Por definir (2A)", grupo: "Llave 7", meta: "Por definir fecha y sede" },
-            { id: 108, l: "Por definir (1D)", v: "Por definir (2C)", grupo: "Llave 8", meta: "Por definir fecha y sede" }
+        "16AVOS DE FINAL": { info: "Puntaje: 1 pt tiempo regular (LEV) + 1 pt extra al que AVANZA por partido.", combinada: true, partidos: [
+            { id: 101, l: "Por definir (1A)", v: "Por definir (2B)", grupo: "Llave 1", meta: "Sede por definir" },
+            { id: 102, l: "Por definir (1C)", v: "Por definir (2D)", grupo: "Llave 2", meta: "Sede por definir" },
+            { id: 103, l: "Por definir (1E)", v: "Por definir (2F)", grupo: "Llave 3", meta: "Sede por definir" },
+            { id: 104, l: "Por definir (1G)", v: "Por definir (2H)", grupo: "Llave 4", meta: "Sede por definir" },
+            { id: 105, l: "Por definir (1I)", v: "Por definir (2J)", grupo: "Llave 5", meta: "Sede por definir" },
+            { id: 106, l: "Por definir (1K)", v: "Por definir (2L)", grupo: "Llave 6", meta: "Sede por definir" },
+            { id: 107, l: "Por definir (1B)", v: "Por definir (2A)", grupo: "Llave 7", meta: "Sede por definir" },
+            { id: 108, l: "Por definir (1D)", v: "Por definir (2C)", grupo: "Llave 8", meta: "Sede por definir" }
         ]},
-        "OCTAVOS Y CUARTOS": { info: "Llaves combinadas de Octavos (Juegos 201-204) y Cuartos (205-206).", eliminatoria: true, partidos: [
-            { id: 201, l: "Ganador Llave 1", v: "Ganador Llave 2", grupo: "Octavos H1", meta: "Por definir" },
-            { id: 202, l: "Ganador Llave 3", v: "Ganador Llave 4", grupo: "Octavos H2", meta: "Por definir" },
-            { id: 203, l: "Ganador Llave 5", v: "Ganador Llave 6", grupo: "Octavos H3", meta: "Por definir" },
-            { id: 204, l: "Ganador Llave 7", v: "Ganador Llave 8", grupo: "Octavos H4", meta: "Por definir" },
-            { id: 205, l: "Ganador Octavos H1", v: "Ganador Octavos H2", grupo: "Cuartos Q1", meta: "Por definir" },
-            { id: 206, l: "Ganador Octavos H3", v: "Ganador Octavos H4", grupo: "Cuartos Q2", meta: "Por definir" }
+        "OCTAVOS Y CUARTOS": { info: "Llaves combinadas de Octavos (201-204) y Cuartos de Final (205-206).", combinada: true, partidos: [
+            { id: 201, l: "Por definir (O1)", v: "Por definir (O2)", grupo: "Octavos H1", meta: "Sede por definir" },
+            { id: 202, l: "Por definir (O3)", v: "Por definir (O4)", grupo: "Octavos H2", meta: "Sede por definir" },
+            { id: 203, l: "Por definir (O5)", v: "Por definir (O6)", grupo: "Octavos H3", meta: "Sede por definir" },
+            { id: 204, l: "Por definir (O7)", v: "Por definir (O8)", grupo: "Octavos H4", meta: "Sede por definir" },
+            { id: 205, l: "Ganador H1", v: "Ganador H2", grupo: "Cuartos Q1", meta: "Sede por definir" },
+            { id: 206, l: "Ganador H3", v: "Ganador H4", grupo: "Cuartos Q2", meta: "Sede por definir" }
         ]},
-        "SEMIFINAL Y FINAL": { info: "Fase Definitiva del Mundial: Semifinales, Tercer Lugar y la Gran Final.", eliminatoria: true, partidos: [
-            { id: 301, l: "Ganador Q1", v: "Ganador Q2", grupo: "Semifinal 1", meta: "Por definir" },
-            { id: 302, l: "Por definir S1", v: "Por definir S2", grupo: "Semifinal 2", meta: "Por definir" },
-            { id: 303, l: "Perdedor S1", v: "Perdedor S2", grupo: "Tercer Lugar", meta: "Por definir" },
-            { id: 304, l: "Ganador S1", v: "Ganador S2", grupo: "GRAN FINAL", meta: "Estadio Nueva York - ¡Día de Corona!" }
+        "SEMIFINAL Y FINAL": { info: "Fase de Medallas: Semifinales, Tercer Lugar y la Gran Final.", combinada: true, partidos: [
+            { id: 301, l: "Por definir (S1)", v: "Por definir (S2)", grupo: "Semifinal 1", meta: "Sede por definir" },
+            { id: 302, l: "Por definir (S3)", v: "Por definir (S4)", grupo: "Semifinal 2", meta: "Sede por definir" },
+            { id: 303, l: "Perdedor S1", v: "Perdedor S2", grupo: "Tercer Lugar", meta: "Sede por definir" },
+            { id: 304, l: "Ganador S1", v: "Ganador S2", grupo: "GRAN FINAL", meta: "Estadio Nueva York" }
         ]}
     };
 
@@ -239,7 +246,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let SERVER_DATA = { cierres: {}, oficial_historial: {}, jugadas: {} };
+    let SERVER_DATA = { cierres: {}, oficial_historial: {}, jugadas: {}, nombres_custom: {} };
     let ETAPA_SELECCIONADA_USER = "ETAPA 1";
     let ETAPA_SELECCIONADA_ADMIN_RESULTADOS = "ETAPA 1";
 
@@ -251,16 +258,25 @@
         document.getElementById('selector-etapa-cierre').innerHTML = listaEtapas.map(e => `<option value="${e}">${e}</option>`).join('');
         document.getElementById('selector-etapa-resultados').innerHTML = listaEtapas.map(e => `<option value="${e}">${e}</option>`).join('');
         document.getElementById('selector-etapa-pagos').innerHTML = listaEtapas.map(e => `<option value="${e}">${e}</option>`).join('');
+        document.getElementById('selector-etapa-equipos').innerHTML = listaEtapas.filter(e => MUNDIAL_FASES_ESTRUCTURA[e].combinada).map(e => `<option value="${e}">${e}</option>`).join('');
         
         db.ref().on('value', snap => {
             const val = snap.val() || {};
             SERVER_DATA.cierres = val.cierres || {};
             SERVER_DATA.oficial_historial = val.oficial_historial || {};
             SERVER_DATA.jugadas = val.jugadas || {};
+            SERVER_DATA.nombres_custom = val.nombres_custom || {};
             listaEtapas.forEach(e => { if(SERVER_DATA.cierres[e] === undefined) SERVER_DATA.cierres[e] = false; });
             actualizarUI();
         });
     };
+
+    function obtenerNombreEquipo(etapa, id, tipo, defaultName) {
+        if (SERVER_DATA.nombres_custom && SERVER_DATA.nombres_custom[etapa] && SERVER_DATA.nombres_custom[etapa][id + "_" + tipo]) {
+            return SERVER_DATA.nombres_custom[etapa][id + "_" + tipo];
+        }
+        return defaultName;
+    }
 
     function actualizarUI() {
         const isCerrada = SERVER_DATA.cierres[ETAPA_SELECCIONADA_USER];
@@ -299,6 +315,8 @@
         const resOfi = SERVER_DATA.oficial_historial[ETAPA_SELECCIONADA_USER] || {};
 
         partidos.forEach(p => {
+            const nombreL = obtenerNombreEquipo(ETAPA_SELECCIONADA_USER, p.id, "l", p.l);
+            const nombreV = obtenerNombreEquipo(ETAPA_SELECCIONADA_USER, p.id, "v", p.v);
             const marcadorOficial = resOfi[p.id + "_voto"] || "";
             const avanzaOficial = resOfi[p.id + "_avanza"] || "";
             
@@ -310,12 +328,12 @@
                     return `<button class="btn-lev ${marcadorOficial === v ? 'real' : ''}" style="cursor:default;" disabled>${v}</button>`;
                 }).join('');
 
-                if (etapaObj.eliminatoria) {
+                if (etapaObj.combinada) {
                     avanzaHtml = `
                         <div class="avanza-box">
-                            <span style="font-size:0.75em; font-weight:bold;">Avanzó:</span>
-                            <button class="btn-avanza ${avanzaOficial==='L'?'real':''}" disabled>${p.l}</button>
-                            <button class="btn-avanza ${avanzaOficial==='V'?'real':''}" disabled>${p.v}</button>
+                            <span style="font-size:0.75em; font-weight:bold;">Clasificó:</span>
+                            <button class="btn-avanza ${avanzaOficial==='L'?'real':''}" disabled>${nombreL}</button>
+                            <button class="btn-avanza ${avanzaOficial==='V'?'real':''}" disabled>${nombreV}</button>
                         </div>`;
                 }
             } else {
@@ -323,12 +341,12 @@
                     return `<button class="btn-lev ${SEL_USER[p.id] === v ? 'selected' : ''}" onclick="setVotoUser(${p.id},'${v}')">${v}</button>`;
                 }).join('');
 
-                if (etapaObj.eliminatoria) {
+                if (etapaObj.combinada) {
                     avanzaHtml = `
                         <div class="avanza-box">
-                            <span style="font-size:0.72em; font-weight:bold; color:var(--mex-verde);">➔ En caso de empate avanza:</span>
-                            <button class="btn-avanza ${SEL_AVANZA[p.id]==='L'?'selected':''}" onclick="setAvanzaUser(${p.id},'L')">${p.l}</button>
-                            <button class="btn-avanza ${SEL_AVANZA[p.id]==='V'?'selected':''}" onclick="setAvanzaUser(${p.id},'V')">${p.v}</button>
+                            <span style="font-size:0.72em; font-weight:bold; color:var(--mex-verde);">➔ Avanza en caso de empate:</span>
+                            <button class="btn-avanza ${SEL_AVANZA[p.id]==='L'?'selected':''}" onclick="setAvanzaUser(${p.id},'L')">${nombreL}</button>
+                            <button class="btn-avanza ${SEL_AVANZA[p.id]==='V'?'selected':''}" onclick="setAvanzaUser(${p.id},'V')">${nombreV}</button>
                         </div>`;
                 }
             }
@@ -337,11 +355,11 @@
                 <div class="partido-card">
                     <div class="meta-header"><span>${p.grupo}</span> <span>ID: ${p.id}</span></div>
                     <div class="partido-row">
-                        <div class="equipo">${p.l}</div>
+                        <div class="equipo">${nombreL}</div>
                         <div class="lev-container">
                             ${levButtonsHtml}
                         </div>
-                        <div class="equipo">${p.v}</div>
+                        <div class="equipo">${nombreV}</div>
                     </div>
                     ${avanzaHtml}
                     <div class="meta-footer">${p.meta} ${isCerrada && marcadorOficial ? `| ➔ REGLA: [${marcadorOficial}]` : ''}</div>
@@ -351,23 +369,24 @@
 
     function renderListaPartidosAdmin() {
         const div = document.getElementById('lista-admin');
-        if(!div) return;
-        div.innerHTML = '';
+        if(!div) return; div.innerHTML = '';
         const etapaObj = MUNDIAL_FASES_ESTRUCTURA[ETAPA_SELECCIONADA_ADMIN_RESULTADOS];
         const partidos = etapaObj.partidos;
         const resOfi = SERVER_DATA.oficial_historial[ETAPA_SELECCIONADA_ADMIN_RESULTADOS] || {};
 
         partidos.forEach(p => {
+            const nombreL = obtenerNombreEquipo(ETAPA_SELECCIONADA_ADMIN_RESULTADOS, p.id, "l", p.l);
+            const nombreV = obtenerNombreEquipo(ETAPA_SELECCIONADA_ADMIN_RESULTADOS, p.id, "v", p.v);
             const votoM = resOfi[p.id + "_voto"] || "";
             const avanzaM = resOfi[p.id + "_avanza"] || "";
 
             let avanzaAdminHtml = "";
-            if (etapaObj.eliminatoria) {
+            if (etapaObj.combinada) {
                 avanzaAdminHtml = `
                     <div class="avanza-box" style="background:#fff5f5;">
                         <span style="font-size:0.75em; font-weight:bold; color:var(--mex-rojo);">¿Quién clasificó?:</span>
-                        <button class="btn-avanza ${avanzaM==='L'?'real':''}" onclick="setAvanzaAdmin(${p.id},'L')">${p.l}</button>
-                        <button class="btn-avanza ${avanzaM==='V'?'real':''}" onclick="setAvanzaAdmin(${p.id},'V')">${p.v}</button>
+                        <button class="btn-avanza ${avanzaM==='L'?'real':''}" onclick="setAvanzaAdmin(${p.id},'L')">${nombreL}</button>
+                        <button class="btn-avanza ${avanzaM==='V'?'real':''}" onclick="setAvanzaAdmin(${p.id},'V')">${nombreV}</button>
                     </div>`;
             }
 
@@ -375,14 +394,52 @@
                 <div class="partido-card">
                     <div class="meta-header"><span>${p.grupo}</span> <span>ID: ${p.id}</span></div>
                     <div class="partido-row">
-                        <div class="equipo">${p.l}</div>
+                        <div class="equipo">${nombreL}</div>
                         <div class="lev-container">
                             ${['L','E','V'].map(v => `<button class="btn-lev ${votoM===v ? 'real':''}" onclick="setVotoAdmin(${p.id},'${v}')">${v}</button>`).join('')}
                         </div>
-                        <div class="equipo">${p.v}</div>
+                        <div class="equipo">${nombreV}</div>
                     </div>
                     ${avanzaAdminHtml}
                 </div>`;
+        });
+    }
+
+    // PANEL DE EDICIÓN DE EQUIPOS DIRECTO EN WEB
+    function renderGestionEquiposAdmin(etapa) {
+        const div = document.getElementById('lista-gestion-equipos');
+        if(!div) return; div.innerHTML = '';
+        const partidos = MUNDIAL_FASES_ESTRUCTURA[etapa].partidos;
+
+        partidos.forEach(p => {
+            const nombreL = obtenerNombreEquipo(etapa, p.id, "l", p.l);
+            const nombreV = obtenerNombreEquipo(etapa, p.id, "v", p.v);
+            
+            div.innerHTML += `
+                <div style="border-bottom:1px dashed #ccc; padding:8px 0;">
+                    <div style="font-size:0.75em; font-weight:bold; color:var(--mex-verde); margin-bottom:4px;">ID ${p.id} - ${p.grupo}</div>
+                    <div class="admin-row-input">
+                        <input type="text" id="custom_l_${p.id}" value="${nombreL}" style="margin:0;">
+                        <span style="font-weight:bold;">vs</span>
+                        <input type="text" id="custom_v_${p.id}" value="${nombreV}" style="margin:0;">
+                    </div>
+                </div>`;
+        });
+    }
+
+    function guardarNombresEquiposCloud() {
+        const e = document.getElementById('selector-etapa-equipos').value;
+        const partidos = MUNDIAL_FASES_ESTRUCTURA[e].partidos;
+        let payload = {};
+
+        partidos.forEach(p => {
+            payload[p.id + "_l"] = document.getElementById(`custom_l_${p.id}`).value.trim();
+            payload[p.id + "_v"] = document.getElementById(`custom_v_${p.id}`).value.trim();
+        });
+
+        db.ref('nombres_custom/' + e).set(payload).then(() => {
+            alert(`Llaves actualizadas con éxito en Firebase para la fase: ${e}`);
+            actualizarUI();
         });
     }
 
@@ -410,8 +467,8 @@
 
         partidos.forEach(p => { 
             if(SEL_USER[p.id]) {
-                if (etapaObj.eliminatoria && !SEL_AVANZA[p.id]) {
-                    // Fuerza a que elijan quién avanza en fases finales
+                if (etapaObj.combinada && !SEL_AVANZA[p.id]) {
+                    // Obliga a poner quién avanza
                 } else {
                     respondidos++;
                 }
@@ -436,7 +493,9 @@
 
         let t = `👤 COLLAB: ${nombre.toUpperCase()}\n🏆 QUINIELA MUNDIALISTA AE\n📅 FASE: ${ETAPA_SELECCIONADA_USER}\n--------------------\n`;
         partidos.forEach(p => { 
-            t += `${p.l} vs ${p.v} [${SEL_USER[p.id]}] ${etapaObj.eliminatoria ? `(Avanza: ${SEL_AVANZA[p.id]})`:''}\n`; 
+            const nL = obtenerNombreEquipo(ETAPA_SELECCIONADA_USER, p.id, "l", p.l);
+            const nV = obtenerNombreEquipo(ETAPA_SELECCIONADA_USER, p.id, "v", p.v);
+            t += `${nL} vs ${nV} [${SEL_USER[p.id]}] ${etapaObj.combinada ? `(Pasa: ${SEL_AVANZA[p.id]})`:''}\n`; 
         });
         document.getElementById('mensaje-texto').innerText = t;
     }
@@ -457,10 +516,8 @@
                 const votoUser = j.votos ? j.votos[p.id] : null;
                 const avanzaUser = j.avanza ? j.avanza[p.id] : null;
 
-                // 1 Punto Regular
                 if(votoReal && String(votoUser) === String(votoReal)) pts++;
-                // 1 Punto Extra si es eliminatoria directa
-                if(etapaObj.eliminatoria && avanzaReal && String(avanzaUser) === String(avanzaReal)) pts++;
+                if(etapaObj.combinada && avanzaReal && String(avanzaUser) === String(avanzaReal)) pts++;
             });
             return { n: j.nombre, p: pts, t: j.timestamp };
         }).sort((a,b) => b.p - a.p || a.t - b.t);
@@ -490,6 +547,11 @@
         if(btn) {
             btn.innerText = status ? `🔓 ABRIR REGISTROS DE: ${e}` : `🔒 CERRAR REGISTROS DE: ${e}`;
             btn.style.background = status ? "#28a745" : "var(--mex-rojo)";
+        }
+        // Forzar render inicial de la sección de equipos si aplica
+        const selEquipos = document.getElementById('selector-etapa-equipos');
+        if(selEquipos && !document.getElementById('lista-gestion-equipos').innerHTML) {
+            renderGestionEquiposAdmin(selEquipos.value);
         }
     }
     document.getElementById('selector-etapa-cierre').onchange = actualizarBierreAdminUI;
@@ -533,7 +595,9 @@
         let h = '<table style="width:100%">';
         const partidos = MUNDIAL_FASES_ESTRUCTURA[j.jornada].partidos;
         partidos.forEach(p => { 
-            h += `<tr><td>${p.l} vs ${p.v}</td><td style="text-align:right; font-weight:bold; color:var(--mex-verde);">[${j.votos[p.id] || '-'}] ${j.avanza&&j.avanza[p.id]?` (Pasa: ${j.avanza[p.id]})`:''}</td></tr>`; 
+            const nL = obtenerNombreEquipo(j.jornada, p.id, "l", p.l);
+            const nV = obtenerNombreEquipo(j.jornada, p.id, "v", p.v);
+            h += `<tr><td>${nL} vs ${nV}</td><td style="text-align:right; font-weight:bold; color:var(--mex-verde);">[${j.votos[p.id] || '-'}] ${j.avanza&&j.avanza[p.id]?` (Pasa: ${j.avanza[p.id]})`:''}</td></tr>`; 
         });
         document.getElementById('modal-detalle').innerHTML = h + '</table>';
         document.getElementById('modal-ver').style.display = 'block';
